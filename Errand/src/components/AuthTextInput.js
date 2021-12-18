@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { TextInput } from 'react-native-paper';
-
-import Container from '../components/Container';
 
 export default AuthTextInput = (props) => {
     const [Focus, setFocus] = useState(false);

@@ -5,7 +5,6 @@ import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
 import Container from '../components/Container';
-import AuthTextInput from '../components/AuthTextInput';
 
 export default LoginScreen = (props) => {
   const [emailFocus, setEmailFocus] = useState(false);
@@ -22,23 +21,6 @@ export default LoginScreen = (props) => {
       </View>
 
       <View style={styles.inputWrapper}>
-        {/* <AuthTextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={text => setEmail(text)}
-          returnKeyType="next"
-          onSubmitEditing={() => { this.secondTextInput.focus(); }}
-          blurOnSubmit={false}
-          left={<TextInput.Icon name={() => <AntDesignIcon name="user" size={20} color="#53B77C" />} />}
-        />
-        <AuthTextInput
-          placeholder="Password"
-          value={password}
-          onChangeText={text => setPassword(text)}
-          secureTextEntry={true}
-          ref={(input) => { this.secondTextInput = input; }}
-          left={<TextInput.Icon name={() => <AntDesignIcon name="lock" size={20} color="#53B77C" />} />}
-        /> */}
         <TextInput
           style={emailFocus ? styles.focusedInput : styles.input}
           autoCorrect={false}
