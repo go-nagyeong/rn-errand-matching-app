@@ -48,7 +48,7 @@ export default RegisterAction = (props) => {
         }
 
 
-        if(!nameErr && !emailErr && !pwErr && !rePwErr) {
+        if(email && password && !nameErr && !emailErr && !pwErr && !rePwErr) {
             auth()
             .createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
