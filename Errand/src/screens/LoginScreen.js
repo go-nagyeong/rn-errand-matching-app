@@ -23,39 +23,43 @@ export default LoginScreen = (props) => {
       <View style={styles.inputWrapper}>
         <TextInput
           style={emailFocus ? styles.focusedInput : styles.input}
-          autoCorrect={false}
-          autoCapitalize='none'
-          underlineColor='transparent'
-          activeUnderlineColor="transparent"
-          selectionColor="#292929"
-          onFocus={() => {setEmailFocus(true)}}
-          onBlur={() => {setEmailFocus(false)}}
-          theme={{ roundness: 7, colors: {text: emailFocus ? "black" : "#999899", placeholder: emailFocus ? "transparent" : "#999899"} }}
           placeholder="Email"
           value={email}
-          onChangeText={text => setEmail(text)}
-          returnKeyType="next"
-          onSubmitEditing={() => { this.secondTextInput.focus(); }}
+          autoCapitalize='none'
+          autoCorrect={false}
           blurOnSubmit={false}
+          onFocus={() => {setEmailFocus(true)}}
+          onBlur={() => {setEmailFocus(false)}}
+          onChangeText={text => setEmail(text)}
+          onSubmitEditing={() => { this.secondTextInput.focus(); }}
+          returnKeyType="next"
+          selectionColor="#292929"
+          // react-native-paper
+          underlineColor='transparent'
+          activeUnderlineColor="transparent"
+          theme={{ roundness: 7, colors: {text: emailFocus ? "black" : "#999899", placeholder: emailFocus ? "transparent" : "#999899"} }}
           left={<TextInput.Icon name={() => <AntDesignIcon name="user" size={20} color="#53B77C" />} />}
         />
         <TextInput 
           style={pwFocus ? styles.focusedInput : styles.input}
-          autoCorrect={false}
-          autoCapitalize='none'
-          underlineColor='transparent'
-          activeUnderlineColor="transparent"
-          selectionColor="#292929"
-          onFocus={() => {setPwFocus(true)}}
-          onBlur={() => {setPwFocus(false)}}
-          theme={{ roundness: 7, colors: {text: pwFocus ? "black" : "#999899", placeholder: pwFocus ? "transparent" : "#999899"} }}
           placeholder="Password"
           value={password}
+          autoCapitalize='none'
+          autoCorrect={false}
+          blurOnSubmit={false}
+          onFocus={() => {setPwFocus(true)}}
+          onBlur={() => {setPwFocus(false)}}
           onChangeText={text => setPassword(text)}
+          onSubmitEditing={() => { props.signIn(email, password) }}
+          selectionColor="#292929"
           secureTextEntry={true}
           ref={(input) => { this.secondTextInput = input; }}
+          // react-native-paper
+          underlineColor='transparent'
+          activeUnderlineColor="transparent"
+          theme={{ roundness: 7, colors: {text: pwFocus ? "black" : "#999899", placeholder: pwFocus ? "transparent" : "#999899"} }}
           left={<TextInput.Icon name={() => <AntDesignIcon name="lock" size={20} color="#53B77C" />} />}
-          />
+        />
 
         <Text style={{
           fontSize: 14, 

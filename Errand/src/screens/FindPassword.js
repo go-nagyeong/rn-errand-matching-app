@@ -4,11 +4,8 @@ import { TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Fontisto';
 
 import Container from '../components/Container';
-import AuthTextInput from '../components/AuthTextInput';
 
 export default FindPassword = (props) => {
-    const [emailFocus, setEmailFocus] = useState(false);
-
     const [email, setEmail] = useState('');
 
     return (
@@ -18,12 +15,19 @@ export default FindPassword = (props) => {
                 <Text style={styles.textArea}>가입할 때 사용한 이메일 주소를 입력해주세요.{"\n"}</Text>
             </View>
             <View style={styles.inputWrapper}>
-                <AuthTextInput 
+                <TextInput 
+                    style={styles.input}
                     placeholder="Email"
                     value={email}
-                    onChangeText={text => setEmail(text)}
-                    left={<TextInput.Icon name={() => <Icon name="email" size={20} color="#53B77C" />} />}
+                    autoCapitalize='none'
+                    autoCorrect={false}
+                    onChangeText={text => {setEmail(text)}}
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => {props.findPassword(email)}}
+                    selectionColor="#292929"
+                    // react-native-paper
                     activeUnderlineColor='#53B77C'
+                    left={<TextInput.Icon name={() => <Icon name="email" size={20} color="#53B77C" />} />}
                 />
                 <Text style={{
                     fontSize: 14,
@@ -63,6 +67,10 @@ const styles = StyleSheet.create({
     inputWrapper: {
         paddingHorizontal: 35,
         marginBottom: 10,
+    },
+    input: {
+        backgroundColor: '#fff',
+        marginBottom: 12,
     },
     buttonWrapper: {
         paddingHorizontal: 35,
