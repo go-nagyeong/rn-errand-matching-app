@@ -7,27 +7,46 @@ import RegisterScreen from '../screens/RegisterScreen';
 
 export default RegisterAction = (props) => {
     const [submit, setSubmit] = useState(false)
+    const [registrable, setRegistrable] = useState(false)
 
     const [nameErr, setNameErr] = useState("")
+    const [isDuplicatedName, setDuplicatedName] = useState(false)
     const [emailErr, setEmailErr] = useState("")
     const [pwErr, setPwErr] = useState("")
     const [rePwErr, setRePwErr] = useState("")
 
-    const [registrable, setRegistrable] = useState(false)
+    const users = firestore().collection('Users')
 
     const createUser = (nickname, email, password, confirmPassword, phoneNum) => {
-        var emailReg = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
+        var emailReg = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/;
         var pwReg = /^.*(?=^.{6,16}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
-                
+        
+        console.log(registrable)
+        
         setSubmit(true);
+        setDuplicatedName(false);
+
+        // 닉네임 중복 검사
+        users
+        .where('nickname', '==', nickname)
+        .get()
+        .then(querySnapshot => {
+            if(querySnapshot.size >= 1) {
+                setDuplicatedName(true);
+            }
+        })
         
         if(!nickname) {
             setNameErr('이름을 입력해주세요.');
+            setRegistrable(false);
+        } else if(isDuplicatedName) {
+            setNameErr('이미 사용 중인 이름입니다.');
             setRegistrable(false);
         } else {
             setNameErr('');
             setRegistrable(true);
         }
+        
 
         if(!email) {
             setEmailErr('이메일를 입력해주세요.');
@@ -65,8 +84,21 @@ export default RegisterAction = (props) => {
 
         if(registrable) {
             auth()
+            // auth로 이메일, 비밀번호 회원가입
             .createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
+                // firestore에 이메일, 닉네임, 등급 저장
+                users
+                .add({
+                    email: email,
+                    nickname: nickname,
+                    grade: 1,
+                })
+                .then(() => {
+                    console.log('User added!');
+                });
+
+                // 인증 메일 전송
                 userCredential.user?.sendEmailVerification();
                 auth().signOut();
                 Alert.alert(
