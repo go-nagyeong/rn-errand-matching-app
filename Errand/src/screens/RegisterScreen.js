@@ -44,7 +44,7 @@ export default RegisterScreen = (props) => {
         <Text style={{fontSize: 14, marginBottom: props.nameErr ? 10 : -10, color: 'red'}}>{props.nameErr}</Text>
 
         <AuthTextInput 
-          placeholder="이메일"
+          placeholder="안동대학교 이메일"
           value={email}
           onChangeText={text => {setEmail(text)}}
           returnKeyType="next"
