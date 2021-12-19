@@ -23,13 +23,13 @@ export default LoginAction = (props) => {
             .signInWithEmailAndPassword(email, password)
             .then(() => {
                 var user = auth().currentUser;
-                if(user) {
+                if (user) {
                     if(user.emailVerified) {
                         setErr('');
                         props.navigation.navigate('Home');
                     } else {
                         auth().signOut();
-                        setErr('존재하지 않는 계정입니다.');
+                        setErr('이메일 인증을 진행해주세요.');
                     }
                 }
             })
