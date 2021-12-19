@@ -4,7 +4,6 @@ import { TextInput } from 'react-native-paper';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
 import Container from '../components/Container';
-import AuthTextInput from '../components/AuthTextInput';
 
 export default RegisterScreen = (props) => {
   const [emailFocus, setEmailFocus] = useState(false);
@@ -22,15 +21,21 @@ export default RegisterScreen = (props) => {
       </View>
 
       <View style={styles.inputWrapper}>
-        <AuthTextInput 
+        <TextInput 
+          style={styles.input}
           placeholder="이름(별칭)"
           value={nickname}
-          onChangeText={text => {setNickname(text)}}
-          ref={(input) => { this.fourthTextInput = input; }}
-          returnKeyType="next"
-          onSubmitEditing={() => { this.fifthTextInput.focus(); }}
+          autoCapitalize='none'
+          autoCorrect={false}
           blurOnSubmit={false}
-          right={props.submit && 
+          onBlur={() => {props.validateName(nickname)}}
+          onChangeText={text => {setNickname(text)}}
+          onSubmitEditing={() => {this.secondTextInput.focus()}}
+          selectionColor="#292929"
+          // react-native-paper
+          underlineColor={props.nameIsEdited ? (props.nameErr ? 'red':'#53B77C') : null}
+          activeUnderlineColor={props.nameErr ? 'red':'#53B77C'}
+          right={props.nameIsEdited && 
             <TextInput.Icon name={() => 
               <AntDesignIcon 
                 name={props.nameErr ? "warning":"checkcircleo"} 
@@ -39,18 +44,25 @@ export default RegisterScreen = (props) => {
               />} 
             />
           }
-          underlineColor={props.submit ? (props.nameErr ? 'red':'#57BBC') : null}
         />
         <Text style={{fontSize: 14, marginBottom: props.nameErr ? 10 : -10, color: 'red'}}>{props.nameErr}</Text>
 
-        <AuthTextInput 
+        <TextInput 
+          style={styles.input}
           placeholder="안동대학교 이메일"
           value={email}
-          onChangeText={text => {setEmail(text)}}
-          returnKeyType="next"
-          onSubmitEditing={() => { this.secondTextInput.focus(); }}
+          autoCapitalize='none'
+          autoCorrect={false}
           blurOnSubmit={false}
-          right={props.submit && 
+          onBlur={() => {props.validateEmail(email)}}
+          onChangeText={text => {setEmail(text)}}
+          onSubmitEditing={() => {this.thirdTextInput.focus()}}
+          selectionColor="#292929"
+          ref={(input) => { this.secondTextInput = input; }}
+          // react-native-paper
+          underlineColor={props.emailIsEdited ? (props.emailErr ? 'red':'#53B77C') : null}
+          activeUnderlineColor={props.emailErr ? 'red':'#53B77C'}
+          right={props.emailIsEdited && 
             <TextInput.Icon name={() => 
               <AntDesignIcon 
                 name={props.emailErr ? "warning":"checkcircleo"} 
@@ -59,20 +71,26 @@ export default RegisterScreen = (props) => {
               />} 
             />
           }
-          underlineColor={props.submit ? (props.emailErr ? 'red':'#57BBC') : null}
         />
         <Text style={{fontSize: 14, marginBottom: props.emailErr ? 10 : -10, color: 'red'}}>{props.emailErr}</Text>
 
-        <AuthTextInput 
+        <TextInput 
+          style={styles.input}
           placeholder="비밀번호"
           value={password}
-          onChangeText={text => {setPassword(text)}}
-          secureTextEntry={true}
-          ref={(input) => { this.secondTextInput = input; }}
-          returnKeyType="next"
-          onSubmitEditing={() => { this.thirdTextInput.focus(); }}
+          autoCapitalize='none'
+          autoCorrect={false}
           blurOnSubmit={false}
-          right={props.submit && 
+          onBlur={() => {props.validatePassword(password)}}
+          onChangeText={text => {setPassword(text)}}
+          onSubmitEditing={() => {this.fourthTextInput.focus()}}
+          selectionColor="#292929"
+          secureTextEntry={true}
+          ref={(input) => { this.thirdTextInput = input; }}
+          // react-native-paper
+          underlineColor={props.pwIsEdited ? (props.pwErr ? 'red':'#53B77C') : null}
+          activeUnderlineColor={props.pwErr ? 'red':'#53B77C'}
+          right={props.pwIsEdited && 
             <TextInput.Icon name={() => 
               <AntDesignIcon 
                 name={props.pwErr ? "warning":"checkcircleo"} 
@@ -81,20 +99,26 @@ export default RegisterScreen = (props) => {
               />} 
             />
           }
-          underlineColor={props.submit ? (props.pwErr ? 'red':'#57BBC') : null}
         />
         <Text style={{fontSize: 14, marginBottom: props.pwErr ? 10 : -10, color: 'red'}}>{props.pwErr}</Text>
 
-        <AuthTextInput 
+        <TextInput 
+          style={styles.input}
           placeholder="비밀번호 확인"
           value={confirmPassword}
-          onChangeText={text => {setConfirmPassword(text)}}
-          secureTextEntry={true}
-          ref={(input) => { this.thirdTextInput = input; }}
-          returnKeyType="next"
-          onSubmitEditing={() => { this.fourthTextInput.focus(); }}
+          autoCapitalize='none'
+          autoCorrect={false}
           blurOnSubmit={false}
-          right={props.submit && 
+          onBlur={() => {props.validateRePassword(password, confirmPassword)}}
+          onChangeText={text => {setConfirmPassword(text)}}
+          onSubmitEditing={() => {props.createUser(nickname, email, password, confirmPassword)}}
+          selectionColor="#292929"
+          secureTextEntry={true}
+          ref={(input) => { this.fourthTextInput = input; }}
+          // react-native-paper
+          underlineColor={props.rePwIsEdited ? (props.rePwErr ? 'red':'#53B77C') : null}
+          activeUnderlineColor={props.rePwErr ? 'red':'#53B77C'}
+          right={props.rePwIsEdited && 
             <TextInput.Icon name={() => 
               <AntDesignIcon 
                 name={props.rePwErr ? "warning":"checkcircleo"} 
@@ -103,7 +127,6 @@ export default RegisterScreen = (props) => {
               />} 
             />
           }
-          underlineColor={props.submit ? (props.rePwErr ? 'red':'#57BBC') : null}
         />
         <Text style={{fontSize: 14, marginBottom: props.rePwErr ? 10 : -10, color: 'red'}}>{props.rePwErr}</Text>
 
@@ -140,6 +163,10 @@ const styles = StyleSheet.create({
   inputWrapper: {
     paddingHorizontal: 30,
     marginBottom: 10,
+  },
+  input: {
+    backgroundColor: '#fff',
+    marginBottom: 12,
   },
   buttonWrapper: {
     paddingHorizontal: 35,

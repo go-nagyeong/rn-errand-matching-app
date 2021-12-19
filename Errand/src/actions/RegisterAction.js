@@ -6,25 +6,23 @@ import firestore from '@react-native-firebase/firestore';
 import RegisterScreen from '../screens/RegisterScreen';
 
 export default RegisterAction = (props) => {
-    const [submit, setSubmit] = useState(false)
-    const [registrable, setRegistrable] = useState(false)
-
     const [nameErr, setNameErr] = useState("")
     const [isDuplicatedName, setDuplicatedName] = useState(false)
+    const [nameIsEdited, setNameEdited] = useState(false)
+
     const [emailErr, setEmailErr] = useState("")
+    const [emailIsEdited, setEmailEdited] = useState(false)
+
     const [pwErr, setPwErr] = useState("")
+    const [pwIsEdited, setPwEdited] = useState(false)
+
     const [rePwErr, setRePwErr] = useState("")
+    const [rePwIsEdited, setRePwEdited] = useState(false)
 
     const users = firestore().collection('Users')
 
-    const createUser = (nickname, email, password, confirmPassword, phoneNum) => {
-        var emailReg = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/;
-        var pwReg = /^.*(?=^.{6,16}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
-        
-        console.log(registrable)
-        
-        setSubmit(true);
-        setDuplicatedName(false);
+    const validateName = (nickname) => {
+        setNameEdited(true)
 
         // 닉네임 중복 검사
         users
@@ -33,63 +31,88 @@ export default RegisterAction = (props) => {
         .then(querySnapshot => {
             if(querySnapshot.size >= 1) {
                 setDuplicatedName(true);
+            } else {
+                setDuplicatedName(false);
             }
         })
         
         if(!nickname) {
             setNameErr('이름을 입력해주세요.');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else if(isDuplicatedName) {
             setNameErr('이미 사용 중인 이름입니다.');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else {
-            setNameErr('');
-            setRegistrable(true);
+            setNameErr(null);
+            // setRegistrable(true);
         }
-        
+
+    }
+    
+    const validateEmail = (email) => {
+        var emailReg = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/;
+
+        setEmailEdited(true)
 
         if(!email) {
             setEmailErr('이메일를 입력해주세요.');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else if (!emailReg.test(email)) {
             setEmailErr('이메일 형식을 올바르게 입력해주세요.');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else {
-            setEmailErr('');
-            setRegistrable(true);
+            setEmailErr(null);
+            // setRegistrable(true);
         }
+    }
+    
+    const validatePassword = (password) => {
+        var pwReg = /^.*(?=^.{6,16}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
+
+        setPwEdited(true)
 
         if(!password) {
             setPwErr('비밀번호를 입력해주세요.');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else if (!pwReg.test(password)) {
             setPwErr('영문, 숫자, 특수문자를 모두 포함 (6~16자 이내)');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else {
-            setPwErr('');
-            setRegistrable(true);
+            setPwErr(null);
+            // setRegistrable(true);
         }
+    }
+
+    const validateRePassword = (password, confirmPassword) => {
+        setRePwEdited(true)
 
         if(!confirmPassword) {
             setRePwErr('비밀번호 재확인을 입력해주세요.');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else if(confirmPassword !== password) {
             setRePwErr('비밀번호가 일치하지 않습니다.');
-            setRegistrable(false);
+            // setRegistrable(false);
         } else {
-            setRePwErr('');
-            setRegistrable(true);
+            setRePwErr(null);
+            // setRegistrable(true);
         }
+    }
 
+    const createUser = (nickname, email, password, confirmPassword) => {
+        validateName(nickname)
+        validateEmail(email)
+        validatePassword(password)
+        validateRePassword(password, confirmPassword)
 
-        if(registrable) {
+        if(email && password && !nameErr && !emailErr && !pwErr && !rePwErr) {
             auth()
             // auth로 이메일, 비밀번호 회원가입
             .createUserWithEmailAndPassword(email, password)
             .then((userCredential) => {
                 // firestore에 이메일, 닉네임, 등급 저장
                 users
-                .add({
+                .doc(email.substr(0,8))
+                .set({
                     email: email,
                     nickname: nickname,
                     grade: 1,
@@ -119,15 +142,28 @@ export default RegisterAction = (props) => {
                     setEmailErr('유효하지 않은 이메일 주소입니다.');
                 }
             })
+        } else {
+            return false;
         }
     }
     
     return <RegisterScreen 
-            submit={submit}
+            nameIsEdited={nameIsEdited}
+            emailIsEdited={emailIsEdited}
+            pwIsEdited={pwIsEdited}
+            rePwIsEdited={rePwIsEdited}
+
             nameErr={nameErr} 
             emailErr={emailErr} 
             pwErr={pwErr} 
-            rePwErr={rePwErr} 
+            rePwErr={rePwErr}
+
+            validateName={validateName}
+            validateEmail={validateEmail}
+            validatePassword={validatePassword}
+            validateRePassword={validateRePassword}
+
             createUser={createUser}
+
             navi={props.navigation} />
 }
