@@ -47,6 +47,9 @@ export default RegisterAction = (props) => {
             // setRegistrable(true);
         }
 
+        console.log("이름 : " + nickname);
+        console.log("이름 에러 : " + nameErr);
+        console.log("----------------------------");
     }
     
     const validateEmail = (email) => {
@@ -64,6 +67,10 @@ export default RegisterAction = (props) => {
             setEmailErr(null);
             // setRegistrable(true);
         }
+
+        console.log("이메일 : " + email);
+        console.log("이메일 에러 : " + emailErr);
+        console.log("----------------------------");
     }
     
     const validatePassword = (password) => {
@@ -81,6 +88,10 @@ export default RegisterAction = (props) => {
             setPwErr(null);
             // setRegistrable(true);
         }
+
+        console.log("비번 : " + password);
+        console.log("비번 에러 : " + pwErr);
+        console.log("----------------------------");
     }
 
     const validateRePassword = (password, confirmPassword) => {
@@ -96,6 +107,10 @@ export default RegisterAction = (props) => {
             setRePwErr(null);
             // setRegistrable(true);
         }
+
+        console.log("재확인 비번 : " + confirmPassword);
+        console.log("재확인 비번 에러 : " + rePwErr);
+        console.log("----------------------------");
     }
 
     const createUser = (nickname, email, password, confirmPassword) => {
@@ -104,7 +119,12 @@ export default RegisterAction = (props) => {
         validatePassword(password)
         validateRePassword(password, confirmPassword)
 
-        if(email && password && !nameErr && !emailErr && !pwErr && !rePwErr) {
+        console.log("회원가입 기능 실행")
+        if(!email || !password || nameErr || emailErr || pwErr || rePwErr) {
+            console.log("통과 X")
+            return false;
+        } else {
+            console.log("통과 O")
             auth()
             // auth로 이메일, 비밀번호 회원가입
             .createUserWithEmailAndPassword(email, password)
@@ -119,7 +139,8 @@ export default RegisterAction = (props) => {
                 })
                 .then(() => {
                     console.log('User added!');
-                });
+                })
+                .catch(error => {console.error(error);})
 
                 // 인증 메일 전송
                 userCredential.user?.sendEmailVerification();
@@ -142,8 +163,6 @@ export default RegisterAction = (props) => {
                     setEmailErr('유효하지 않은 이메일 주소입니다.');
                 }
             })
-        } else {
-            return false;
         }
     }
     
