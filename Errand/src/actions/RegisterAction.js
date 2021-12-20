@@ -38,13 +38,10 @@ export default RegisterAction = (props) => {
         
         if(!nickname) {
             setNameErr('이름을 입력해주세요.');
-            // setRegistrable(false);
         } else if(isDuplicatedName) {
             setNameErr('이미 사용 중인 이름입니다.');
-            // setRegistrable(false);
         } else {
             setNameErr(null);
-            // setRegistrable(true);
         }
 
         console.log("이름 : " + nickname);
@@ -59,13 +56,10 @@ export default RegisterAction = (props) => {
 
         if(!email) {
             setEmailErr('이메일를 입력해주세요.');
-            // setRegistrable(false);
         } else if (!emailReg.test(email)) {
             setEmailErr('이메일 형식을 올바르게 입력해주세요.');
-            // setRegistrable(false);
         } else {
             setEmailErr(null);
-            // setRegistrable(true);
         }
 
         console.log("이메일 : " + email);
@@ -80,13 +74,10 @@ export default RegisterAction = (props) => {
 
         if(!password) {
             setPwErr('비밀번호를 입력해주세요.');
-            // setRegistrable(false);
         } else if (!pwReg.test(password)) {
             setPwErr('영문, 숫자, 특수문자를 모두 포함 (6~16자 이내)');
-            // setRegistrable(false);
         } else {
             setPwErr(null);
-            // setRegistrable(true);
         }
 
         console.log("비번 : " + password);
@@ -99,13 +90,10 @@ export default RegisterAction = (props) => {
 
         if(!confirmPassword) {
             setRePwErr('비밀번호 재확인을 입력해주세요.');
-            // setRegistrable(false);
         } else if(confirmPassword !== password) {
             setRePwErr('비밀번호가 일치하지 않습니다.');
-            // setRegistrable(false);
         } else {
             setRePwErr(null);
-            // setRegistrable(true);
         }
 
         console.log("재확인 비번 : " + confirmPassword);
