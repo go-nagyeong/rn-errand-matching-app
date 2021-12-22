@@ -43,7 +43,7 @@ export default RegisterAction = (props) => {
                 if(!nickname) {
                     setNameErr('이름을 입력해주세요.');
                 } else {
-                    setNameErr(null);
+                    setNameErr("");
                 }
             }
         })
@@ -63,7 +63,7 @@ export default RegisterAction = (props) => {
         } else if (!emailReg.test(email)) {
             setEmailErr('이메일 형식을 올바르게 입력해주세요.');
         } else {
-            setEmailErr(null);
+            setEmailErr("");
         }
 
         console.log("이메일 : " + email);
@@ -81,7 +81,7 @@ export default RegisterAction = (props) => {
         } else if (!pwReg.test(password)) {
             setPwErr('영문, 숫자, 특수문자를 모두 포함 (6~16자 이내)');
         } else {
-            setPwErr(null);
+            setPwErr("");
         }
 
         console.log("비번 : " + password);
@@ -97,7 +97,7 @@ export default RegisterAction = (props) => {
         } else if(confirmPassword !== password) {
             setRePwErr('비밀번호가 일치하지 않습니다.');
         } else {
-            setRePwErr(null);
+            setRePwErr("");
         }
 
         console.log("재확인 비번 : " + confirmPassword);
