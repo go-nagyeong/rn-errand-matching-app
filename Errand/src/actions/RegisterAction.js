@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
@@ -21,6 +21,13 @@ export default RegisterAction = (props) => {
 
     const users = firestore().collection('Users')
 
+    useEffect(()=>{ 
+        if(isDuplicatedName) {
+            setNameErr('이미 사용 중인 이름입니다.');
+        }
+    }, [isDuplicatedName])
+
+    
     const validateName = (nickname) => {
         setNameEdited(true)
 
@@ -33,16 +40,13 @@ export default RegisterAction = (props) => {
                 setDuplicatedName(true);
             } else {
                 setDuplicatedName(false);
+                if(!nickname) {
+                    setNameErr('이름을 입력해주세요.');
+                } else {
+                    setNameErr(null);
+                }
             }
         })
-        
-        if(!nickname) {
-            setNameErr('이름을 입력해주세요.');
-        } else if(isDuplicatedName) {
-            setNameErr('이미 사용 중인 이름입니다.');
-        } else {
-            setNameErr(null);
-        }
 
         console.log("이름 : " + nickname);
         console.log("이름 에러 : " + nameErr);
@@ -107,12 +111,9 @@ export default RegisterAction = (props) => {
         validatePassword(password)
         validateRePassword(password, confirmPassword)
 
-        console.log("회원가입 기능 실행")
-        if(!email || !password || nameErr || emailErr || pwErr || rePwErr) {
-            console.log("통과 X")
+        if(!nickname || !email || !password || !confirmPassword || nameErr || emailErr || pwErr || rePwErr) {
             return false;
         } else {
-            console.log("통과 O")
             auth()
             // auth로 이메일, 비밀번호 회원가입
             .createUserWithEmailAndPassword(email, password)
@@ -125,10 +126,8 @@ export default RegisterAction = (props) => {
                     nickname: nickname,
                     grade: 1,
                 })
-                .then(() => {
-                    console.log('User added!');
-                })
-                .catch(error => {console.error(error);})
+                .then(() => console.log('User added!'))
+                .catch(error => console.error(error));
 
                 // 인증 메일 전송
                 userCredential.user?.sendEmailVerification();

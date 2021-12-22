@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
@@ -6,14 +6,42 @@ import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import Container from '../components/Container';
 
 export default RegisterScreen = (props) => {
+  const [nicknameFocus, setNicknameFocus] = useState(false);
   const [emailFocus, setEmailFocus] = useState(false);
   const [pwFocus, setPwFocus] = useState(false);
+  const [rePwFocus, setRePwFocus] = useState(false);
 
   const [nickname, setNickname] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
+  // 입력 항목을 실시간으로 감지 하면서 해당하는 함수를 호출
+  useEffect(() => { 
+    if(nicknameFocus) {
+      props.validateName(nickname)
+    }
+  }, [nickname])
+
+  useEffect(() => { 
+    if(emailFocus) {
+      props.validateEmail(email)
+    }
+  }, [email])
+
+  useEffect(() => { 
+    if(pwFocus) {
+      props.validatePassword(password)
+    }
+  }, [password])
+
+  useEffect(() => { 
+    if(rePwFocus) {
+      props.validateRePassword(password, confirmPassword)
+    }
+  }, [confirmPassword])
+
+
   return (
     <Container>
       <View style={styles.titleWrapper}>
@@ -28,7 +56,8 @@ export default RegisterScreen = (props) => {
           autoCapitalize='none'
           autoCorrect={false}
           blurOnSubmit={false}
-          onBlur={() => {props.validateName(nickname)}}
+          onFocus={() => {setNicknameFocus(true)}}
+          onBlur={() => {setNicknameFocus(false)}}
           onChangeText={text => {setNickname(text)}}
           onSubmitEditing={() => {this.secondTextInput.focus()}}
           selectionColor="#292929"
@@ -54,7 +83,8 @@ export default RegisterScreen = (props) => {
           autoCapitalize='none'
           autoCorrect={false}
           blurOnSubmit={false}
-          onBlur={() => {props.validateEmail(email)}}
+          onFocus={() => {setEmailFocus(true)}}
+          onBlur={() => {setEmailFocus(false)}}
           onChangeText={text => {setEmail(text)}}
           onSubmitEditing={() => {this.thirdTextInput.focus()}}
           selectionColor="#292929"
@@ -81,7 +111,8 @@ export default RegisterScreen = (props) => {
           autoCapitalize='none'
           autoCorrect={false}
           blurOnSubmit={false}
-          onBlur={() => {props.validatePassword(password)}}
+          onFocus={() => {setPwFocus(true)}}
+          onBlur={() => {setPwFocus(false)}}
           onChangeText={text => {setPassword(text)}}
           onSubmitEditing={() => {this.fourthTextInput.focus()}}
           selectionColor="#292929"
@@ -109,7 +140,8 @@ export default RegisterScreen = (props) => {
           autoCapitalize='none'
           autoCorrect={false}
           blurOnSubmit={false}
-          onBlur={() => {props.validateRePassword(password, confirmPassword)}}
+          onFocus={() => {setRePwFocus(true)}}
+          onBlur={() => {setRePwFocus(false)}}
           onChangeText={text => {setConfirmPassword(text)}}
           onSubmitEditing={() => {props.createUser(nickname, email, password, confirmPassword)}}
           selectionColor="#292929"
