@@ -47,10 +47,6 @@ export default RegisterAction = (props) => {
                 }
             }
         })
-
-        console.log("이름 : " + nickname);
-        console.log("이름 에러 : " + nameErr);
-        console.log("----------------------------");
     }
     
     const validateEmail = (email) => {
@@ -65,10 +61,6 @@ export default RegisterAction = (props) => {
         } else {
             setEmailErr("");
         }
-
-        console.log("이메일 : " + email);
-        console.log("이메일 에러 : " + emailErr);
-        console.log("----------------------------");
     }
     
     const validatePassword = (password) => {
@@ -83,10 +75,6 @@ export default RegisterAction = (props) => {
         } else {
             setPwErr("");
         }
-
-        console.log("비번 : " + password);
-        console.log("비번 에러 : " + pwErr);
-        console.log("----------------------------");
     }
 
     const validateRePassword = (password, confirmPassword) => {
@@ -99,10 +87,6 @@ export default RegisterAction = (props) => {
         } else {
             setRePwErr("");
         }
-
-        console.log("재확인 비번 : " + confirmPassword);
-        console.log("재확인 비번 에러 : " + rePwErr);
-        console.log("----------------------------");
     }
 
     const createUser = (nickname, email, password, confirmPassword) => {
