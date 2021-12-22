@@ -29,6 +29,8 @@ export default RegisterAction = (props) => {
 
     
     const validateName = (nickname) => {
+        var nameReg = /^[a-zA-Z0-9ㄱ-힣-_.]{2,10}$/;
+
         setNameEdited(true)
 
         // 닉네임 중복 검사
@@ -42,6 +44,8 @@ export default RegisterAction = (props) => {
                 setDuplicatedName(false);
                 if(!nickname) {
                     setNameErr('이름을 입력해주세요.');
+                } else if (!nameReg.test(nickname)) {
+                    setNameErr('2~10자 한글, 영문, 숫자, 특수문자 -_.만 사용 가능');
                 } else {
                     setNameErr("");
                 }
@@ -50,7 +54,7 @@ export default RegisterAction = (props) => {
     }
     
     const validateEmail = (email) => {
-        var emailReg = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/;
+        var emailReg = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
 
         setEmailEdited(true)
 
