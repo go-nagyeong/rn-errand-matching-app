@@ -107,9 +107,9 @@ export default RegisterAction = (props) => {
             auth()
             // auth로 이메일, 비밀번호 회원가입
             .createUserWithEmailAndPassword(email, password)
-            .then((userCredential) => {
+            .then(async (userCredential) => {
                 // firestore에 이메일, 닉네임, 등급 저장
-                users
+                await users
                 .doc(id)
                 .set({
                     email: email,
