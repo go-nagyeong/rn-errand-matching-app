@@ -3,6 +3,7 @@ import { Button } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
+import Home from './src/screens/HomeScreen';
 import Mypage from './src/screens/MypageScreen';
 // import Login from './src/screens/LoginScreen';
 import LoginAction from './src/actions/LoginAction';
@@ -16,13 +17,13 @@ const Stack = createStackNavigator();
 export default App = () => {
   return (
     <NavigationContainer> 
-      <Stack.Navigator
-        screenOptions={({navigation}) => ({
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={Home} options={({navigation}) => ({
           headerRight: () => (
-            <Button title="Home" onPress={() => navigation.navigate('Home')} />
+            <Button title="Mypage" onPress={() => navigation.navigate('Mypage')} />
           )
-      })}>
-        <Stack.Screen name="Home" component={Mypage} options={{headerShown: false}} />
+        })}/>
+        <Stack.Screen name="Mypage" component={Mypage} />
         <Stack.Screen name="Login" component={LoginAction} />
         <Stack.Screen name="Register" component={RegisterAction} />
         <Stack.Screen name="FindPw" component={FindPwAction} />
