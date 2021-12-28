@@ -10,23 +10,23 @@ export default RegisterAction = (props) => {
     const [isDuplicatedName, setDuplicatedName] = useState(false)
     const [nameIsEdited, setNameEdited] = useState(false)
 
-    const [emailErr, setEmailErr] = useState("")
-    const [emailIsEdited, setEmailEdited] = useState(false)
+    const [idErr, setIdErr] = useState("")
+    const [idIsEdited, setIdEdited] = useState(false)
 
     const [pwErr, setPwErr] = useState("")
     const [pwIsEdited, setPwEdited] = useState(false)
 
     const [rePwErr, setRePwErr] = useState("")
     const [rePwIsEdited, setRePwEdited] = useState(false)
-
+    
     const users = firestore().collection('Users')
-
+    
     useEffect(()=>{ 
         if(isDuplicatedName) {
             setNameErr('이미 사용 중인 이름입니다.');
         }
     }, [isDuplicatedName])
-
+    
     
     const validateName = (nickname) => {
         var nameReg = /^[a-zA-Z0-9ㄱ-힣-_.]{2,10}$/;
@@ -53,17 +53,17 @@ export default RegisterAction = (props) => {
         })
     }
     
-    const validateEmail = (email) => {
-        var emailReg = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+    const validateId = (id) => {
+        var idReg = /^[0-9]{8}$/i;
 
-        setEmailEdited(true)
+        setIdEdited(true)
 
-        if(!email) {
-            setEmailErr('이메일를 입력해주세요.');
-        } else if (!emailReg.test(email)) {
-            setEmailErr('이메일 형식을 올바르게 입력해주세요.');
+        if(!id) {
+            setIdErr('학번을 입력해주세요.');
+        } else if (!idReg.test(id)) {
+            setIdErr('학번이 올바르지 않습니다.');
         } else {
-            setEmailErr("");
+            setIdErr("");
         }
     }
     
@@ -93,13 +93,15 @@ export default RegisterAction = (props) => {
         }
     }
 
-    const createUser = (nickname, email, password, confirmPassword) => {
+    const createUser = (nickname, id, password, confirmPassword) => {
+        var email = id + "@student.anu.ac.kr";
+
         validateName(nickname)
-        validateEmail(email)
+        validateId(id)
         validatePassword(password)
         validateRePassword(password, confirmPassword)
 
-        if(!nickname || !email || !password || !confirmPassword || nameErr || emailErr || pwErr || rePwErr) {
+        if(!nickname || !id || !password || !confirmPassword || nameErr || idErr || pwErr || rePwErr) {
             return false;
         } else {
             auth()
@@ -108,7 +110,7 @@ export default RegisterAction = (props) => {
             .then((userCredential) => {
                 // firestore에 이메일, 닉네임, 등급 저장
                 users
-                .doc(email.substr(0,8))
+                .doc(id)
                 .set({
                     email: email,
                     nickname: nickname,
@@ -132,10 +134,10 @@ export default RegisterAction = (props) => {
             })
             .catch(error => {
                 if (error.code === 'auth/email-already-in-use') {
-                    setEmailErr('이미 사용 중인 이메일입니다.');
+                    setIdErr('이미 사용 중인 이메일입니다.');
                 }
                 if (error.code === 'auth/invalid-email') {
-                    setEmailErr('유효하지 않은 이메일 주소입니다.');
+                    setIdErr('유효하지 않은 이메일 주소입니다.');
                 }
             })
         }
@@ -143,17 +145,17 @@ export default RegisterAction = (props) => {
     
     return <RegisterScreen 
             nameIsEdited={nameIsEdited}
-            emailIsEdited={emailIsEdited}
+            idIsEdited={idIsEdited}
             pwIsEdited={pwIsEdited}
             rePwIsEdited={rePwIsEdited}
 
             nameErr={nameErr} 
-            emailErr={emailErr} 
+            idErr={idErr} 
             pwErr={pwErr} 
             rePwErr={rePwErr}
 
             validateName={validateName}
-            validateEmail={validateEmail}
+            validateId={validateId}
             validatePassword={validatePassword}
             validateRePassword={validateRePassword}
 

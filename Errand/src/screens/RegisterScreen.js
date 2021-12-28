@@ -7,12 +7,12 @@ import Container from '../components/Container';
 
 export default RegisterScreen = (props) => {
   const [nicknameFocus, setNicknameFocus] = useState(false);
-  const [emailFocus, setEmailFocus] = useState(false);
+  const [idFocus, setIdFocus] = useState(false);
   const [pwFocus, setPwFocus] = useState(false);
   const [rePwFocus, setRePwFocus] = useState(false);
 
   const [nickname, setNickname] = useState('');
-  const [email, setEmail] = useState('');
+  const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -24,10 +24,10 @@ export default RegisterScreen = (props) => {
   }, [nickname])
 
   useEffect(() => { 
-    if(emailFocus) {
-      props.validateEmail(email)
+    if(idFocus) {
+      props.validateId(id)
     }
-  }, [email])
+  }, [id])
 
   useEffect(() => { 
     if(pwFocus) {
@@ -76,33 +76,37 @@ export default RegisterScreen = (props) => {
         />
         <Text style={{fontSize: 14, marginBottom: props.nameErr ? 10 : -10, color: 'red'}}>{props.nameErr}</Text>
 
-        <TextInput 
-          style={styles.input}
-          placeholder="안동대학교 이메일"
-          value={email}
-          autoCapitalize='none'
-          autoCorrect={false}
-          blurOnSubmit={false}
-          onFocus={() => {setEmailFocus(true)}}
-          onBlur={() => {setEmailFocus(false)}}
-          onChangeText={text => {setEmail(text)}}
-          onSubmitEditing={() => {this.thirdTextInput.focus()}}
-          selectionColor="#292929"
-          ref={(input) => { this.secondTextInput = input; }}
-          // react-native-paper
-          underlineColor={props.emailIsEdited ? (props.emailErr ? 'red':'#53B77C') : null}
-          activeUnderlineColor={props.emailErr ? 'red':'#53B77C'}
-          right={props.emailIsEdited && 
-            <TextInput.Icon name={() => 
-              <AntDesignIcon 
-                name={props.emailErr ? "warning":"checkcircleo"} 
-                size={15} 
-                color={props.emailErr ? "red":"green"} 
-              />} 
-            />
-          }
-        />
-        <Text style={{fontSize: 14, marginBottom: props.emailErr ? 10 : -10, color: 'red'}}>{props.emailErr}</Text>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <TextInput 
+            style={[styles.input, {width: '45%'}]}
+            placeholder="학번"
+            value={id}
+            autoCapitalize='none'
+            autoCorrect={false}
+            blurOnSubmit={false}
+            onFocus={() => {setIdFocus(true)}}
+            onBlur={() => {setIdFocus(false)}}
+            onChangeText={text => {setId(text)}}
+            onSubmitEditing={() => {this.thirdTextInput.focus()}}
+            selectionColor="#292929"
+            ref={(input) => { this.secondTextInput = input; }}
+            maxLength={8}
+            // react-native-paper
+            underlineColor={props.idIsEdited ? (props.idErr ? 'red':'#53B77C') : null}
+            activeUnderlineColor={props.idErr ? 'red':'#53B77C'}
+            right={props.idIsEdited && 
+              <TextInput.Icon name={() => 
+                <AntDesignIcon 
+                  name={props.idErr ? "warning":"checkcircleo"} 
+                  size={15} 
+                  color={props.idErr ? "red":"green"} 
+                />} 
+              />
+            }
+          />
+          <Text style={{fontSize: 16, paddingBottom: 12}}> @student.anu.ac.kr</Text>
+        </View>
+        <Text style={{fontSize: 14, marginBottom: props.idErr ? 10 : -10, color: 'red'}}>{props.idErr}</Text>
 
         <TextInput 
           style={styles.input}
@@ -143,7 +147,7 @@ export default RegisterScreen = (props) => {
           onFocus={() => {setRePwFocus(true)}}
           onBlur={() => {setRePwFocus(false)}}
           onChangeText={text => {setConfirmPassword(text)}}
-          onSubmitEditing={() => {props.createUser(nickname, email, password, confirmPassword)}}
+          onSubmitEditing={() => {props.createUser(nickname, id, password, confirmPassword)}}
           selectionColor="#292929"
           secureTextEntry={true}
           ref={(input) => { this.fourthTextInput = input; }}
@@ -173,7 +177,7 @@ export default RegisterScreen = (props) => {
       </View>
 
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={[styles.squareButton, {marginBottom: 30}]} onPress={() => {props.createUser(nickname, email, password, confirmPassword)}}>
+        <TouchableOpacity style={[styles.squareButton, {marginBottom: 30}]} onPress={() => {props.createUser(nickname, id, password, confirmPassword)}}>
           <Text style={styles.squareButtonText}>REGISTER</Text>
         </TouchableOpacity>
       </View>
