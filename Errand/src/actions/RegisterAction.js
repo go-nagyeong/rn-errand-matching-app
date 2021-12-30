@@ -118,6 +118,13 @@ export default RegisterAction = (props) => {
                 })
                 .then(() => console.log('User added!'))
                 .catch(error => console.error(error));
+                
+                // auth에도 아이디, 비번 뿐 아니라 닉네임도 저장
+                auth()
+                .currentUser
+                .updateProfile({
+                    displayName: nickname
+                });
 
                 // 인증 메일 전송
                 userCredential.user?.sendEmailVerification();

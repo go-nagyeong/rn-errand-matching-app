@@ -22,7 +22,7 @@ export default MypageScreen = (props) => {
     <Container>
       <View style={styles.centerView}>
         <Text style={{alignSelf:'center', fontSize:30, marginBottom: 30}}>마이페이지</Text>
-        {user && <Text>{`${user.email}님, 안녕하세요.\n`}</Text>}
+        {user && <Text>{`${user.displayName}님, 안녕하세요.\n`}</Text>}
         {user 
           ? <LogoutAction />
           : <Button
