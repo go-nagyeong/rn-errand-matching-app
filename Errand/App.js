@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 import Home from './src/screens/HomeScreen';
 import Mypage from './src/screens/MypageScreen';
@@ -12,18 +13,23 @@ import RegisterAction from './src/actions/RegisterAction';
 // import FindPw from './src/screens/FindPassword';
 import FindPwAction from './src/actions/FindPwAction';
 
+const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+const TabNavigator = () => {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen name="Home" component={Home} />
+      <Tab.Screen name="Mypage" component={Mypage} />
+    </Tab.Navigator>
+  )
+}
 
 export default App = () => {
   return (
     <NavigationContainer> 
-      <Stack.Navigator>
-        <Stack.Screen name="Home" component={Home} options={({navigation}) => ({
-          headerRight: () => (
-            <Button title="Mypage" onPress={() => navigation.navigate('Mypage')} />
-          )
-        })}/>
-        <Stack.Screen name="Mypage" component={Mypage} />
+      <Stack.Navigator screenOptions={{headerBackTitle: null}}>
+        <Stack.Screen name="Tab" component={TabNavigator} options={{headerShown: false}}/>
         <Stack.Screen name="Login" component={LoginAction} />
         <Stack.Screen name="Register" component={RegisterAction} />
         <Stack.Screen name="FindPw" component={FindPwAction} />
