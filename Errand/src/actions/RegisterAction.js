@@ -54,14 +54,14 @@ export default RegisterAction = (props) => {
     }
     
     const validateId = (id) => {
-        var idReg = /^[0-9]{8}$/i;
+        var idReg = /^[A-Za-z0-9]{5,15}$/g;
 
         setIdEdited(true)
 
         if(!id) {
-            setIdErr('학번을 입력해주세요.');
+            setIdErr('이메일을 입력해주세요.');
         } else if (!idReg.test(id)) {
-            setIdErr('학번이 올바르지 않습니다.');
+            setIdErr('이메일이 올바르지 않습니다.');
         } else {
             setIdErr("");
         }
@@ -110,11 +110,11 @@ export default RegisterAction = (props) => {
             .then(async (userCredential) => {
                 // firestore에 이메일, 닉네임, 등급 저장
                 await users
-                .doc(id)
+                .doc(email)
                 .set({
                     email: email,
                     nickname: nickname,
-                    grade: 1,
+                    grade: 2.3,
                 })
                 .then(() => console.log('User added!'))
                 .catch(error => console.error(error));

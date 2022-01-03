@@ -78,8 +78,8 @@ export default RegisterScreen = (props) => {
 
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <TextInput 
-            style={[styles.input, {width: '45%'}]}
-            placeholder="학번"
+            style={[styles.input, {width: '50%'}]}
+            placeholder="이메일"
             value={id}
             autoCapitalize='none'
             autoCorrect={false}
@@ -90,7 +90,6 @@ export default RegisterScreen = (props) => {
             onSubmitEditing={() => {this.thirdTextInput.focus()}}
             selectionColor="#292929"
             ref={(input) => { this.secondTextInput = input; }}
-            maxLength={8}
             // react-native-paper
             underlineColor={props.idIsEdited ? (props.idErr ? 'red':'#53B77C') : null}
             activeUnderlineColor={props.idErr ? 'red':'#53B77C'}
