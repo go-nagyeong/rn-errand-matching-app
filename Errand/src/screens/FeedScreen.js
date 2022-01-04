@@ -33,7 +33,7 @@ const renderItem = ({ item }) => {
             </View>
 
             {/* 작성일 */}
-            <View style={{flex: 1, alignSelf: 'center'}}>
+            <View style={{flex: 1, alignSelf: 'flex-end'}}>
                 <Text style={{fontSize: 13, color: '#C2C2C2'}}>
                 {Moment(item.date.toDate()).diff(Moment(), 'days') >= -2
                     ? Moment(item.date.toDate()).fromNow()
