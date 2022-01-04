@@ -4,7 +4,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import Feed from './src/screens/FeedScreen';
+// import Feed from './src/screens/FeedScreen';
+import FeedAction from './src/actions/FeedAction';
 import Mypage from './src/screens/MypageScreen';
 // import Login from './src/screens/LoginScreen';
 import LoginAction from './src/actions/LoginAction';
@@ -19,7 +20,7 @@ const Stack = createStackNavigator();
 const TabNavigator = () => {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Home" component={Feed} />
+      <Tab.Screen name="Home" component={FeedAction} />
       <Tab.Screen name="Mypage" component={Mypage} />
     </Tab.Navigator>
   )

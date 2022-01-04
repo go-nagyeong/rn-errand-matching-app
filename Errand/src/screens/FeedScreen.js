@@ -47,27 +47,12 @@ const renderItem = ({ item }) => {
 export default HomeScreen = (props) => {
     const isDarkMode = useColorScheme() === 'dark';
 
-    const [data, setData] = useState([]);
     const [keyword, setKeyword] = useState('');
 
-    const board = firestore().collection('Board')
-
     useEffect(() => {
-        board
-        .onSnapshot(querySnapshot => {
-            const data = [];
-
-            querySnapshot.forEach(documentSnapshot => {
-                data.push({
-                    ...documentSnapshot.data(),
-                    key: documentSnapshot.id,
-                });
-            });
-
-            setData(data);
-        });
+        props.getFeed();
     }, [])
-    
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -89,7 +74,7 @@ export default HomeScreen = (props) => {
                 
                 <FlatList 
                     keyExtractor={item => item.id}
-                    data={data}
+                    data={props.posts}
                     renderItem={renderItem}
                 />
             </View>
