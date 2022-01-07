@@ -11,9 +11,15 @@ export default FeedAction = () => {
 
     const [posts, setPosts] = useState([]);
 
+    useEffect(() => {
+        getFeed()
+    }, [])
+
     const getFeed = () => {
         board
-        .onSnapshot(querySnapshot => {
+        .orderBy('date', 'desc')
+        .get()
+        .then(querySnapshot => {
             const posts = [];
 
             querySnapshot.forEach(documentSnapshot => {
@@ -26,9 +32,31 @@ export default FeedAction = () => {
             setPosts(posts);
         });
     }
+
+    const search = (keyword) => {
+        board
+        .orderBy('date', 'desc')
+        .get()
+        .then(querySnapshot => {
+            const posts = [];
+
+            querySnapshot.forEach(documentSnapshot => {
+                var title = documentSnapshot.data()['title'],
+                    content = documentSnapshot.data()['content'];
+                if (title.includes(keyword) || content.includes(keyword)) {
+                    posts.push({
+                        ...documentSnapshot.data(),
+                        key: documentSnapshot.id,
+                    });
+                }
+            });
+
+            setPosts(posts);
+        });
+    }
     
     return <FeedScreen 
-            getFeed={getFeed}
             posts={posts}
+            search={search}
             />
 }
