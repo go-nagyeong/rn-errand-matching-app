@@ -11,9 +11,12 @@ export default FeedAction = () => {
 
     const [posts, setPosts] = useState([]);
 
+    const [pressCategory, setPressCategory] = useState(false)
+    const [feedCategory, setFeedCategory] = useState('');
+
     useEffect(() => {
         getFeed()
-    }, [])
+    }, [feedCategory])
 
     const getFeed = () => {
         board
@@ -23,10 +26,20 @@ export default FeedAction = () => {
             const posts = [];
 
             querySnapshot.forEach(documentSnapshot => {
-                posts.push({
-                    ...documentSnapshot.data(),
-                    key: documentSnapshot.id,
-                });
+                if (pressCategory) {
+                    var category = documentSnapshot.data()['category'];
+                    if (category == feedCategory) {
+                        posts.push({
+                            ...documentSnapshot.data(),
+                            key: documentSnapshot.id,
+                        });
+                    }
+                } else {
+                    posts.push({
+                        ...documentSnapshot.data(),
+                        key: documentSnapshot.id,
+                    });
+                }
             });
 
             setPosts(posts);
@@ -54,9 +67,20 @@ export default FeedAction = () => {
             setPosts(posts);
         });
     }
+
+    const selectCategory = (category) => {
+        if(category == '전체보기') {
+            setPressCategory(false)
+        } else {
+            setPressCategory(true)
+        }
+
+        setFeedCategory(category)
+    }
     
     return <FeedScreen 
             posts={posts}
             search={search}
+            selectCategory={selectCategory}
             />
 }

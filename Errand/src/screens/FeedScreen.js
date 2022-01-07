@@ -110,11 +110,32 @@ export default HomeScreen = (props) => {
 
     const [keyword, setKeyword] = useState('');
 
+    const categories = [
+        {text: '전체보기', icon: 'bars'},
+        {text: '마트', icon: 'shoppingcart'}, 
+        {text: '과제', icon: 'book'}, 
+        {text: '탐색', icon: 'eyeo'}, 
+        {text: '서류', icon: 'filetext1'}, 
+        {text: '공구', icon: 'tool'}, 
+        {text: '짐', icon: 'car'}, 
+        {text: '생각', icon: 'bulb1'}, 
+        {text: '기타', icon: 'ellipsis1'}
+    ]
+    const categoryBox = categories.map((category) => 
+        <TouchableOpacity style={styles.categoryBox} onPress={() => props.selectCategory(category.text)}>
+            <Text style={styles.categoryText}>{category.text}</Text>
+            <Icon name={category.icon} size={30}></Icon>
+        </TouchableOpacity>
+    )
+
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
             <View style={styles.header}>
+                <ScrollView style={{padding: 20}} horizontal={true} showsHorizontalScrollIndicator={false}>
+                    {categoryBox}
+                </ScrollView>
             </View>
 
             <View style={styles.boardView}>
