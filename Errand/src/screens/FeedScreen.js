@@ -71,7 +71,7 @@ const renderItem = ({ item }) => {
     }
 
     return (
-        <View style={{flexDirection: 'row', backgroundColor: '#fff', height: 80, marginBottom: 15, padding: 15, borderRadius: 10}}>
+        <View style={{flexDirection: 'row', backgroundColor: '#fff', height: 80, marginBottom: 15, padding: 14, borderRadius: 10}}>
             {/* 카테고리 아이콘 */}
             <View style={{backgroundColor: categoryBackgroundColor, borderRadius: 30, padding: 10, marginRight: 15}}>
                 <Icon name={categoryIcon} size={30} color='white' />
