@@ -11,12 +11,20 @@ export default FeedAction = () => {
 
     const [posts, setPosts] = useState([]);
 
-    const [pressCategory, setPressCategory] = useState(false)
-    const [feedCategory, setFeedCategory] = useState('');
+    const [isSelectCategory, setSelectCategory] = useState(false)
+    const [category, setCategory] = useState('');
+    const [isSearchKeyword, setSearchKeyword] = useState(false)
+    const [keyword, setKeyword] = useState('')
+
+    useEffect(() => {
+        setSearchKeyword(false)
+        setKeyword('')
+        getFeed()
+    }, [category])
 
     useEffect(() => {
         getFeed()
-    }, [feedCategory])
+    }, [keyword])
 
     const getFeed = () => {
         board
@@ -26,14 +34,36 @@ export default FeedAction = () => {
             const posts = [];
 
             querySnapshot.forEach(documentSnapshot => {
-                if (pressCategory) {
-                    var category = documentSnapshot.data()['category'];
-                    if (category == feedCategory) {
+                if (isSelectCategory) {
+                    var cat = documentSnapshot.data()['category'],
+                        title = documentSnapshot.data()['title'],
+                        content = documentSnapshot.data()['content'];
+                    if (isSearchKeyword) {
+                        if (cat == category && (title.includes(keyword) || content.includes(keyword))) {
+                            posts.push({
+                                ...documentSnapshot.data(),
+                                key: documentSnapshot.id,
+                            });
+                        }
+                    } else {
+                        if (cat == category) {
+                            posts.push({
+                                ...documentSnapshot.data(),
+                                key: documentSnapshot.id,
+                            });
+                        }
+                    }
+
+                } else if (isSearchKeyword) {
+                    var title = documentSnapshot.data()['title'],
+                        content = documentSnapshot.data()['content'];
+                    if (title.includes(keyword) || content.includes(keyword)) {
                         posts.push({
                             ...documentSnapshot.data(),
                             key: documentSnapshot.id,
                         });
                     }
+
                 } else {
                     posts.push({
                         ...documentSnapshot.data(),
@@ -46,41 +76,29 @@ export default FeedAction = () => {
         });
     }
 
-    const search = (keyword) => {
-        board
-        .orderBy('date', 'desc')
-        .get()
-        .then(querySnapshot => {
-            const posts = [];
-
-            querySnapshot.forEach(documentSnapshot => {
-                var title = documentSnapshot.data()['title'],
-                    content = documentSnapshot.data()['content'];
-                if (title.includes(keyword) || content.includes(keyword)) {
-                    posts.push({
-                        ...documentSnapshot.data(),
-                        key: documentSnapshot.id,
-                    });
-                }
-            });
-
-            setPosts(posts);
-        });
+    const searchKeyword = (keyword) => {
+        if(keyword) {
+            setSearchKeyword(true)
+        } else {
+            setSearchKeyword(false)
+        }
+        
+        setKeyword(keyword)
     }
 
     const selectCategory = (category) => {
         if(category == '전체보기') {
-            setPressCategory(false)
+            setSelectCategory(false)
         } else {
-            setPressCategory(true)
+            setSelectCategory(true)
         }
 
-        setFeedCategory(category)
+        setCategory(category)
     }
     
     return <FeedScreen 
             posts={posts}
-            search={search}
+            searchKeyword={searchKeyword}
             selectCategory={selectCategory}
             />
 }

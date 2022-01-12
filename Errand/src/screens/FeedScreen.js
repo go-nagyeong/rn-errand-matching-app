@@ -128,7 +128,7 @@ export default HomeScreen = (props) => {
         {text: '기타', icon: 'ellipsis1'}
     ]
     const categoryBox = categories.map((category, index) => 
-        <TouchableOpacity style={styles.categoryBox} onPress={() => props.selectCategory(category.text)}>
+        <TouchableOpacity style={styles.categoryBox} onPress={() => {props.selectCategory(category.text); this.textInput.clear();} }>
             <Text style={styles.categoryText}>{category.text}</Text>
             <Icon name={category.icon} size={30}></Icon>
         </TouchableOpacity>
@@ -146,8 +146,16 @@ export default HomeScreen = (props) => {
 
             <View style={styles.boardView}>
                 <View style={styles.search} >
-                    <TextInput style={styles.searchBox} placeholder="search" value={keyword} onChangeText={text => setKeyword(text)}/>
-                    <TouchableOpacity style={styles.searchButton} onPress={() => props.search(keyword)}>
+                    <TextInput
+                        style={styles.searchBox}
+                        placeholder="search"
+                        value={keyword}
+                        onChangeText={text => setKeyword(text)}
+                        autoCapitalize={false}
+                        autoCorrect={false}
+                        ref={(input) => { this.textInput = input }}
+                         />
+                    <TouchableOpacity style={styles.searchButton} onPress={() => props.searchKeyword(keyword)} >
                         <Icon name="search1" size={20} color="white" />
                     </TouchableOpacity>
                 </View>
