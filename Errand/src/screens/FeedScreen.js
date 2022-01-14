@@ -155,7 +155,7 @@ export default HomeScreen = (props) => {
                         autoCorrect={false}
                         ref={(input) => { this.textInput = input }}
                          />
-                    <TouchableOpacity style={styles.searchButton} onPress={() => props.searchKeyword(keyword)} >
+                    <TouchableOpacity style={styles.searchButton} onPress={() => keyword? props.searchKeyword(keyword):null}>
                         <Icon name="search1" size={20} color="white" />
                     </TouchableOpacity>
                 </View>
@@ -217,6 +217,16 @@ const styles = StyleSheet.create({
         top: "-50%", 
         right: 6,
         backgroundColor: '#53B77C',
+        padding: 10,
+        alignItems: 'center',
+        borderRadius: 30,
+    },
+    disabledSearchButton: {
+        alignSelf: 'flex-end',
+        top: "-50%", 
+        right: 6,
+        backgroundColor: '#53B77C',
+        opacity: 0.5,
         padding: 10,
         alignItems: 'center',
         borderRadius: 30,
