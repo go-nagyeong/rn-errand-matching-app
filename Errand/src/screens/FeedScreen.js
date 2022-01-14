@@ -115,7 +115,10 @@ export default HomeScreen = (props) => {
     const isDarkMode = useColorScheme() === 'dark';
 
     const [keyword, setKeyword] = useState('');
-
+    useEffect(() => {
+        props.searchKeyword(keyword)
+    }, [keyword])
+ 
     const categories = [
         {text: '전체보기', icon: 'bars'},
         {text: '마트', icon: 'shoppingcart'}, 
@@ -153,11 +156,9 @@ export default HomeScreen = (props) => {
                         onChangeText={text => setKeyword(text)}
                         autoCapitalize={false}
                         autoCorrect={false}
+                        clearButtonMode="always"
                         ref={(input) => { this.textInput = input }}
                          />
-                    <TouchableOpacity style={styles.searchButton} onPress={() => keyword? props.searchKeyword(keyword):null}>
-                        <Icon name="search1" size={20} color="white" />
-                    </TouchableOpacity>
                 </View>
                 
                 <FlatList 
@@ -181,7 +182,7 @@ const styles = StyleSheet.create({
     },
     categoryBox: {
         backgroundColor: '#fff',
-        padding: 18,
+        padding: 17,
         borderRadius: 30,
         width: 100,
         height: 100,
@@ -191,6 +192,7 @@ const styles = StyleSheet.create({
         color: 'black',
         fontFamily: 'Roboto-Medium',
         fontSize: 16,
+        marginBottom: 3,
     },
     boardView: {
         flex: Platform.OS === 'ios' ? 2.6 : 2,
@@ -203,32 +205,13 @@ const styles = StyleSheet.create({
     search: {
         position: 'absolute',
         top: -25, 
-        left: 20,
-        right: 20, 
+        left: 25,
+        right: 25, 
     },
     searchBox: {
         backgroundColor: '#fff',
         padding: Platform.OS === "ios" ? 15 : 12,
         fontSize: 16,
-        borderRadius: 30,
-    },
-    searchButton: {
-        alignSelf: 'flex-end',
-        top: "-50%", 
-        right: 6,
-        backgroundColor: '#53B77C',
-        padding: 10,
-        alignItems: 'center',
-        borderRadius: 30,
-    },
-    disabledSearchButton: {
-        alignSelf: 'flex-end',
-        top: "-50%", 
-        right: 6,
-        backgroundColor: '#53B77C',
-        opacity: 0.5,
-        padding: 10,
-        alignItems: 'center',
         borderRadius: 30,
     },
 });
