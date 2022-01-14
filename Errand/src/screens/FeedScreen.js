@@ -114,37 +114,62 @@ const renderItem = ({ item }) => {
 export default HomeScreen = (props) => {
     const isDarkMode = useColorScheme() === 'dark';
 
+    const [selectedId, setSelectedId] = useState(1);
+
     const [keyword, setKeyword] = useState('');
     useEffect(() => {
         props.searchKeyword(keyword)
     }, [keyword])
- 
+    
+
     const categories = [
-        {text: '전체보기', icon: 'bars'},
-        {text: '마트', icon: 'shoppingcart'}, 
-        {text: '과제', icon: 'book'}, 
-        {text: '탐색', icon: 'eyeo'}, 
-        {text: '서류', icon: 'filetext1'}, 
-        {text: '공구', icon: 'tool'}, 
-        {text: '짐', icon: 'car'}, 
-        {text: '생각', icon: 'bulb1'}, 
-        {text: '기타', icon: 'ellipsis1'}
+        {id: 1, text: '전체보기', icon: 'bars'},
+        {id: 2, text: '마트', icon: 'shoppingcart'}, 
+        {id: 3, text: '과제', icon: 'book'}, 
+        {id: 4, text: '탐색', icon: 'eyeo'}, 
+        {id: 5, text: '서류', icon: 'filetext1'}, 
+        {id: 6, text: '공구', icon: 'tool'}, 
+        {id: 7, text: '짐', icon: 'car'}, 
+        {id: 8, text: '생각', icon: 'bulb1'}, 
+        {id: 9, text: '기타', icon: 'ellipsis1'}
     ]
-    const categoryBox = categories.map((category, index) => 
-        <TouchableOpacity style={styles.categoryBox} onPress={() => {props.selectCategory(category.text); this.textInput.clear();} }>
-            <Text style={styles.categoryText}>{category.text}</Text>
-            <Icon name={category.icon} size={30}></Icon>
+    const CategoryBox = ({opacity, onPress, item}) => (
+        <TouchableOpacity 
+            style={[styles.categoryBox, opacity]}
+            onPress={onPress}>
+            <Text style={styles.categoryText}>{item.text}</Text>
+            <Icon name={item.icon} size={30}></Icon>
         </TouchableOpacity>
     )
+    const renderCategoryBox = ({item}) => {
+        const opacity = item.id === selectedId ? 0.7:1;
+        return (
+            <CategoryBox 
+                opacity={{opacity}}
+                onPress={() => {
+                    setSelectedId(item.id)
+                    props.selectCategory(item.text);
+                    this.textInput.clear();
+                }}
+                item={item}
+            />
+        )
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
             <View style={styles.header}>
-                <ScrollView style={{padding: 20}} horizontal={true} showsHorizontalScrollIndicator={false}>
-                    {categoryBox}
-                </ScrollView>
+                <FlatList 
+                    contentContainerStyle={{padding: 20}}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={item => item.id}
+                    data={categories}
+                    renderItem={renderCategoryBox}
+                    extraData={selectedId}
+                />
             </View>
 
             <View style={styles.boardView}>
