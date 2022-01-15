@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
         flex: Platform.OS === 'ios' ? 2.6 : 2,
         backgroundColor: '#EDF1F5',
         padding: 12,
-        paddingVertical: 40,
+        paddingTop: 40,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
