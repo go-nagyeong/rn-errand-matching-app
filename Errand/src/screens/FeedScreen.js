@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {StyleSheet, Platform, SafeAreaView, useColorScheme, StatusBar, ScrollView, View, Text, TextInput, TouchableOpacity, FlatList} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
@@ -114,6 +114,8 @@ const renderItem = ({ item }) => {
 export default HomeScreen = (props) => {
     const isDarkMode = useColorScheme() === 'dark';
 
+    const textInput = useRef();
+
     const [selectedId, setSelectedId] = useState(1);
 
     const [keyword, setKeyword] = useState('');
@@ -149,7 +151,7 @@ export default HomeScreen = (props) => {
                 onPress={() => {
                     setSelectedId(item.id)
                     props.selectCategory(item.text);
-                    this.textInput.clear();
+                    textInput.current.clear();
                 }}
                 item={item}
             />
@@ -158,40 +160,40 @@ export default HomeScreen = (props) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+                <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
-            <View style={styles.header}>
-                <FlatList 
-                    contentContainerStyle={{padding: 20}}
-                    horizontal={true}
-                    showsHorizontalScrollIndicator={false}
-                    keyExtractor={item => item.id}
-                    data={categories}
-                    renderItem={renderCategoryBox}
-                    extraData={selectedId}
-                />
-            </View>
-
-            <View style={styles.boardView}>
-                <View style={styles.search} >
-                    <TextInput
-                        style={styles.searchBox}
-                        placeholder="search"
-                        value={keyword}
-                        onChangeText={text => setKeyword(text)}
-                        autoCapitalize={false}
-                        autoCorrect={false}
-                        clearButtonMode="always"
-                        ref={(input) => { this.textInput = input }}
-                         />
+                <View style={styles.header}>
+                    <FlatList 
+                        contentContainerStyle={{padding: 20}}
+                        horizontal={true}
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={item => item.id}
+                        data={categories}
+                        renderItem={renderCategoryBox}
+                        extraData={selectedId}
+                    />
                 </View>
-                
-                <FlatList 
-                    keyExtractor={item => item.id}
-                    data={props.posts}
-                    renderItem={renderItem}
-                />
-            </View>
+
+                <View style={styles.boardView}>
+                    <View style={styles.search} >
+                        <TextInput
+                            style={styles.searchBox}
+                            placeholder="search"
+                            value={keyword}
+                            onChangeText={text => setKeyword(text)}
+                            autoCapitalize='none'
+                            autoCorrect={false}
+                            clearButtonMode="always"
+                            ref={textInput}
+                            />
+                    </View>
+                    
+                    <FlatList 
+                        keyExtractor={item => item.key}
+                        data={props.posts}
+                        renderItem={renderItem}
+                    />
+                </View>
         </SafeAreaView>
     );
 };
