@@ -80,7 +80,7 @@ const renderItem = ({ item }) => {
             {/* 제목, 내용 */}
             <View style={{flex: 3.8, flexDirection: 'column', marginRight: 15, alignSelf: 'center'}}>
                 <Text style={{fontSize: 15, fontWeight: '600', color: '#090909', marginBottom: 7}}>
-                    {item.title}
+                    {item.title.join(' ')}
                 </Text>
                 <Text style={{fontSize: 14, color: '#89888c', marginBottom: 12}} numberOfLines={1} ellipsizeMode="tail">
                     {item.content}
