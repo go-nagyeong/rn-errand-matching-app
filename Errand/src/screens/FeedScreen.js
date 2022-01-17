@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {StyleSheet, Platform, SafeAreaView, useColorScheme, StatusBar, ScrollView, View, Text, TextInput, TouchableOpacity, FlatList} from 'react-native';
+import {StyleSheet, Platform, SafeAreaView, useColorScheme, StatusBar, View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
 import firestore from '@react-native-firebase/firestore';
@@ -158,6 +158,14 @@ export default HomeScreen = (props) => {
         )
     }
 
+    const renderFooter = () => {
+        if(props.loading) {
+            return <ActivityIndicator style={{marginTop: 10}}/>
+        } else {
+            return null
+        }
+    }
+
     return (
         <SafeAreaView style={styles.container}>
                 <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
@@ -190,8 +198,11 @@ export default HomeScreen = (props) => {
                     
                     <FlatList 
                         keyExtractor={item => item.key}
-                        data={props.posts}
+                        data={props.data}
                         renderItem={renderItem}
+                        refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getFeed} />}
+                        ListFooterComponent={renderFooter}
+                        onEndReached={!props.isListEnd && props.getMoreFeed}
                     />
                 </View>
         </SafeAreaView>
