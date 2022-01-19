@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {StyleSheet, Platform, SafeAreaView, useColorScheme, StatusBar, View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
+import { FAB } from 'react-native-paper';
 import firestore from '@react-native-firebase/firestore';
 import Moment from 'moment';
 import 'moment/locale/ko';
@@ -122,6 +123,8 @@ export default HomeScreen = (props) => {
     useEffect(() => {
         props.searchKeyword(keyword)
     }, [keyword])
+
+    const [showFAB, setShowFAB] = useState(true);
     
 
     const categories = [
@@ -203,8 +206,21 @@ export default HomeScreen = (props) => {
                         refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getFeed} />}
                         ListFooterComponent={renderFooter}
                         onEndReached={!props.isListEnd && props.getMoreFeed}
+                        onScrollBeginDrag={() => setShowFAB(false)}
+                        onScrollEndDrag={() => setShowFAB(true)}
                     />
+
+                    {showFAB &&
+                        <FAB
+                            style={styles.fab}
+                            color="#fff"
+                            large
+                            icon="pencil"
+                            onPress={() => props.navi.navigate('SelectCategory')}
+                        />
+                    }
                 </View>
+
         </SafeAreaView>
     );
 };
@@ -233,7 +249,7 @@ const styles = StyleSheet.create({
         marginBottom: 3,
     },
     boardView: {
-        flex: Platform.OS === 'ios' ? 2.6 : 2,
+        flex: Platform.OS === 'ios' ? 2.7 : 2,
         backgroundColor: '#EDF1F5',
         padding: 12,
         paddingTop: 40,
@@ -251,5 +267,12 @@ const styles = StyleSheet.create({
         padding: Platform.OS === "ios" ? 15 : 12,
         fontSize: 16,
         borderRadius: 30,
+    },
+    fab: {
+        position: 'absolute',
+        margin: 16,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#1bb55a',
     },
 });

@@ -4,7 +4,7 @@ import firestore from '@react-native-firebase/firestore';
 
 import FeedScreen from '../screens/FeedScreen';
 
-export default FeedAction = () => {
+export default FeedAction = (props) => {
     const [data, setData] = useState([]);
 
     const [refreshing, setRefreshing] = useState(false)
@@ -17,13 +17,13 @@ export default FeedAction = () => {
     const [isSearchKeyword, setSearchKeyword] = useState(false)
     const [keyword, setKeyword] = useState([])
     
-    const board = isSelectCategory 
+    const posts = isSelectCategory 
         ? (isSearchKeyword
-            ? firestore().collection('Board').where('category', '==', category).where('title', 'array-contains', keyword)
-            : firestore().collection('Board').where('category', '==', category))
+            ? firestore().collection('Posts').where('category', '==', category).where('title', 'array-contains', keyword)
+            : firestore().collection('Posts').where('category', '==', category))
         : (isSearchKeyword
-            ? firestore().collection('Board').where('title', 'array-contains', keyword)
-            : firestore().collection('Board'))
+            ? firestore().collection('Posts').where('title', 'array-contains', keyword)
+            : firestore().collection('Posts'))
 
     useEffect(() => {
         setSearchKeyword(false)
@@ -38,15 +38,15 @@ export default FeedAction = () => {
     const getFeed = () => {
         setRefreshing(true)
 
-        board
+        posts
         .orderBy('date', 'desc')
         .limit(4)
         .get()
         .then(querySnapshot => {
-            const posts = [];
+            const documentData = [];
 
             querySnapshot.forEach(documentSnapshot => {
-                posts.push({
+                documentData.push({
                     ...documentSnapshot.data(),
                     key: documentSnapshot.id,
                 });
@@ -54,7 +54,7 @@ export default FeedAction = () => {
 
             if(querySnapshot.size > 0) {
                 let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['date'];
-                setData(posts);
+                setData(documentData);
                 setRefreshing(false);
                 setLastVisible(lastVisible);
                 setIsListEnd(false);
@@ -68,16 +68,16 @@ export default FeedAction = () => {
     const getMoreFeed = () => {
         setLoading(true)
 
-        board
+        posts
         .orderBy('date', 'desc')
         .startAfter(lastVisible)
         .limit(4)
         .get()
         .then(querySnapshot => {
-            const posts = [];
+            const documentData = [];
 
             querySnapshot.forEach(documentSnapshot => {
-                posts.push({
+                documentData.push({
                     ...documentSnapshot.data(),
                     key: documentSnapshot.id,
                 });
@@ -85,7 +85,7 @@ export default FeedAction = () => {
 
             if(querySnapshot.size > 0) {
                 let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['date'];
-                setData([...data, ...posts]);
+                setData([...data, ...documentData]);
                 setLoading(false);
                 setLastVisible(lastVisible);
                 setIsListEnd(false)
@@ -125,5 +125,6 @@ export default FeedAction = () => {
             searchKeyword={searchKeyword}
             selectCategory={selectCategory}
             isListEnd={isListEnd}
+            navi={props.navigation}
             />
 }
