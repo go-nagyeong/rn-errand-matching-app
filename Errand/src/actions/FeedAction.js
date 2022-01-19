@@ -52,14 +52,14 @@ export default FeedAction = (props) => {
                 });
             });
 
+            setData(documentData);
+            setRefreshing(false);
+
             if(querySnapshot.size > 0) {
                 let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['date'];
-                setData(documentData);
-                setRefreshing(false);
                 setLastVisible(lastVisible);
                 setIsListEnd(false);
             } else {
-                setRefreshing(false);
                 setIsListEnd(true);
             }
         });
