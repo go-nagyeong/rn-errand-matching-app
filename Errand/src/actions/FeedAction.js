@@ -14,26 +14,14 @@ export default FeedAction = (props) => {
 
     const [isSelectCategory, setSelectCategory] = useState(false)
     const [category, setCategory] = useState('');
-    const [isSearchKeyword, setSearchKeyword] = useState(false)
-    const [keyword, setKeyword] = useState([])
     
     const posts = isSelectCategory 
-        ? (isSearchKeyword
-            ? firestore().collection('Posts').where('category', '==', category).where('title', 'array-contains', keyword)
-            : firestore().collection('Posts').where('category', '==', category))
-        : (isSearchKeyword
-            ? firestore().collection('Posts').where('title', 'array-contains', keyword)
-            : firestore().collection('Posts'))
+        ? firestore().collection('Posts').where('category', '==', category)
+        : firestore().collection('Posts')
 
     useEffect(() => {
-        setSearchKeyword(false)
-        setKeyword('')
         getFeed()
     }, [category])
-    
-    useEffect(() => {
-        getFeed()
-    }, [keyword])
     
     const getFeed = () => {
         setRefreshing(true)
@@ -96,16 +84,6 @@ export default FeedAction = (props) => {
         });
     }
 
-    const searchKeyword = (keyword) => {
-        if(keyword) {
-            setSearchKeyword(true)
-        } else {
-            setSearchKeyword(false)
-        }
-
-        setKeyword(keyword)
-    }
-
     const selectCategory = (category) => {
         if(category == '전체보기') {
             setSelectCategory(false)
@@ -122,8 +100,6 @@ export default FeedAction = (props) => {
             refreshing={refreshing}
             getFeed={getFeed}
             getMoreFeed={getMoreFeed}
-            searchKeyword={searchKeyword}
-            selectCategory={selectCategory}
             isListEnd={isListEnd}
             navi={props.navigation}
             />

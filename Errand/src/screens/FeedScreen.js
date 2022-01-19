@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {StyleSheet, Platform, SafeAreaView, useColorScheme, StatusBar, View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
@@ -115,17 +115,9 @@ const renderItem = ({ item }) => {
 export default HomeScreen = (props) => {
     const isDarkMode = useColorScheme() === 'dark';
 
-    const textInput = useRef();
-
     const [selectedId, setSelectedId] = useState(1);
 
-    const [keyword, setKeyword] = useState('');
-    useEffect(() => {
-        props.searchKeyword(keyword)
-    }, [keyword])
-
     const [showFAB, setShowFAB] = useState(true);
-    
 
     const categories = [
         {id: 1, text: '전체보기', icon: 'bars'},
@@ -154,7 +146,6 @@ export default HomeScreen = (props) => {
                 onPress={() => {
                     setSelectedId(item.id)
                     props.selectCategory(item.text);
-                    textInput.current.clear();
                 }}
                 item={item}
             />
@@ -175,7 +166,7 @@ export default HomeScreen = (props) => {
 
                 <View style={styles.header}>
                     <FlatList 
-                        contentContainerStyle={{padding: 20}}
+                        contentContainerStyle={{padding: 18}}
                         horizontal={true}
                         showsHorizontalScrollIndicator={false}
                         keyExtractor={item => item.id}
@@ -183,22 +174,15 @@ export default HomeScreen = (props) => {
                         renderItem={renderCategoryBox}
                         extraData={selectedId}
                     />
+
+                    <View style={styles.filter} >
+                        <TouchableOpacity style={styles.filterButton} activeOpacity={0.5} onPress={() => console.log('pressed')}>
+                            <FIcon name='filter' size={30} color="white" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View style={styles.boardView}>
-                    <View style={styles.search} >
-                        <TextInput
-                            style={styles.searchBox}
-                            placeholder="search"
-                            value={keyword}
-                            onChangeText={text => setKeyword(text)}
-                            autoCapitalize='none'
-                            autoCorrect={false}
-                            clearButtonMode="always"
-                            ref={textInput}
-                            />
-                    </View>
-                    
                     <FlatList 
                         keyExtractor={item => item.key}
                         data={props.data}
@@ -212,7 +196,7 @@ export default HomeScreen = (props) => {
 
                     {showFAB &&
                         <FAB
-                            style={styles.fab}
+                            style={styles.postButton}
                             color="#fff"
                             large
                             icon="pencil"
@@ -248,27 +232,24 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 3,
     },
+    filter: {
+        position: 'absolute',
+        right: 28, 
+        bottom: 10,
+    },
+    filterButton: {
+        flexDirection: 'row',
+        backgroundColor: 'tranparent',
+    },
     boardView: {
-        flex: Platform.OS === 'ios' ? 2.7 : 2,
+        flex: Platform.OS === 'ios' ? 2.8 : 2.1,
         backgroundColor: '#EDF1F5',
-        padding: 12,
-        paddingTop: 40,
+        paddingHorizontal: 12,
+        paddingTop: 20,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
-    search: {
-        position: 'absolute',
-        top: -25, 
-        left: 25,
-        right: 25, 
-    },
-    searchBox: {
-        backgroundColor: '#fff',
-        padding: Platform.OS === "ios" ? 15 : 12,
-        fontSize: 16,
-        borderRadius: 30,
-    },
-    fab: {
+    postButton: {
         position: 'absolute',
         margin: 16,
         right: 0,
