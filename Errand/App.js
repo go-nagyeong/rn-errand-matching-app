@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from 'react-native';
+import auth from '@react-native-firebase/auth';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -7,7 +9,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 // import Feed from './src/screens/FeedScreen';
 import FeedAction from './src/actions/FeedAction';
 
-import Mypage from './src/screens/MypageScreen';
+// import Mypage from './src/screens/MypageScreen';
+import MypageAction from './src/actions/MypageAction';
 // import Login from './src/screens/LoginScreen';
 import LoginAction from './src/actions/LoginAction';
 // import Register from './src/screens/RegisterScreen';
@@ -28,26 +31,43 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Home" component={FeedAction} />
-      <Tab.Screen name="Mypage" component={Mypage} />
+      <Tab.Screen name="Mypage" component={MypageAction} />
     </Tab.Navigator>
   )
 }
 
 export default App = () => {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    auth().onAuthStateChanged(user => {
+      if (user) {
+        setUser(user);
+      } else {
+        setUser(null)
+      }
+    })
+  });
+
   return (
     <NavigationContainer> 
       <Stack.Navigator screenOptions={{headerBackTitle: null}}>
-        <Stack.Screen name="Tab" component={TabNavigator} options={{headerShown: false}}/>
-
-        <Stack.Screen name="Login" component={LoginAction} />
-        <Stack.Screen name="Register" component={RegisterAction} />
-        <Stack.Screen name="FindPw" component={FindPwAction} />
-
-        <Stack.Screen name="SelectCategory" component={SelectCategory} />
-        <Stack.Screen name="InputPrice" component={InputPrice} />
-        <Stack.Screen name="WriteTitle" component={WriteTitle} />
-        <Stack.Screen name="WriteContent" component={WriteContent} />
-        <Stack.Screen name="SelectStartDate" component={SelectStartDate} />
+        {user 
+          ? <>
+              <Stack.Screen name="Tab" component={TabNavigator} options={{headerShown: false}} />
+      
+              <Stack.Screen name="SelectCategory" component={SelectCategory} />
+              <Stack.Screen name="InputPrice" component={InputPrice} />
+              <Stack.Screen name="WriteTitle" component={WriteTitle} />
+              <Stack.Screen name="WriteContent" component={WriteContent} />
+              <Stack.Screen name="SelectStartDate" component={SelectStartDate} />
+            </>
+          : <>
+              <Stack.Screen name="Login" component={LoginAction} />
+              <Stack.Screen name="Register" component={RegisterAction} />
+              <Stack.Screen name="FindPw" component={FindPwAction} />
+            </>
+        }
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -26,7 +26,7 @@ export default LoginAction = (props) => {
                 if (user) {
                     if(user.emailVerified) {
                         setErr('');
-                        props.navigation.navigate('Home');
+                        props.navigation.navigate('Tab');
                     } else {
                         auth().signOut();
                         setErr('이메일 인증을 진행해주세요.');

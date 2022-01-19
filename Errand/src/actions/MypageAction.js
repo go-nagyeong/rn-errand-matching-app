@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Button } from 'react-native';
 import auth from '@react-native-firebase/auth';
 
-export default LogoutAction = () => {
+import MypageScreen from '../screens/MypageScreen';
+
+export default MypageAction = (props) => {
     const signOut = () => {
         auth()
         .signOut()
@@ -11,5 +12,5 @@ export default LogoutAction = () => {
         });
     }
 
-    return <Button title="로그아웃" onPress={() => signOut()} />
+    return <MypageScreen signOut={signOut} />
 }
