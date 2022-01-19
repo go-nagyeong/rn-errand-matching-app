@@ -194,15 +194,14 @@ export default HomeScreen = (props) => {
                         onScrollEndDrag={() => setShowFAB(true)}
                     />
 
-                    {showFAB &&
-                        <FAB
-                            style={styles.postButton}
-                            color="#fff"
-                            large
-                            icon="pencil"
-                            onPress={() => props.navi.navigate('SelectCategory')}
-                        />
-                    }
+                    <FAB
+                        style={styles.postButton}
+                        color="#fff"
+                        large
+                        icon="pencil"
+                        visible={showFAB}
+                        onPress={() => props.navi.navigate('SelectCategory')}
+                    />
                 </View>
 
         </SafeAreaView>
