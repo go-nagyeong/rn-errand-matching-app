@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {StyleSheet, Platform, SafeAreaView, useColorScheme, StatusBar, View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
+import {FAB} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
-import { FAB } from 'react-native-paper';
-import firestore from '@react-native-firebase/firestore';
 import Moment from 'moment';
 import 'moment/locale/ko';
-
-import Container from '../components/Container';
 
 const renderItem = ({ item }) => {
     let categoryBackgroundColor = '',
@@ -42,28 +39,28 @@ const renderItem = ({ item }) => {
             categoryIcon = 'ellipsis1'; break;
     }
 
-    if (item.writergrade >= 4.1) {
+    if (item.writerGrade >= 4.1) {
         grade = 'A+';
         gradeColor = '#4CA374';
-    } else if (item.writergrade >= 3.6) {
+    } else if (item.writerGrade >= 3.6) {
         grade = 'A0';
         gradeColor = '#4CA374';
-    } else if (item.writergrade >= 3.1) {
+    } else if (item.writerGrade >= 3.1) {
         grade = 'B+';
         gradeColor = '#4CA374';
-    } else if (item.writergrade >= 2.6) {
+    } else if (item.writerGrade >= 2.6) {
         grade = 'B0';
         gradeColor = '#4CA374';
-    } else if (item.writergrade >= 2.1) {
+    } else if (item.writerGrade >= 2.1) {
         grade = 'C+';
         gradeColor = '#4CA374';
-    } else if (item.writergrade >= 1.6) {
+    } else if (item.writerGrade >= 1.6) {
         grade = 'C0';
         gradeColor = '#4CA374';
-    } else if (item.writergrade >= 1.1) {
+    } else if (item.writerGrade >= 1.1) {
         grade = 'D+';
         gradeColor = '#EB4E3D';
-    } else if (item.writergrade >= 0.6) {
+    } else if (item.writerGrade >= 0.6) {
         grade = 'D0';
         gradeColor = '#EB4E3D';
     } else {
@@ -80,7 +77,7 @@ const renderItem = ({ item }) => {
 
             {/* 제목, 내용 */}
             <View style={{flex: 3.8, flexDirection: 'column', marginRight: 15, alignSelf: 'center'}}>
-                <Text style={{fontSize: 15, fontWeight: '600', color: '#090909', marginBottom: 7}}>
+                <Text style={{fontSize: 15, fontWeight: '600', color: '#090909', marginBottom: 7}} numberOfLines={1} ellipsizeMode="tail">
                     {item.title.join(' ')}
                 </Text>
                 <Text style={{fontSize: 14, color: '#89888c', marginBottom: 12}} numberOfLines={1} ellipsizeMode="tail">
@@ -131,9 +128,7 @@ export default HomeScreen = (props) => {
         {id: 9, text: '기타', icon: 'ellipsis1'}
     ]
     const CategoryBox = ({opacity, onPress, item}) => (
-        <TouchableOpacity 
-            style={[styles.categoryBox, opacity]}
-            onPress={onPress}>
+        <TouchableOpacity style={[styles.categoryBox, opacity]} onPress={onPress}>
             <Text style={styles.categoryText}>{item.text}</Text>
             <Icon name={item.icon} size={30}></Icon>
         </TouchableOpacity>
@@ -162,47 +157,47 @@ export default HomeScreen = (props) => {
 
     return (
         <SafeAreaView style={styles.container}>
-                <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
-                <View style={styles.header}>
-                    <FlatList 
-                        contentContainerStyle={{padding: 18}}
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={item => item.id}
-                        data={categories}
-                        renderItem={renderCategoryBox}
-                        extraData={selectedId}
-                    />
+            <View style={styles.header}>
+                <FlatList 
+                    contentContainerStyle={{padding: 18}}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={item => item.id}
+                    data={categories}
+                    renderItem={renderCategoryBox}
+                    extraData={selectedId}
+                />
 
-                    <View style={styles.filter} >
-                        <TouchableOpacity style={styles.filterButton} activeOpacity={0.5} onPress={() => console.log('pressed')}>
-                            <FIcon name='filter' size={30} color="white" />
-                        </TouchableOpacity>
-                    </View>
+                <View style={styles.filter} >
+                    <TouchableOpacity style={styles.filterButton} activeOpacity={0.5} onPress={() => console.log('pressed')}>
+                        <FIcon name='filter' size={30} color="white" />
+                    </TouchableOpacity>
                 </View>
+            </View>
 
-                <View style={styles.boardView}>
-                    <FlatList 
-                        keyExtractor={item => item.key}
-                        data={props.data}
-                        renderItem={renderItem}
-                        refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getFeed} />}
-                        ListFooterComponent={renderFooter}
-                        onEndReached={!props.isListEnd && props.getMoreFeed}
-                        onScrollBeginDrag={() => setShowFAB(false)}
-                        onScrollEndDrag={() => setShowFAB(true)}
-                    />
+            <View style={styles.boardView}>
+                <FlatList 
+                    keyExtractor={item => item.key}
+                    data={props.data}
+                    renderItem={renderItem}
+                    refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getFeed} />}
+                    ListFooterComponent={renderFooter}
+                    onEndReached={!props.isListEnd && props.getMoreFeed}
+                    onScrollBeginDrag={() => setShowFAB(false)}
+                    onScrollEndDrag={() => setShowFAB(true)}
+                />
 
-                    <FAB
-                        style={styles.postButton}
-                        color="#fff"
-                        large
-                        icon="pencil"
-                        visible={showFAB}
-                        onPress={() => props.navi.navigate('SelectCategory')}
-                    />
-                </View>
+                <FAB
+                    style={styles.postButton}
+                    color="#fff"
+                    large
+                    icon="pencil"
+                    visible={showFAB}
+                    onPress={() => props.navi.navigate('SelectCategory')}
+                />
+            </View>
 
         </SafeAreaView>
     );
@@ -232,9 +227,9 @@ const styles = StyleSheet.create({
         marginBottom: 3,
     },
     filter: {
-        position: 'absolute',
-        right: 28, 
-        bottom: 10,
+        alignSelf: 'flex-start',
+        marginLeft: 20,
+        marginBottom: 10,
     },
     filterButton: {
         flexDirection: 'row',

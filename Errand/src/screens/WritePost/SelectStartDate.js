@@ -123,7 +123,7 @@ export default SelectStartDate = (props) => {
                   date: new Date(startDate),
                   endDate: new Date(endDate),
                   writer : user["displayName"], 
-                  writergrade: userGrade,   // user grade
+                  writerGrade: userGrade,   // user grade
                   process: "regist" // regist, matching, finished
                 })
                 .then(() => {
