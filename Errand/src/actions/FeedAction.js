@@ -16,9 +16,9 @@ export default FeedAction = (props) => {
     const [category, setCategory] = useState('');
     
     const posts = isSelectCategory 
-        ? firestore().collection('Posts').where('category', '==', category)
-        : firestore().collection('Posts')
-
+        ? firestore().collection('Posts').where('category', '==', category).orderBy('id', 'desc')
+        : firestore().collection('Posts').orderBy('id', 'desc')
+            
     useEffect(() => {
         getFeed()
     }, [category])
@@ -27,8 +27,7 @@ export default FeedAction = (props) => {
         setRefreshing(true)
 
         posts
-        .orderBy('date', 'desc')
-        .limit(4)
+        .limit(5)
         .get()
         .then(querySnapshot => {
             const documentData = [];
@@ -36,7 +35,6 @@ export default FeedAction = (props) => {
             querySnapshot.forEach(documentSnapshot => {
                 documentData.push({
                     ...documentSnapshot.data(),
-                    key: documentSnapshot.id,
                 });
             });
 
@@ -44,7 +42,7 @@ export default FeedAction = (props) => {
             setRefreshing(false);
 
             if(querySnapshot.size > 0) {
-                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['date'];
+                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['id'];
                 setLastVisible(lastVisible);
                 setIsListEnd(false);
             } else {
@@ -57,9 +55,8 @@ export default FeedAction = (props) => {
         setLoading(true)
 
         posts
-        .orderBy('date', 'desc')
         .startAfter(lastVisible)
-        .limit(4)
+        .limit(5)
         .get()
         .then(querySnapshot => {
             const documentData = [];
@@ -67,12 +64,11 @@ export default FeedAction = (props) => {
             querySnapshot.forEach(documentSnapshot => {
                 documentData.push({
                     ...documentSnapshot.data(),
-                    key: documentSnapshot.id,
                 });
             });
 
             if(querySnapshot.size > 0) {
-                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['date'];
+                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['id'];
                 setData([...data, ...documentData]);
                 setLoading(false);
                 setLastVisible(lastVisible);
@@ -95,12 +91,13 @@ export default FeedAction = (props) => {
     }
     
     return <FeedScreen 
-            data={data}
-            loading={loading}
-            refreshing={refreshing}
-            getFeed={getFeed}
-            getMoreFeed={getMoreFeed}
-            isListEnd={isListEnd}
-            navi={props.navigation}
-            />
+                data={data}
+                loading={loading}
+                refreshing={refreshing}
+                getFeed={getFeed}
+                getMoreFeed={getMoreFeed}
+                selectCategory={selectCategory}
+                isListEnd={isListEnd}
+                navi={props.navigation}
+                />
 }

@@ -78,7 +78,7 @@ const renderItem = ({ item }) => {
             {/* 제목, 내용 */}
             <View style={{flex: 3.8, flexDirection: 'column', marginRight: 15, alignSelf: 'center'}}>
                 <Text style={{fontSize: 15, fontWeight: '600', color: '#090909', marginBottom: 7}} numberOfLines={1} ellipsizeMode="tail">
-                    {item.title.join(' ')}
+                    {item.title}
                 </Text>
                 <Text style={{fontSize: 14, color: '#89888c', marginBottom: 12}} numberOfLines={1} ellipsizeMode="tail">
                     {item.content}
@@ -179,7 +179,7 @@ export default HomeScreen = (props) => {
 
             <View style={styles.boardView}>
                 <FlatList 
-                    keyExtractor={item => item.key}
+                    keyExtractor={(item, index) => String(index)}
                     data={props.data}
                     renderItem={renderItem}
                     refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getFeed} />}
