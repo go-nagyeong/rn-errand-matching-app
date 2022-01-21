@@ -4,7 +4,7 @@ import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
 
-import CustomLabel from '../components/CustomLabel';
+import CustomLabel from '../../components/CustomLabel';
 
 export default FilterModal = (props) => {
     const [showFilterModal, setShowFilterModal] = useState(false);
