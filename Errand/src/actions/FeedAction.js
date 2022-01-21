@@ -14,14 +14,27 @@ export default FeedAction = (props) => {
 
     const [isSelectCategory, setSelectCategory] = useState(false)
     const [category, setCategory] = useState('');
-    
+
+    const [sortByColumn, setSortByColumn] = useState('id')
+    const [sortOrder, setSortOrder] = useState('desc')
+
+    // const [priceRange, setPriceRange] = useState([0,5000])
+    const [priceRange, setPriceRange] = useState([0,1000,2000,3000,4000,5000])
+
+    const post = firestore().collection('Posts')
+    // .where('price', '>=', priceRange[0]).where('price', '<=', priceRange[1])
+    // .where('price', 'in', priceRange)
     const posts = isSelectCategory 
-        ? firestore().collection('Posts').where('category', '==', category).orderBy('id', 'desc')
-        : firestore().collection('Posts').orderBy('id', 'desc')
+        ? (sortByColumn == 'id'
+            ? post.where('category', '==', category).orderBy(sortByColumn, sortOrder)
+            : post.where('category', '==', category).orderBy(sortByColumn, sortOrder).orderBy('id', 'desc'))
+        : (sortByColumn == 'id'
+            ? post.orderBy(sortByColumn, sortOrder)
+            : post.orderBy(sortByColumn, sortOrder).orderBy('id', 'desc'))
             
     useEffect(() => {
         getFeed()
-    }, [category])
+    }, [category, sortByColumn, sortOrder, priceRange])
     
     const getFeed = () => {
         setRefreshing(true)
@@ -42,7 +55,7 @@ export default FeedAction = (props) => {
             setRefreshing(false);
 
             if(querySnapshot.size > 0) {
-                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['id'];
+                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()[sortByColumn];
                 setLastVisible(lastVisible);
                 setIsListEnd(false);
             } else {
@@ -68,7 +81,7 @@ export default FeedAction = (props) => {
             });
 
             if(querySnapshot.size > 0) {
-                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()['id'];
+                let lastVisible = querySnapshot.docs[querySnapshot.size-1].data()[sortByColumn];
                 setData([...data, ...documentData]);
                 setLoading(false);
                 setLastVisible(lastVisible);
@@ -89,6 +102,23 @@ export default FeedAction = (props) => {
 
         setCategory(category)
     }
+
+    const sortFilter = (sort) => {
+        setSortByColumn(sort[0])
+        setSortOrder(sort[1])
+    }
+
+    const priceFilter = (range) => {
+        // setPriceRange(range[0])
+        // setPriceRange(range[1])
+        var priceRange = [];
+
+        for(var i=range[0]; i<=range[1]; i+=500) {
+            priceRange.push(i)
+        }
+
+        setPriceRange(priceRange)
+    }
     
     return <FeedScreen 
                 data={data}
@@ -99,5 +129,7 @@ export default FeedAction = (props) => {
                 selectCategory={selectCategory}
                 isListEnd={isListEnd}
                 navi={props.navigation}
+                sortFilter={sortFilter}
+                priceFilter={priceFilter}
                 />
 }

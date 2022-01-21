@@ -6,6 +6,8 @@ import FIcon from 'react-native-vector-icons/FontAwesome';
 import Moment from 'moment';
 import 'moment/locale/ko';
 
+import FeedFilter from './FeedFilter';
+
 const renderItem = ({ item }) => {
     let categoryBackgroundColor = '',
         categoryIcon = '',
@@ -170,11 +172,10 @@ export default HomeScreen = (props) => {
                     extraData={selectedId}
                 />
 
-                <View style={styles.filter} >
-                    <TouchableOpacity style={styles.filterButton} activeOpacity={0.5} onPress={() => console.log('pressed')}>
-                        <FIcon name='filter' size={30} color="white" />
-                    </TouchableOpacity>
-                </View>
+                <FeedFilter 
+                    sortFilter={props.sortFilter}
+                    priceFilter={props.priceFilter}
+                />
             </View>
 
             <View style={styles.boardView}>
@@ -198,7 +199,6 @@ export default HomeScreen = (props) => {
                     onPress={() => props.navi.navigate('SelectCategory')}
                 />
             </View>
-
         </SafeAreaView>
     );
 };
@@ -226,17 +226,8 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 3,
     },
-    filter: {
-        alignSelf: 'flex-start',
-        marginLeft: 20,
-        marginBottom: 10,
-    },
-    filterButton: {
-        flexDirection: 'row',
-        backgroundColor: 'tranparent',
-    },
     boardView: {
-        flex: Platform.OS === 'ios' ? 2.8 : 2.1,
+        flex: Platform.OS === 'ios' ? 2.6 : 1.9,
         backgroundColor: '#EDF1F5',
         paddingHorizontal: 12,
         paddingTop: 20,
