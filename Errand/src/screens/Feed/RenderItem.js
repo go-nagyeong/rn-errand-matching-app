@@ -6,37 +6,8 @@ import Moment from 'moment';
 import 'moment/locale/ko';
 
 export default RenderItem = ({ item }) => {
-    let categoryBackgroundColor = '',
-        categoryIcon = '',
-        grade = '',
+    let grade = '',
         gradeColor = '';
-
-    switch (item.category) {
-        case '마트':
-            categoryBackgroundColor = 'green';
-            categoryIcon = 'shoppingcart'; break;
-        case '과제':
-            categoryBackgroundColor = 'lightgreen';
-            categoryIcon = 'book'; break;
-        case '탐색':
-            categoryBackgroundColor = 'brown';
-            categoryIcon = 'eyeo'; break;
-        case '서류':
-            categoryBackgroundColor = 'lightblue';
-            categoryIcon = 'filetext1'; break;
-        case '공구':
-            categoryBackgroundColor = 'gray';
-            categoryIcon = 'tool'; break;
-        case '짐':
-            categoryBackgroundColor = 'navy';
-            categoryIcon = 'car'; break;
-        case '생각':
-            categoryBackgroundColor = 'orange';
-            categoryIcon = 'bulb1'; break;
-        case '기타':
-            categoryBackgroundColor = 'lightgray';
-            categoryIcon = 'ellipsis1'; break;
-    }
 
     if (item.writerGrade >= 4.1) {
         grade = 'A+';
@@ -67,11 +38,22 @@ export default RenderItem = ({ item }) => {
         gradeColor = '#EB4E3D';
     }
 
+    categoryIconStyle = {
+        마트: ['green', 'shoppingcart'],
+        과제: ['lightgreen', 'book'],
+        탐색: ['brown', 'eyeo'],
+        서류: ['lightblue', 'filetext1'],
+        공구: ['gray', 'tool'],
+        짐: ['navy', 'car'],
+        생각: ['orange', 'bulb1'],
+        기타: ['lightgray', 'ellipsis1']
+    }
+
     return (
         <View style={{flexDirection: 'row', backgroundColor: '#fff', height: 100, marginBottom: 15, padding: 15, borderRadius: 10}}>
             {/* 카테고리 아이콘 */}
-            <View style={{backgroundColor: categoryBackgroundColor, borderRadius: 30, padding: 10, marginRight: 15, alignSelf: 'center'}}>
-                <Icon name={categoryIcon} size={30} color='white' />
+            <View style={{backgroundColor: categoryIconStyle[item.category][0], borderRadius: 30, padding: 10, marginRight: 15, alignSelf: 'center'}}>
+                <Icon name={categoryIconStyle[item.category][1]} size={30} color='white' />
             </View>
 
             {/* 제목, 내용 */}
