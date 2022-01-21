@@ -11,7 +11,7 @@ export default InputPrice = (props ) => {
   
   const { category } = props.route.params;
 
-  const priceList = ["1000", "2000", "3000", "4000", "5000"]
+  const priceList = [1000, 2000, 3000, 4000, 5000]
 
   return (
     <Container>
@@ -26,7 +26,6 @@ export default InputPrice = (props ) => {
             <SelectDropdown
               data={priceList}
               onSelect={(selectedItem, index) => {
-                console.log(selectedItem, index)
                 setPrice(selectedItem)
               }}
               buttonTextAfterSelection={(selectedItem, index) => {
