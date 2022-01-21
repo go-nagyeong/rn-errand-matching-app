@@ -1,12 +1,33 @@
 import React, { useState } from 'react';
-import { Platform, Image, StyleSheet, Text, View, TouchableOpacity, ImageBackground, ScrollView } from 'react-native';
+import { Platform, Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 import Container from '../../components/Container';
 
 export default SelectCategory = (props) => {
-    const setCategory = (category) => {
-        props.navigation.navigate('InputPrice', {category: category,})
+    const setCategory = (category, content) => {
+        props.navigation.navigate('InputPrice', {category: category, content: content,})
     }
+
+    const categories = [
+        {title: '마트', content: '대신 장을 좀 봐주세요.', image: 'Home.png'}, 
+        {title: '과제', content: '과제를 도와주세요.', image: 'Pen.png'}, 
+        {title: '탐색', content: '물건을 찾아주세요.', image: 'Search.png'}, 
+        {title: '서류', content: '서류를 배달해주세요.', image: 'Folder.png'}, 
+        {title: '공구', content: '맥가이버가 되어보세요.', image: 'ToolBox.png'}, 
+        {title: '짐', content: '무거운 짐을 옮겨주세요.', image: 'Box.png'}, 
+        {title: '생각', content: '생각을 공유해보세요.', image: 'Idea.png'}, 
+        {title: '기타', content: '~을 해주세요.', image: 'Chat.png'}
+    ]
+    const categoryBox = categories.map((category, index) => 
+        <TouchableOpacity key={String(index)} style={styles.boxView} onPress={() => {setCategory(category.title, category.content)}}>
+            <Text style={styles.itemText}>{category.title}</Text>
+            <Text style={styles.itemTextContent}>{category.content}</Text>
+            <Image
+                source={require('../../assets/img/Home.png')}  // 파라미터로 변수 사용 불가 (icon으로 변경 ?)
+                style={styles.itemImage}
+            />
+        </TouchableOpacity>
+    )
 
     return (
         <Container>
@@ -15,139 +36,14 @@ export default SelectCategory = (props) => {
                 <Text style={styles.subTitle}>카테고리를 선택해 주세요.</Text>
             </View>
 
-            <View style={{backgroundColor: '#53B77C', borderRadius: 10}}>
-                <View style={[styles.centerView, { marginTop: 20}]}>
-                    <View>
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("탐색")}}>
-                            <Text style={styles.itemText}>탐색</Text>
-                            <Text style={styles.itemTextContent}>물건을 찾아주세요.</Text>
-                            <Image
-                                source={require('../../assets/img/Search.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("기타")}}>
-                            <Text style={styles.itemText}>기타</Text>
-                            <Text style={styles.itemTextContent}>기타 입니다.</Text>
-                            <Image
-                                source={require('../../assets/img/Chat.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={styles.centerView}>
-                    <View>
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("서류")}}>
-                            <Text style={styles.itemText}>서류</Text>
-                            <Text style={styles.itemTextContent}>서류를 배달해 주세요.</Text>
-                            <Image
-                                source={require('../../assets/img/Folder.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("마트")}}>
-                            <Text style={styles.itemText}>마트</Text>
-                            <Text style={styles.itemTextContent}>대신 장을 봐주세요.</Text>
-                            <Image
-                                source={require('../../assets/img/Home.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
-                <View style={styles.centerView}>
-                    <View>
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("과제")}}>
-                            <Text style={styles.itemText}>과제</Text>
-                            <Text style={styles.itemTextContent}>과제를 도와주세요.</Text>
-                            <Image
-                                source={require('../../assets/img/Pen.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("공구")}}>
-                            <Text style={styles.itemText}>공구</Text>
-                            <Text style={styles.itemTextContent}>맥가이버가 되어보세요.</Text>
-                            <Image
-                                source={require('../../assets/img/ToolBox.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            
-                <View style={[styles.centerView, { marginBottom: 20}]}>
-                    <View >
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("짐")}}>
-                            <Text style={styles.itemText}>짐</Text>
-                            <Text style={styles.itemTextContent}>짐 나르기를 도와주세요.</Text>
-                            <Image
-                                source={require('../../assets/img/Box.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                    <View>
-                        <TouchableOpacity style={[styles.boxView]} onPress={() => {setCategory("생각")}}>
-                            <Text style={styles.itemText}>생각</Text>
-                            <Text style={styles.itemTextContent}>생각을 공유해 보세요.</Text>
-                            <Image
-                                source={require('../../assets/img/Idea.png')}
-                                style={[styles.item]}
-                            />
-                        </TouchableOpacity>
-                    </View>
-                </View>
+            <View style={styles.centerView}>
+                {categoryBox}
             </View>
         </Container>
     );
 }
 
 const styles = StyleSheet.create({
-    centerView: {
-        flex: 1,
-        flexDirection: 'row', 
-        margin: 10,
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    boxView: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        marginRight : 10,
-        marginLeft : 10,
-        width: 170, 
-        height: 170, 
-    },
-    checkItem: {
-        width: 70, 
-        height: 70, 
-    },
-    item: {
-        marginLeft: "45%",
-        marginTop: "15%",
-        width: 70, 
-        height: 70, 
-    },
-    itemText: {
-        marginTop : 10,
-        marginLeft : 10,
-        fontSize: 18,
-    },
-    itemTextContent: {
-        margin : 5,
-        marginLeft : 10,
-        fontSize: 14,
-    },
     titleWrapper: {
         alignItems: 'center',
         marginTop: Platform.OS === "ios" ? "18%" : "8%",
@@ -165,30 +61,38 @@ const styles = StyleSheet.create({
         fontSize: 18,
         padding: 10,
     },
-    inputWrapper: {
-        paddingHorizontal: 35,
-    },
-    input: {
-        backgroundColor: '#fff',
-        marginBottom: 12,
-    },
-    buttonWrapper: {
-        paddingHorizontal: 35,
-    },
-    squareButton: {
+
+    centerView: {
+        flex: 1,
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
         backgroundColor: '#53B77C',
-        paddingVertical: 13,
-        alignItems: 'center',
-        borderRadius: 5,
+        borderRadius: 10,
+        padding: 15,
     },
-    squareButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
+    boxView: {
+        backgroundColor: '#fff',
+        borderRadius: 20,
+        width: 170, 
+        height: 170, 
+        marginBottom: 15,
+        padding: 5,
     },
-    textButtonText: {
-        color: "#53B77C",
-        fontSize: 16,
-        fontWeight: "600",
+    itemText: {
+        marginTop : 10,
+        marginLeft : 10,
+        fontSize: 18,
+    },
+    itemTextContent: {
+        margin : 5,
+        marginLeft : 10,
+        fontSize: 14,
+    },
+    itemImage: {
+        marginLeft: "45%",
+        marginTop: "15%",
+        width: 70, 
+        height: 70, 
     },
   });

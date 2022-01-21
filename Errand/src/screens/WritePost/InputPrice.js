@@ -9,7 +9,7 @@ import Container from '../../components/Container';
 export default InputPrice = (props ) => {
   const [price, setPrice] = useState("");
   
-  const { category } = props.route.params;
+  const { category, content } = props.route.params;
 
   const priceList = [1000, 2000, 3000, 4000, 5000]
 
@@ -18,7 +18,7 @@ export default InputPrice = (props ) => {
       <View style={styles.titleMargin}>
         <View style={styles.titleWrapper}>
           <Text style={styles.title}>{category}</Text>
-          <Text style={styles.subTitle}>{category}의 원하는 가격을 선택해 주세요.</Text>
+          <Text style={styles.subTitle}>{content}</Text>
         </View>
 
         <View style={styles.inputWrapper}>
