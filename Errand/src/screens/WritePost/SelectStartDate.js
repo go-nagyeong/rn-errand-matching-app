@@ -117,9 +117,7 @@ export default SelectStartDate = (props) => {
       <View style={styles.titleMargin}>
         <View style={styles.titleWrapper}>
             <Text style={styles.title}>종료 날짜</Text>
-
             <Text style={styles.subTitle}>종료되는 날짜를 정해주세요.</Text>
-            <Text style={styles.subTitle}>{current}</Text>
         </View>
 
         <View style={styles.inputWrapper}>
@@ -135,7 +133,6 @@ export default SelectStartDate = (props) => {
 
           <TouchableOpacity style={[{marginTop: 30, marginBottom: 100, alignItems: 'center', justifyContent: 'center'}]}
             onPress={() => addPostData()}>
-            <Text>{startDate}</Text>
             <Image
               style = {styles.item}
               source={require('../../assets/img/Ok.png')}

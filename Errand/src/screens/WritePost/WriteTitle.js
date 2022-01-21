@@ -13,6 +13,15 @@ export default WriteTitle = (props) => {
   const [titleFocus, setTitleFocus] = useState(false);
   const { category, price } = props.route.params;
 
+  const onPress = () => {
+    if(title){
+      props.navigation.navigate('WriteContent', {category: category, price: price, title: title, })  
+    }
+    else{
+      alert("최소 한글자 이상 작성해 주세요.")
+    }
+  }
+
   return (
     <Container>
       <View style={styles.titleMargin}>
@@ -28,10 +37,12 @@ export default WriteTitle = (props) => {
             placeholder="Title"
             autoCapitalize='none'
             autoCorrect={false}
+            autoFocus={true}
             blurOnSubmit={false}
             onFocus={() => {setTitleFocus(true)}}
             onBlur={() => {setTitleFocus(false)}}
             onChangeText={text => setTitle(text)}
+            onSubmitEditing={() => onPress()}
             returnKeyType="next"
             selectionColor="#292929"
             // react-native-paper
@@ -41,14 +52,7 @@ export default WriteTitle = (props) => {
             left={<TextInput.Icon name={() => <AntDesignIcon name="right" size={20} color="#53B77C" />} />}
           />
 
-          <TouchableOpacity style={[{marginTop: 30, marginBottom: 100, alignItems: 'center', justifyContent: 'center'}]} onPress={() => { 
-            if(title){
-              props.navigation.navigate('WriteContent', {category: category, price: price, title: title, })  
-            }
-            else{
-              alert("최소 한글자 이상 작성해 주세요.")
-            }
-          }}>
+          <TouchableOpacity style={[{marginTop: 30, marginBottom: 100, alignItems: 'center', justifyContent: 'center'}]} onPress={() => onPress()}>
             <Image
               style = {styles.item}
               source={require('../../assets/img/Ok.png')}

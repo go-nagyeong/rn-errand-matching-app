@@ -14,6 +14,15 @@ export default WriteContent = (props) => {
   
   const { category, price, title } = props.route.params;
 
+  const onPress = () => {
+    if(content){
+      props.navigation.navigate('SelectStartDate', {category: category, price: price, title: title, content: content, })
+    }
+    else{
+      alert("최소 한글자 이상 작성해 주세요.")
+    }
+  }
+
   return (
     <Container>
       <View style={styles.titleMargin}>
@@ -31,12 +40,11 @@ export default WriteContent = (props) => {
             placeholder="Title"
             autoCapitalize='none'
             autoCorrect={false}
+            autoFocus={true}
             blurOnSubmit={false}
             onFocus={() => {setContentFocus(true)}}
             onBlur={() => {setContentFocus(false)}}
             onChangeText={text => setContent(text)}
-            
-            returnKeyType="next"
             selectionColor="#292929"
             // react-native-paper
             underlineColor='transparent'
@@ -45,15 +53,7 @@ export default WriteContent = (props) => {
             left={<TextInput.Icon name={() => <AntDesignIcon name="right" size={20} color="#53B77C" />} />}
           />
 
-          <TouchableOpacity style={[{marginTop: 30, marginBottom: 100, alignItems: 'center', justifyContent: 'center'}]} onPress={() => { 
-            if(content){
-              props.navigation.navigate('SelectStartDate', {category: category, price: price, title: title, content: content, })
-              
-            }
-            else{
-              alert("최소 한글자 이상 작성해 주세요.")
-            }
-          }}>
+          <TouchableOpacity style={[{marginTop: 30, marginBottom: 100, alignItems: 'center', justifyContent: 'center'}]} onPress={() => onPress()}>
             <Image
               style = {styles.item}
               source={require('../../assets/img/Ok.png')}
