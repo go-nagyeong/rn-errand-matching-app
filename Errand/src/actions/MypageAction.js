@@ -140,7 +140,6 @@ export default MypageAction = (props) => {
                 updateNickname = {updateNickname}
                 downloadImg = {downloadImg}
                 withdrawal = {withdrawal}
-                signOut = {signOut}
 
             /> //{...contactData} {...props} 
 }
