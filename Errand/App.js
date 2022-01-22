@@ -17,6 +17,8 @@ import LoginAction from './src/actions/LoginAction';
 import RegisterAction from './src/actions/RegisterAction';
 // import FindPw from './src/screens/FindPassword';
 import FindPwAction from './src/actions/FindPwAction';
+// import ReName from './src/screens/ReNameScreen';
+import ReNameAction from './src/actions/ReNameAction';
 
 import SelectCategory from './src/screens/WritePost/SelectCategory';
 import InputPrice from './src/screens/WritePost/InputPrice';
@@ -55,6 +57,8 @@ export default App = () => {
         {user 
           ? <>
               <Stack.Screen name="Tab" component={TabNavigator} options={{headerShown: false}} />
+              <Stack.Screen name="FindPw" component={FindPwAction} />
+              <Stack.Screen name="ReName" component={ReNameAction} />
       
               <Stack.Screen name="SelectCategory" component={SelectCategory} />
               <Stack.Screen name="InputPrice" component={InputPrice} />
