@@ -185,6 +185,22 @@ export default SettingsScreen = (props) => {
                 rightIcon={<Chevron />}
                 />
                 <ListItem
+                title="로그아웃"
+                rightTitleStyle={{ fontSize: 15 }}
+                onPress={() => props.signOut()}
+                containerStyle={styles.listItemContainer}
+                leftIcon={
+                    <BaseIcon
+                    containerStyle={{ backgroundColor: '#FEA8A1' }}
+                    icon={{
+                        type: 'material',
+                        name: 'language',
+                    }}
+                    />
+                }
+                rightIcon={<Chevron />}
+                />
+                <ListItem
                 title="회원 탈퇴"
                 rightTitleStyle={{ fontSize: 15 }}
                 onPress={togglewithdrawalView}

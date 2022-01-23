@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect} from 'react';
+import { Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
@@ -20,6 +21,22 @@ export default MypageAction = (props) => {
         skipBackup: true,
         },
     };
+    
+    const signOut = () => {
+      Alert.alert(
+        "로그아웃",
+        "정말 로그아웃 하시겠습니까?",
+        [{
+            text: "로그아웃",
+            onPress: () => auth().signOut(),
+            style: "default",
+          },
+          {
+            text: "닫기",
+            style: "default",
+        }],
+      );
+    }
 
     const withdrawal = () => {
       const users = firestore().collection('Users').doc(email);
@@ -140,6 +157,7 @@ export default MypageAction = (props) => {
                 updateNickname = {updateNickname}
                 downloadImg = {downloadImg}
                 withdrawal = {withdrawal}
+                signOut = {signOut}
 
             /> //{...contactData} {...props} 
 }
