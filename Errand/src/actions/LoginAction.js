@@ -10,17 +10,19 @@ export default LoginAction = (props) => {
         var emailReg = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
         
         if(!email) {
-            setErr('이메일을 입력해주세요.');
-            return false;
-        } else if(!emailReg.test(email)) {
-            setErr('이메일 형식을 올바르게 입력해주세요.');
+            setErr('아이디(이메일)를 입력해주세요.');
             return false;
         } else if(!password) {
             setErr('비밀번호를 입력해주세요.');
             return false;
         } else {
+            let id = email;
+            if(!emailReg.test(email)) {
+                id = email + "@student.anu.ac.kr";
+            }
+            
             auth()
-            .signInWithEmailAndPassword(email, password)
+            .signInWithEmailAndPassword(id, password)
             .then(() => {
                 var user = auth().currentUser;
                 if (user) {

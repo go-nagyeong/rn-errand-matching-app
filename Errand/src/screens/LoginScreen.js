@@ -23,7 +23,7 @@ export default LoginScreen = (props) => {
       <View style={styles.inputWrapper}>
         <TextInput
           style={emailFocus ? styles.focusedInput : styles.input}
-          placeholder="Email"
+          placeholder="ID or Email"
           value={email}
           autoCapitalize='none'
           autoCorrect={false}
