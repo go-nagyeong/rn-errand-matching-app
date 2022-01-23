@@ -134,7 +134,7 @@ export default RegisterAction = (props) => {
                     "인증 메일을 전송하였습니다.\n전송된 이메일의 링크를 클릭하면 회원가입이 완료됩니다.",
                     [{
                         text: "확인",
-                        onPress: () => props.navigation.navigate('Home'),
+                        onPress: () => props.navigation.navigate('Login'),
                         style: "cancel",
                     }],
                 );
