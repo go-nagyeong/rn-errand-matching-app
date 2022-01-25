@@ -53,7 +53,7 @@ export default SelectStartDate = (props) => {
 
   useEffect(() => {
     users
-    .where('nickname', '==', user['displayName'])
+    .where('nickname', '==', user.displayName)
     .get()
     .then(querySnapshot => {
       querySnapshot.forEach(function(doc) {
@@ -82,7 +82,8 @@ export default SelectStartDate = (props) => {
         content: content,
         date: new Date(startDate),
         endDate: new Date(endDate),
-        writer : user["displayName"], 
+        writer: user.displayName,
+        writerEmail: user.email,
         writerGrade: userGrade,
         process: "regist" // regist, matching, finished
       })
@@ -125,7 +126,7 @@ export default SelectStartDate = (props) => {
             minDate={current}
             onDayPress={day => {
                 setStartDate(Date.parse(new Date()))
-                setEndDate(Date.parse(new Date([day["dateString"]])))
+                setEndDate(Date.parse(day["dateString"].split('-').join('/') + ' 00:00:00'))
                 addDates([day["dateString"]]);
             }}
             markedDates={markedDates}
