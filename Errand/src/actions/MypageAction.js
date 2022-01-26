@@ -13,6 +13,15 @@ export default MypageAction = (props) => {
     const [nickname, setNickname] = useState(null)
     const [url, setUrl] = useState(null)
 
+    // 해당 화면에 focus가 있을 때 수행하는 작업
+    useEffect(() => {
+      const unsubscribe = props.navigation.addListener('focus', () => {
+        updateNickname();
+        downloadImg();
+      });
+    
+      return unsubscribe;
+    }, [props.navigation]);
 
     const nicknameReg  =  /^[\w\Wㄱ-ㅎㅏ-ㅣ가-힣]{2,20}$/
     const options = {

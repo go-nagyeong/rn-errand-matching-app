@@ -51,7 +51,7 @@ export default ReNameAction = (props) => {
                             "이름 변경이 완료되었습니다.",
                             [{
                                 text: "확인",
-                                onPress: () => props.navigation.navigate('Home'),
+                                onPress: () => props.navigation.navigate('Mypage'),
                                 style: "cancel",
                             }],
                         );

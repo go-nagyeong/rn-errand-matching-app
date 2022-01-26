@@ -16,11 +16,6 @@ export default SettingsScreen = (props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [menuVisible, setMenuVisible] = useState(false); // edit profile Menu
     const [withdrawalVisible, setwithdrawalVisible] = useState(false) // withdrawal Menu
-    // 최초 1번 프로필 업데이트
-    useEffect( () => {
-        props.updateNickname(); // 프로필 닉네임 업데이트
-        props.downloadImg();
-    }, [])
 
     // refresh control
     const wait = (timeout) => {

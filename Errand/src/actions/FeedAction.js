@@ -35,6 +35,15 @@ export default FeedAction = (props) => {
     useEffect(() => {
         getFeed()
     }, [category, sortByColumn, sortOrder, priceRange])
+
+    // 해당 화면에 focus가 있을 때 수행하는 작업
+    useEffect(() => {
+        const unsubscribe = props.navigation.addListener('focus', () => {
+            getFeed()
+        });
+      
+        return unsubscribe;
+    }, [props.navigation]);
     
     const getFeed = () => {
         setRefreshing(true)
