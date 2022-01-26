@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {StyleSheet, Platform, SafeAreaView, useColorScheme, StatusBar, View, Text, TouchableOpacity, FlatList, ActivityIndicator, RefreshControl} from 'react-native';
 import {FAB} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/AntDesign';
@@ -7,7 +7,7 @@ import FIcon from 'react-native-vector-icons/FontAwesome';
 import FeedFilter from './FeedFilter';
 import RenderItem from './RenderItem';
 
-export default HomeScreen = (props) => {
+export default FeedScreen = (props) => {
     const isDarkMode = useColorScheme() === 'dark';
 
     const [selectedId, setSelectedId] = useState(1);
@@ -52,11 +52,15 @@ export default HomeScreen = (props) => {
             return null
         }
     }
+    
+    const renderItem = ({ item }) => {
+        return <RenderItem item={item} />
+    }
 
     return (
         <SafeAreaView style={styles.container}>
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-
+            
             <View style={styles.header}>
                 <FlatList 
                     contentContainerStyle={{padding: 18}}
@@ -73,17 +77,18 @@ export default HomeScreen = (props) => {
                     priceFilter={props.priceFilter}
                 />
             </View>
-
+            
             <View style={styles.boardView}>
                 <FlatList 
                     keyExtractor={(item, index) => String(index)}
                     data={props.data}
-                    renderItem={RenderItem}
+                    renderItem={renderItem}
                     refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getFeed} />}
                     ListFooterComponent={renderFooter}
                     onEndReached={!props.isListEnd && props.getMoreFeed}
                     onScrollBeginDrag={() => setShowFAB(false)}
                     onScrollEndDrag={() => setShowFAB(true)}
+                    
                 />
 
                 <FAB

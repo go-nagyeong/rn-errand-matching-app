@@ -8,6 +8,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 // import Feed from './src/screens/FeedScreen';
 import FeedAction from './src/actions/FeedAction';
+import ShowDetailPost from './src/screens/ShowDetailPost';
 
 // import Mypage from './src/screens/MypageScreen';
 import MypageAction from './src/actions/MypageAction';
@@ -25,6 +26,7 @@ import InputPrice from './src/screens/WritePost/InputPrice';
 import WriteTitle from './src/screens/WritePost/WriteTitle';
 import WriteContent from './src/screens/WritePost/WriteContent';
 import SelectStartDate from './src/screens/WritePost/SelectStartDate';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -57,6 +59,7 @@ export default App = () => {
         {user 
           ? <>
               <Stack.Screen name="Tab" component={TabNavigator} options={{headerShown: false}} />
+              <Stack.Screen name="ShowDetailPost" component={ShowDetailPost} />
               <Stack.Screen name="FindPw" component={FindPwAction} />
               <Stack.Screen name="ReName" component={ReNameAction} />
       
