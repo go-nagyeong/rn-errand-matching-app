@@ -8,7 +8,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
 // import Feed from './src/screens/FeedScreen';
 import FeedAction from './src/actions/FeedAction';
-import ShowDetailPost from './src/screens/ShowDetailPost';
+import ShowDetailPost from './src/screens/Feed/ShowDetailPost';
 
 // import Mypage from './src/screens/MypageScreen';
 import MypageAction from './src/actions/MypageAction';

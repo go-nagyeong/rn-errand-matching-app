@@ -7,7 +7,7 @@ import SelectDropdown from 'react-native-select-dropdown'
 import storage from '@react-native-firebase/storage';
 
 
-export default ShowDetailPost = (props  => {
+export default ShowDetailPost = (props)  => {
   const { title, content, writerName, writergrade, price,} = props.route.params;
 
   const [url, setUrl] = useState(null)
@@ -20,11 +20,6 @@ export default ShowDetailPost = (props  => {
       setUrl(url)
   })
   .catch((e) => console.log('Errors while downloading => ', e));
- 
-
-  useEffect(()=>{ 
-    console.log(price);
-  }, [price])
 
   return (
     <Container>
