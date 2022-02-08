@@ -10,6 +10,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import FeedAction from './src/actions/FeedAction';
 import ShowDetailPost from './src/screens/Feed/ShowDetailPost';
 
+import MyErrandAction from './src/actions/MyErrandAction';
+
 // import Mypage from './src/screens/MypageScreen';
 import MypageAction from './src/actions/MypageAction';
 // import Login from './src/screens/LoginScreen';
@@ -35,6 +37,7 @@ const TabNavigator = () => {
   return (
     <Tab.Navigator>
       <Tab.Screen name="Home" component={FeedAction} />
+      <Tab.Screen name="MyErrand" component={MyErrandAction} />
       <Tab.Screen name="Mypage" component={MypageAction} />
     </Tab.Navigator>
   )
