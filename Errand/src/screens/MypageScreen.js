@@ -185,6 +185,21 @@ export default SettingsScreen = (props) => {
             <InfoText text="More" />
             <View>
                 <ListItem
+                    title="게시물 목록"
+                    onPress={() => {props.navi.navigate('MyRegisteredErrand')}}
+                    containerStyle={styles.listItemContainer}
+                    leftIcon={
+                        <BaseIcon
+                        containerStyle={{ backgroundColor: '#A4C8F0' }}
+                        icon={{
+                            type: 'ionicon',
+                            name: 'md-information-circle',
+                        }}
+                        />
+                    }
+                    rightIcon={<Chevron />}
+                />
+                <ListItem
                     title="About US"
                     onPress={() => console.log('About US')}
                     containerStyle={styles.listItemContainer}

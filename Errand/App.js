@@ -6,21 +6,15 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-// import Feed from './src/screens/FeedScreen';
 import FeedAction from './src/actions/FeedAction';
 import ShowDetailPost from './src/screens/Feed/ShowDetailPost';
 
 import MyErrandAction from './src/actions/MyErrandAction';
 
-// import Mypage from './src/screens/MypageScreen';
 import MypageAction from './src/actions/MypageAction';
-// import Login from './src/screens/LoginScreen';
 import LoginAction from './src/actions/LoginAction';
-// import Register from './src/screens/RegisterScreen';
 import RegisterAction from './src/actions/RegisterAction';
-// import FindPw from './src/screens/FindPassword';
 import FindPwAction from './src/actions/FindPwAction';
-// import ReName from './src/screens/ReNameScreen';
 import ReNameAction from './src/actions/ReNameAction';
 
 import SelectCategory from './src/screens/WritePost/SelectCategory';
@@ -28,6 +22,8 @@ import InputPrice from './src/screens/WritePost/InputPrice';
 import WriteTitle from './src/screens/WritePost/WriteTitle';
 import WriteContent from './src/screens/WritePost/WriteContent';
 import SelectStartDate from './src/screens/WritePost/SelectStartDate';
+
+import MyRegisteredErrand from './src/actions/MyRegisteredErrandAction';
 
 
 const Tab = createBottomTabNavigator();
@@ -63,6 +59,8 @@ export default App = () => {
           ? <>
               <Stack.Screen name="Tab" component={TabNavigator} options={{headerShown: false}} />
               <Stack.Screen name="ShowDetailPost" component={ShowDetailPost} />
+
+              <Stack.Screen name="MyRegisteredErrand" component={MyRegisteredErrand} />
               <Stack.Screen name="FindPw" component={FindPwAction} />
               <Stack.Screen name="ReName" component={ReNameAction} />
       
