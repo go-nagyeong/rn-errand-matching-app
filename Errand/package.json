@@ -10,6 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@gorhom/bottom-sheet": "^4",
     "@ptomasroos/react-native-multi-slider": "^2.2.2",
     "@react-native-community/datetimepicker": "^5.1.0",
     "@react-native-firebase/app": "^14.2.3",
@@ -29,11 +30,13 @@
     "react-native-elements": "^2.2.1",
     "react-native-gesture-handler": "^2.0.0",
     "react-native-image-picker": "^4.7.1",
-    "react-native-keyboard-aware-scroll-view": "^0.9.5",
+    "react-native-multi-selectbox": "^1.5.0",
+    "react-native-pager-view": "^5.4.9",
     "react-native-paper": "^4.10.1",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "^3.10.0",
     "react-native-select-dropdown": "^1.7.0",
+    "react-native-tab-view": "^3.1.1",
     "react-native-vector-icons": "^9.0.0"
   },
   "devDependencies": {
