@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect, useCallback, setState } from 'react'
-import { SafeAreaView, ScrollView, Switch, StyleSheet, Text, View, LogBox, RefreshControl, TouchableOpacity } from 'react-native'
+import { SafeAreaView, ScrollView, Switch, StyleSheet, Text, View, LogBox, RefreshControl, TouchableOpacity, Linking, Alert } from 'react-native'
 // Settings UI
 import { Avatar, ListItem } from 'react-native-elements'
 import BaseIcon from '../components/Icon'
@@ -7,6 +7,9 @@ import Chevron from '../components/Chevron'
 import InfoText from '../components/InfoText'
 // Edit profile menu
 import { BottomSheet } from 'react-native-btr';
+
+import Container from '../components/Container'
+
 // Ignore Warnings
 LogBox.ignoreLogs(['Warning: ...']);
 
@@ -16,16 +19,6 @@ export default SettingsScreen = (props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [menuVisible, setMenuVisible] = useState(false); // edit profile Menu
     const [withdrawalVisible, setwithdrawalVisible] = useState(false) // withdrawal Menu
-
-    // refresh control
-    const wait = (timeout) => {
-        return new Promise(resolve => setTimeout(resolve, timeout));
-    }
-    const onRefresh = useCallback(() => {
-        props.updateNickname(); // 프로필 닉네임 업데이트
-        setRefreshing(true);
-        wait(300).then(() => setRefreshing(false));
-    }, [])
 
     // 프로필 수정 메뉴 (Bottom sheet)
     const toggleUpdateProfileView = () => {
@@ -37,120 +30,96 @@ export default SettingsScreen = (props) => {
         setwithdrawalVisible(!withdrawalVisible)
     };
 
-    // Notification settings
-    const [pushNotifications, setPushNotifications] = useState(true)
-    
-
     return (
-        <ScrollView style={styles.scroll}
-            refreshControl={
-                <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                />
-            }
-        >
-            <SafeAreaView style={styles.container}>
-                <View style={styles.container}>
-                    {/* Edit profile */}
-                    <BottomSheet
-                        visible={menuVisible}
-                        onBackButtonPress={toggleUpdateProfileView}
-                        onBackdropPress={toggleUpdateProfileView}
-                    >
-                        <View style={styles.panel}>
-                            <View style={{alignItems: 'center'}}>
-                                <Text style={styles.panelTitle}>Edit Profile</Text>
-                                <Text style={styles.panelSubtitle}>버튼을 눌러 선택하세요!</Text>
-                            </View>
-                            <TouchableOpacity style={styles.panelButton} onPress={() => props.navi.navigate('ReName')}> 
-                                <Text style={styles.panelButtonTitle}>이름 수정</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.panelButton} onPress={() => {props.importFromCamera()}}>
-                                <Text style={styles.panelButtonTitle}>카메라</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.panelButton} onPress={() => {props.importFromAlbum()}}>
-                                <Text style={styles.panelButtonTitle}>앨범에서 가져오기</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.panelButton}
-                                onPress={toggleUpdateProfileView}>
-                                <Text style={styles.panelButtonTitle}>Cancel</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </BottomSheet>
+        <Container>
+            {/* Eit profile */}
+            <BottomSheet
+                visible={menuVisible}
+                onBackButtonPress={toggleUpdateProfileView}
+                onBackdropPress={toggleUpdateProfileView}
+            >
+                <View style={styles.panel}>
+                    <View style={{alignItems: 'center'}}>
+                        <Text style={styles.panelTitle}>Edit Profile</Text>
+                        <Text style={styles.panelSubtitle}>버튼을 눌러 선택하세요!</Text>
+                    </View>
+                    <TouchableOpacity style={styles.panelButton} onPress={() => props.navi.navigate('ReName')}> 
+                        <Text style={styles.panelButtonTitle}>이름 수정</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.panelButton} onPress={() => {props.importFromCamera()}}>
+                        <Text style={styles.panelButtonTitle}>카메라</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.panelButton} onPress={() => {props.importFromAlbum()}}>
+                        <Text style={styles.panelButtonTitle}>앨범에서 가져오기</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={styles.panelButton}
+                        onPress={toggleUpdateProfileView}>
+                        <Text style={styles.panelButtonTitle}>Cancel</Text>
+                    </TouchableOpacity>
                 </View>
-                <View style={styles.container}>
-                    <BottomSheet
-                            visible={withdrawalVisible}
-                            onBackButtonPress={togglewithdrawalView}
-                            onBackdropPress={togglewithdrawalView}
-                        >
-                            <View style={styles.panel}>
-                                <View style={{alignItems: 'center'}}>
-                                    <Text style={styles.panelTitle}>회원 탈퇴</Text>
-                                    <Text style={styles.panelSubtitle}>정말 탈퇴하시겠어요?</Text>
-                                </View>
-                                <TouchableOpacity style={styles.panelButton} onPress={() => props.withdrawal()}>
-                                    {/* props.withdrawal()  togglewithdrawalView */}
-                                    <Text style={styles.panelButtonTitle}>예</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.panelButton} onPress={() => togglewithdrawalView()}>
-                                    <Text style={styles.panelButtonTitle}>아니요</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </BottomSheet>
-                </View>
-            </SafeAreaView>
-            
+            </BottomSheet>
 
-            {/* <SafeAreaView style={styles.container}>
-                <View style={styles.container}>
-                    
+            {/* Membership Withdrawal */}
+            <BottomSheet
+                visible={withdrawalVisible}
+                onBackButtonPress={togglewithdrawalView}
+                onBackdropPress={togglewithdrawalView}
+            >
+                <View style={styles.panel}>
+                    <View style={{alignItems: 'center'}}>
+                        <Text style={styles.panelTitle}>회원 탈퇴</Text>
+                        <Text style={styles.panelSubtitle}>정말 탈퇴하시겠어요?</Text>
+                    </View>
+                    <TouchableOpacity style={styles.panelButton} onPress={() => props.withdrawal()}>
+                        {/* props.withdrawal()  togglewithdrawalView */}
+                        <Text style={styles.panelButtonTitle}>예</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.panelButton} onPress={() => togglewithdrawalView()}>
+                        <Text style={styles.panelButtonTitle}>아니요</Text>
+                    </TouchableOpacity>
                 </View>
-            </SafeAreaView> */}
+            </BottomSheet>
             
             <TouchableOpacity onPress={toggleUpdateProfileView}>
                 <View style={styles.userRow}>
-                <View style={styles.userImage}>
-                    <Avatar
-                        rounded
-                        size="large"
-                        source={{uri: props.url}}
-                    />
+                    <View style={styles.userImage}>
+                        <Avatar
+                            rounded
+                            size="large"
+                            source={{uri: props.url}}
+                        />
+                    </View>
+                    <View>
+                        <Text style={{ fontSize: 16 }}>{props.nickname}</Text>
+                        <Text
+                        style={{
+                            color: 'gray',
+                            fontSize: 16,
+                        }}
+                        >
+                        {props.email}
+                        </Text>
+                    </View>
+                    <View style={{textAlign: 'right', padding: 40}}>
+                        <Chevron  />
+                    </View>
                 </View>
-                <View>
-                    <Text style={{ fontSize: 16 }}>{props.nickname}</Text>
-                    <Text
-                    style={{
-                        color: 'gray',
-                        fontSize: 16,
-                    }}
-                    >
-                    {props.email}
-                    </Text>
-                </View>
-                <View style={{textAlign: 'right', padding: 40}}>
-                    <Chevron  />
-                </View>
-                </View>
-                
-                
             </TouchableOpacity>
         
-            
             <InfoText text="Account" />
             <View>
                 <ListItem
                 hideChevron
                 title="알림 설정"
                 containerStyle={styles.listItemContainer}
-                rightElement={
-                    <Switch
-                    onValueChange={() => setPushNotifications(!pushNotifications)}
-                    value={pushNotifications}
-                    />
-                }
+                // rightElement={
+                    // <Switch
+                    //     onValueChange={() => {launchSettings(); console.log(1);}} //setPushNotifications(!pushNotifications)
+                    //     value={pushNotifications}
+                    // />
+                // }
+                rightIcon={<Chevron />}
                 leftIcon={
                     <BaseIcon
                     containerStyle={{
@@ -212,22 +181,23 @@ export default SettingsScreen = (props) => {
                 rightIcon={<Chevron />}
                 />
             </View>
+
             <InfoText text="More" />
             <View>
                 <ListItem
-                title="About US"
-                onPress={() => console.log('About US')}
-                containerStyle={styles.listItemContainer}
-                leftIcon={
-                    <BaseIcon
-                    containerStyle={{ backgroundColor: '#A4C8F0' }}
-                    icon={{
-                        type: 'ionicon',
-                        name: 'md-information-circle',
-                    }}
-                    />
-                }
-                rightIcon={<Chevron />}
+                    title="About US"
+                    onPress={() => console.log('About US')}
+                    containerStyle={styles.listItemContainer}
+                    leftIcon={
+                        <BaseIcon
+                        containerStyle={{ backgroundColor: '#A4C8F0' }}
+                        icon={{
+                            type: 'ionicon',
+                            name: 'md-information-circle',
+                        }}
+                        />
+                    }
+                    rightIcon={<Chevron />}
                 />
                 <ListItem
                 title="Share our App"
@@ -285,7 +255,7 @@ export default SettingsScreen = (props) => {
                 rightIcon={<Chevron />}
                 />
             </View>
-        </ScrollView>
+        </Container>
     )
 }
 const styles = StyleSheet.create({
@@ -332,25 +302,12 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: 'white',
     },
-
-
-    container: {
-        flex: 1,
-        margin: 2,
+    bottomNavigationView: {
+        backgroundColor: '#fff',
+        width: '100%',
+        height: 250,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#E0F7FA',
-    },
-    bottomNavigationView: {
-    backgroundColor: '#fff',
-    width: '100%',
-    height: 250,
-    justifyContent: 'center',
-    alignItems: 'center',
-    },
-    
-    scroll: {
-        backgroundColor: 'white',
     },
     userRow: {
         alignItems: 'center',

@@ -49,7 +49,7 @@ export default ErrandRating = (props) => {
                     </View>
 
                     <View style={styles.profileWrap}>
-                        <View style={{flexDirection: 'row', marginRight: 80}}>
+                        <View style={{flexDirection: 'row', marginRight: 80, alignItems: 'center'}}>
                             {/* Errander 프로필 사진 */}
                             <Avatar 
                                 rounded
@@ -108,10 +108,12 @@ export default ErrandRating = (props) => {
                             max={4.5}
                             step={0.5}
                             snapped={true}
+                            // enableLabel={true}
                             trackStyle={{height: 30, backgroundColor: '#d1d1d1'}}
                             selectedStyle={{backgroundColor: 'orange'}}
                             unselectedStyle={{backgroundColor: '#e0e0e0'}}
                             customMarker={() => (<Icon name="edit" size={34} color='black' style={styles.ratingSliderBar}/>)}
+                            // customLabel={CustomLabel}
                         />
 
                         <Animated.View style={{opacity: opacityAnim, transform: [{scale: scaleAnim}]}}>
