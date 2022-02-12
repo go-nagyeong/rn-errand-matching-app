@@ -52,7 +52,7 @@ export default RenderItem = ({ item }) => {
         기타: ['lightgray', 'ellipsis1']
     }
     return (
-        <TouchableOpacity title={item.title  +  ' ' + item.content} onPress={() => { navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : grade, price : item.price, }) }} >  
+        <TouchableOpacity title={item.title  +  ' ' + item.content} onPress={() => { navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : grade, price : item.price, email : item.writerEmail, id : item.id}) }} >  
             <View style={{flexDirection: 'row', backgroundColor: '#fff', height: 100, marginBottom: 15, padding: 15, borderRadius: 10}}>
                 {/* 카테고리 아이콘 */}
                 <View style={{backgroundColor: categoryIconStyle[item.category][0], borderRadius: 30, padding: 10, marginRight: 15, alignSelf: 'center'}}>

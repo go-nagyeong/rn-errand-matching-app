@@ -85,7 +85,9 @@ export default SelectStartDate = (props) => {
         writer: user.displayName,
         writerEmail: user.email,
         writerGrade: userGrade,
-        process: "regist" // regist, matching, finished
+        process: "regist", // regist > request > matching > finished
+        errander: "",
+        erranderEmail: ""
       })
       .then(() => {
           const increment = firestore.FieldValue.increment(1);
