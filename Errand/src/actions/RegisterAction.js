@@ -115,6 +115,8 @@ export default RegisterAction = (props) => {
                     email: email,
                     nickname: nickname,
                     grade: 2.3,
+                    grade_t: 2.3,
+                    grade_n: 1,
                 })
                 .then(() => console.log('User added!'))
                 .catch(error => console.error(error));

@@ -83,14 +83,30 @@ export default MyErrandAction = () => {
         .catch(e => console.log(e));
     }
 
+
     const addScore = (score) => {
-        let total = Math.round((erranderGradeNum + (score*0.02)) * 100) / 100
+        firestore()
+        .collection('Users')
+        .doc(erranderEmail)
+        .get()
+        .then(documentSnapshot => {
+            let grade_t = documentSnapshot.data()['grade_t']
+            let grade_n = documentSnapshot.data()['grade_n']
+            let newGrade = Math.round(((grade_t+score) / (grade_n+1)) * 100) / 100
+            giveGrades(score, newGrade)
+        })
+    }
+    const giveGrades = (score, newGrade) => {
+        const grade_t_increment = firestore.FieldValue.increment(score);
+        const grade_n_increment = firestore.FieldValue.increment(1);
 
         firestore()
         .collection('Users')
         .doc(erranderEmail)
         .update({
-            grade: total,
+            grade_t: grade_t_increment,
+            grade_n: grade_n_increment,
+            grade: newGrade,
         })
         .then(() => {
             console.log('errand grade updated')
