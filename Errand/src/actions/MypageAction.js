@@ -48,26 +48,51 @@ export default MypageAction = (props) => {
     }
 
     const withdrawal = () => {
-      const users = firestore().collection('Users').doc(email);
       // firestore에서 삭제
+      const users = firestore().collection('Users').doc(email);
       users.delete()
       .then(() => {
-        console.log('계정 삭제 완료')
+        console.log('Users 계정 삭제 완료')
       })
       .catch((err) => {
         console.log('error :', err)
       })
+      
       // authentification에서 삭제
       var user = auth().currentUser;
-      console.log('탈퇴')
       user.delete()
       .then(() => {
-        console.log('계정이 삭제되었어요')
+        console.log('Auth 계정 삭제 완료')
       })
       .catch((error) => {
         console.log('error : ', error)
+        if (error.code === 'auth/requires-recent-login') {
+          Alert.prompt(
+            "비밀번호 재인증",
+            "비밀번호 재인증이 필요합니다. 비밀번호를 입력해주세요.",
+            [
+              {
+                text: "취소",
+                onPress: () => console.log("Cancel Pressed"),
+                style: "cancel"
+              },
+              {
+                text: "확인",
+                onPress: password => {
+                  const credential = auth.EmailAuthProvider.credential(user.email, password);
+                  user
+                  .reauthenticateWithCredential(credential)
+                  .then(() => withdrawal())
+                  .catch(error => console.log(error));
+                },
+              }
+            ],
+            "secure-text"
+          );
+        }
       })
     }
+
     // nickname 변수를 ReNameScreen에 전달해서 수정할 순 없을까? (그렇다면 refresh 없이도 자동 업데이트 가능)
     // 사용 x
     const updateNickname = () => {
