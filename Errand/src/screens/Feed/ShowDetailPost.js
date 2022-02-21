@@ -17,62 +17,109 @@ export default ShowDetailPost = (props) => {
 
   const [profileUrl, setProfileUrl] = useState(null)
 
-  const [confirmProcess, setConfirmProcess] = useState("")
+  // 해당 게시물에 다른 사람의 요청이 들어가있는지 체크
+  const [processIsRequested, setProcessIsRequested] = useState(false)
+  // 본인 게시물인지 체크
+  const [confirmMyPost, setConfirmMyPost] = useState(false)
+  // 진행중인 다른 심부름 존재 여부 체크
+  const [isOtherErrander, setIsOtherErrander] = useState(false)
 
-  const [confirmMyPost, setConfirmMyPost] = useState("")
+
+  useEffect(() => {
+     // 게시물 사진과 작성자 사진 로드
+     storage()
+     .ref('Posts/' + title)
+     .getDownloadURL()
+     .then((url) => {
+       console.log('게시물 이미지를 다운로드 하였습니다')
+       setUrl(url)
+     })
+     .catch((e) => console.log('게시물 사진 다운로드 실패 => ', e));
+ 
+     storage()
+     .ref('Users/' + confirmMyPost)
+     .getDownloadURL()
+     .then((url) => {
+       console.log('사용자 이미지를 다운로드 하였습니다')
+       setProfileUrl(url)
+     })
+     .catch((e) => console.log('사용자 사진 다운로드 실패 => ', e));
+
+    // 해당 심부름의 진행 상태와 작성자 확인
+    firestore()
+    .collection('Posts')
+    .doc(id.toString())
+    .onSnapshot(doc => {
+      if (doc.data()['process'] === 'request') {
+        setProcessIsRequested(true)
+      } else {
+        setProcessIsRequested(false)
+      }
+      if (doc.data()['writerEmail'] === auth().currentUser.email) {
+        setConfirmMyPost(true)
+      } else {
+        setConfirmMyPost(false)
+      }
+    })
+
+    // 사용자가 현재 다른 심부름을 하고 있는지 확인
+    firestore()
+    .collection('Posts')
+    .where('erranderEmail', '==', auth().currentUser.email)
+    .get()
+    .then(querySnapshot => {
+      if (querySnapshot.size >= 1) {
+        setIsOtherErrander(true)
+      } else {
+        setIsOtherErrander(false)
+      }
+    })
+  }, [])
+
+
+  const requestErrand = () => {
+    firestore()
+    .collection('Posts')
+    .doc(id.toString())
+    .update({
+      process: "request",
+      erranderEmail: auth().currentUser.email,
+      errander: auth().currentUser.displayName,
+    })
+    .then(() => {
+      Alert.alert(
+        "심부름 수행 요청 완료",
+        "요청이 전송되었습니다.\n심부름을 진행해 주세요!",
+        [{
+          text: "확인",
+          onPress: () => props.navigation.navigate('Home'),
+          style: "cancel",
+        }],
+      );
+    })
+    .catch(err => { console.log(err) })
+  }
 
   const updatePostState = () => {
-    if (confirmProcess !== "matching" && confirmProcess == "regist") {
-      if (confirmMyPost !== auth().currentUser.email) {
+    if (!processIsRequested) {
+
+      if (!isOtherErrander){
         Alert.alert(
           "심부름 수행 요청",
           "심부름 요청을 수행하셨습니다.\n정말로 진행하시겠습니까?",
           [{
             text: "확인",
-            onPress: () => {
-              // 프로세스 matching 변경, errander 추가
-              firestore()
-                .collection('Posts')
-                .doc(id.toString())
-                .update({
-                  'process': "matching",
-                  'erranderEmail': auth().currentUser.email,
-                })
-                .then(() => {
-                  Alert.alert(
-                    "심부름 수행 요청 완료",
-                    "요청이 전송되었습니다.\n심부름을 진행해 주세요!",
-                    [{
-                      text: "확인",
-                      onPress: () => props.navigation.navigate('Home'),
-                      style: "cancel",
-                    }],
-                  );
-                })
-                .catch(err => { console.log(err) })
-            },
+            onPress: () => requestErrand(),
             style: "default",
           }, {
             text: "취소",
-            onPress: () => { 
-              Alert.alert(
-                "심부름 수행 요청 취소",
-                "요청을 취소 하였습니다.",
-                [{
-                  text: "확인",
-                  style: "cancel",
-                }],
-              );
-            },
             style: "default",
-          }
-          ],
+          }],
         );
-      }
-      else {
+      } else {
         Alert.alert(
-          "나의 심부름은 진행할 수 없습니다.",
-          "심부름을 진행하기 위해서\n다른 심부름을 진행해 주세요.",
+          "진행중인 심부름이 존재합니다.",
+          "다른 심부름을 먼저 진행해 주세요.",
           [{
             text: "확인",
             onPress: () => props.navigation.navigate('Home'),
@@ -80,11 +127,11 @@ export default ShowDetailPost = (props) => {
           }],
         );
       }
-    }
-    else {
+
+    } else {
       Alert.alert(
         "심부름 수행 요청 실패",
-        "이미 매칭된 심부름 입니다.\n다른 심부름을 이용해 주세요.",
+        "다른 사용자가 요청중인 심부름입니다.\n다른 심부름을 이용해 주세요.",
         [{
           text: "확인",
           onPress: () => props.navigation.navigate('Home'),
@@ -93,42 +140,6 @@ export default ShowDetailPost = (props) => {
       );
     }
   }
-
-  // 프로세스 확인, 나의 게시글인지 확인
-  useEffect(() => {
-    firestore()
-    .collection('Posts')
-    .doc(id.toString())
-    .onSnapshot(doc => {
-      setConfirmProcess(doc.data()['process'])
-      setConfirmMyPost(doc.data()['writerEmail'])
-    })
-
-    storage()
-    .ref('Posts/' + title)
-    .getDownloadURL()
-    .then((url) => {
-      console.log('이미지를 다운로드 하였습니다')
-      setUrl(url)
-    })
-    .catch((e) => console.log('게시물 사진 다운로드 실패 => ', e));
-
-    storage()
-    .ref('Users/' + email)
-    .getDownloadURL()
-    .then((url) => {
-      console.log('이미지를 다운로드 하였습니다')
-      setProfileUrl(url)
-    })
-    .catch((e) => console.log('사용자 사진 다운로드 실패 => ', e));
-  }, [])
-
-  useEffect(() => {
-    console.log('프로세스 진행 여부 :', confirmProcess)
-  }, [confirmProcess])
-  useEffect(() => {
-    console.log('나의 게시글 확인 용도 :', confirmMyPost)
-  }, [confirmMyPost])
 
   return (
     <Container>
@@ -145,7 +156,7 @@ export default ShowDetailPost = (props) => {
         <View>
           <Text style={{ fontSize: 16 }}>{writerName} {writergrade}</Text>
           <Text style={{ color: 'gray', fontSize: 16, }} >
-            {email}
+            {confirmMyPost}
           </Text>
         </View>
       </View>
@@ -164,9 +175,9 @@ export default ShowDetailPost = (props) => {
       </View>
       
       <View style={styles.titleWrapper}>
-        <TouchableOpacity onPress={() => {
-          updatePostState()
-        }} >
+        {/* 테스트를 위해 내 심부름도 일단 요청 가능하게 */}
+        {/* <TouchableOpacity onPress={() => updatePostState()} disabled={confirmMyPost} > */}
+        <TouchableOpacity onPress={() => updatePostState()} >
 
           <Text> 심부름 수행하기 </Text>
         </TouchableOpacity>
