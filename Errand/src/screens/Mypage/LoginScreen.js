@@ -4,7 +4,7 @@ import { TextInput } from 'react-native-paper';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
-import Container from '../components/Container';
+import Container from '../../components/Container';
 
 export default LoginScreen = (props) => {
   const [emailFocus, setEmailFocus] = useState(false);

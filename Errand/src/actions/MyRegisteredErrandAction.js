@@ -1,10 +1,10 @@
 import React, { Component, useState, useEffect, useCallback } from 'react'
-import { SafeAreaView, ScrollView, Switch, StyleSheet, Text, View, LogBox, RefreshControl, TouchableOpacity } from 'react-native'
+import { SafeAreaView, ScrollView, Switch, StyleSheet, Text, View, RefreshControl, TouchableOpacity } from 'react-native'
 
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
-import MyRegisteredErrandScreen from '../screens/MyRegisteredErrandScreen'
+import MyRegisteredErrandScreen from '../screens/Mypage/MyRegisteredErrandScreen'
 
 
 
@@ -15,7 +15,7 @@ export default MyRegisteredErrandAction = (props) => {
     const [completedPosts, setCompletedPosts] = useState();
     
     const CompletedErrand = () => {
-        let data = query.where('process', '==', 'completed')
+        let data = query.where('process', '==', 'finished')
         
         data
         .limit(7)

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Fontisto';
 
-import Container from '../components/Container';
+import Container from '../../components/Container';
 
 export default FindPassword = (props) => {
     const [email, setEmail] = useState('');

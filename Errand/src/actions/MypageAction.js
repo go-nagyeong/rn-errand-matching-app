@@ -5,7 +5,7 @@ import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker'; // Migration from 2.x.x to 3.x.x => showImagePicker API is removed.
 
-import MypageScreen from '../screens/MypageScreen'
+import MypageScreen from '../screens/Mypage/MypageScreen'
 
 export default MypageAction = (props) => {
     console.log('설정 액션 화면입니다')

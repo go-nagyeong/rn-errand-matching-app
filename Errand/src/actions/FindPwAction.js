@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import auth from '@react-native-firebase/auth';
 
-import FindPassword from '../screens/FindPassword';
+import FindPassword from '../screens/Mypage/FindPassword';
 
 export default FindPwAction = (props) => {
     const [err, setErr] = useState('');

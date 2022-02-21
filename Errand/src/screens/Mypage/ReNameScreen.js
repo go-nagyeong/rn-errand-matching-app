@@ -4,11 +4,12 @@ import { TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Fontisto';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
-import Container from '../components/Container';
+import Container from '../../components/Container';
 
 export default ReNameScreen = (props) => {
     console.log('이름 수정 페이지 입니다');
     const [name, setName] = useState('');
+    //var admin = require('firebase-admin');*
     return (
         <Container>
             <View style={styles.titleWrapper}>

@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
-import Container from '../components/Container';
+import Container from '../../components/Container';
 
 export default RegisterScreen = (props) => {
   const [nicknameFocus, setNicknameFocus] = useState(false);

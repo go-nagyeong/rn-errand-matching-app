@@ -1,17 +1,18 @@
 import React, { Component, useState, useEffect, useCallback, setState } from 'react'
-import { SafeAreaView, ScrollView, Switch, StyleSheet, Text, View, LogBox, RefreshControl, TouchableOpacity, Linking, Alert } from 'react-native'
+import { SafeAreaView, ScrollView, Switch, StyleSheet, Text, View, RefreshControl, TouchableOpacity, Linking, Alert } from 'react-native'
 // Settings UI
 import { Avatar, ListItem } from 'react-native-elements'
-import BaseIcon from '../components/Icon'
-import Chevron from '../components/Chevron'
-import InfoText from '../components/InfoText'
+import BaseIcon from '../../components/Icon'
+import Chevron from '../../components/Chevron'
+import InfoText from '../../components/InfoText'
 // Edit profile menu
 import { BottomSheet } from 'react-native-btr';
 
-import Container from '../components/Container'
+import Container from '../../components/Container'
 
-// Ignore Warnings
-LogBox.ignoreLogs(['Warning: ...']);
+// import {checkNotifications, requestNotifications, openSettings} from 'react-native-permissions';
+// import {PushNotificationPermissions, PushNotification} from 'react-native-push-notification';
+// import messaging from '@react-native-firebase/messaging';
 
 // Main
 export default SettingsScreen = (props) => {
@@ -20,6 +21,19 @@ export default SettingsScreen = (props) => {
     const [menuVisible, setMenuVisible] = useState(false); // edit profile Menu
     const [withdrawalVisible, setwithdrawalVisible] = useState(false) // withdrawal Menu
 
+    
+    // Notification settings
+    // const [pushNotifications, setPushNotifications] = useState(true)
+    
+    // [foreground] 알림 수신 되었을 때 alert
+    // useEffect(() => {
+    //     const unsubscribe = messaging().onMessage(async remoteMessage => {
+    //       Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    //     });
+    
+    //     return unsubscribe;
+    //   }, []);
+    
     // 프로필 수정 메뉴 (Bottom sheet)
     const toggleUpdateProfileView = () => {
         setMenuVisible(!menuVisible);
@@ -29,6 +43,14 @@ export default SettingsScreen = (props) => {
         console.log(!withdrawalVisible)
         setwithdrawalVisible(!withdrawalVisible)
     };
+    
+    // const launchSettings = () => {
+    //     if(Platform.OS === 'ios'){
+    //         Linking.openURL('app-settings://')
+    //     }else{
+    //         Linking.openSettings();
+    //     }
+    // }
 
     return (
         <Container>
@@ -119,6 +141,7 @@ export default SettingsScreen = (props) => {
                     //     value={pushNotifications}
                     // />
                 // }
+                // onPress={() => {launchSettings();}}
                 rightIcon={<Chevron />}
                 leftIcon={
                     <BaseIcon
@@ -341,3 +364,29 @@ const styles = StyleSheet.create({
         borderColor: '#ECECEC',
     },
 })
+
+
+    // checkNotifications().then(({status, settings}) => {
+    //         if (status == 'granted') {
+    //         console.log(status, settings);
+    //         this.setState({
+    //             notification: false
+    //         })
+    //         console.log(status, settings);
+    //     }
+    // });
+
+    // requestNotifications(['alert']).then(({status, settings}) => {
+    //     if (status == 'granted') {
+    //         console.log(status, settings);
+    //         this.setState({
+    //             notification: false
+    //         })
+    //         console.log(status, settings);
+    //     }
+
+    // });
+    // 앱 설정 이동
+    // openSettings().catch(() => console.warn('cannot open settings'));
+
+    // PushNotificationPermissions();
