@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {Platform, View, Text, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
+import firestore from '@react-native-firebase/firestore';
 import Moment from 'moment';
 import 'moment/locale/ko';
 import { useNavigation } from '@react-navigation/native';
@@ -9,31 +10,42 @@ import { useNavigation } from '@react-navigation/native';
 export default RenderItem = ({ item }) => {
     const navigation = useNavigation()
 
+    const [writerGrade, setWriterGrade] = useState(0)
+
+    firestore()
+    .collection('Users')
+    .doc(item.writerEmail)
+    .onSnapshot(doc => {
+        if (doc.exists) {
+            setWriterGrade(doc.data()['grade'])
+        }
+    })
+
     let grade = '',
         gradeColor = '';
 
-    if (item.writerGrade >= 4.1) {
+    if (writerGrade >= 4.1) {
         grade = 'A+';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 3.6) {
+    } else if (writerGrade >= 3.6) {
         grade = 'A0';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 3.1) {
+    } else if (writerGrade >= 3.1) {
         grade = 'B+';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 2.6) {
+    } else if (writerGrade >= 2.6) {
         grade = 'B0';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 2.1) {
+    } else if (writerGrade >= 2.1) {
         grade = 'C+';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 1.6) {
+    } else if (writerGrade >= 1.6) {
         grade = 'C0';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 1.1) {
+    } else if (writerGrade >= 1.1) {
         grade = 'D+';
         gradeColor = '#EB4E3D';
-    } else if (item.writerGrade >= 0.6) {
+    } else if (writerGrade >= 0.6) {
         grade = 'D0';
         gradeColor = '#EB4E3D';
     } else {
@@ -52,7 +64,7 @@ export default RenderItem = ({ item }) => {
         기타: ['lightgray', 'ellipsis1']
     }
     return (
-        <TouchableOpacity title={item.title  +  ' ' + item.content} onPress={() => { navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : grade, price : item.price, email : item.writerEmail, id : item.id}) }} >  
+        <TouchableOpacity   title = { item.title  +  ' ' + item.content }   onPress={() => { navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : grade, price : item.price, email : item.writerEmail, id : item.id }) }} >  
             <View style={{flexDirection: 'row', backgroundColor: '#fff', height: 100, marginBottom: 15, padding: 15, borderRadius: 10}}>
                 {/* 카테고리 아이콘 */}
                 <View style={{backgroundColor: categoryIconStyle[item.category][0], borderRadius: 30, padding: 10, marginRight: 15, alignSelf: 'center'}}>

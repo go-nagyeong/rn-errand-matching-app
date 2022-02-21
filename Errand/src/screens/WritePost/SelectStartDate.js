@@ -86,7 +86,6 @@ export default SelectStartDate = (props) => {
         endDate: new Date(endDate),
         writer: user.displayName,
         writerEmail: user.email,
-        writerGrade: userGrade,
         process: "regist", // regist > request > matching > finished
         errander: "",
         erranderEmail: ""
