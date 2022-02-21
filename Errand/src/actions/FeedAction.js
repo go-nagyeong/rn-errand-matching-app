@@ -21,7 +21,7 @@ export default FeedAction = (props) => {
     // const [priceRange, setPriceRange] = useState([0,5000])
     const [priceRange, setPriceRange] = useState([0,1000,2000,3000,4000,5000])
 
-    const post = firestore().collection('Posts')
+    const post = firestore().collection('Posts').where('process', 'in', ['regist', 'request'])
     // .where('price', '>=', priceRange[0]).where('price', '<=', priceRange[1])
     // .where('price', 'in', priceRange)
     const posts = isSelectCategory 
