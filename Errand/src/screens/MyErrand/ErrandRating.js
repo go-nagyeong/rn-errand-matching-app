@@ -4,14 +4,18 @@ import { Avatar } from 'react-native-elements';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
+import firestore from '@react-native-firebase/firestore';
+import { useNavigation } from '@react-navigation/native';
 
 export default ErrandRating = (props) => {
+    const navigation = useNavigation()
+
     const [rating, setRating] = useState([4.5])
     const [grade, setGrade] = useState('')
 
     const [opacityAnim, setOpacityAnim] = useState(new Animated.Value(0));
     const [scaleAnim, setScaleAnim] = useState(new Animated.Value(3));
-    
+
     const giveMarks = () => {
         Animated.parallel([
             Animated.timing(opacityAnim, {
@@ -31,6 +35,50 @@ export default ErrandRating = (props) => {
     const resetMarks = () => {
         setOpacityAnim(new Animated.Value(0));
         setScaleAnim(new Animated.Value(3));
+    }
+
+
+    const addScore = (score) => {
+        firestore()
+            .collection('Users')
+            .doc(props.erranderEmail)
+            .get()
+            .then(documentSnapshot => {
+                let grade_t = documentSnapshot.data()['grade_t']
+                let grade_n = documentSnapshot.data()['grade_n']
+                let newGrade = Math.round(((grade_t + score) / (grade_n + 1)) * 100) / 100
+                giveGrades(score, newGrade)
+            })
+    }
+    const giveGrades = (score, newGrade) => {
+        const grade_t_increment = firestore.FieldValue.increment(score);
+        const grade_n_increment = firestore.FieldValue.increment(1);
+
+        firestore()
+            .collection('Users')
+            .doc(props.erranderEmail)
+            .update({
+                grade_t: grade_t_increment,
+                grade_n: grade_n_increment,
+                grade: newGrade,
+            })
+            .then(() => {
+                console.log('errand grade updated')
+                finishErrand()
+            })
+    }
+    const finishErrand = () => {
+        firestore()
+            .collection('Posts')
+            .doc(props.id.toString())
+            .update({
+              process: "finished",
+            })
+            .then(() => {
+                props.onRequestClose()
+                navigation.navigate('MyErrand')
+            })
+            .catch(err => { console.log(err) })
     }
 
     return (
@@ -54,7 +102,7 @@ export default ErrandRating = (props) => {
                             <Avatar 
                                 rounded
                                 size="medium"
-                                source={{uri: props.erranderInfo[2]}} 
+                                source={{uri: props.erranderImage}} 
                                 overlayContainerStyle={{backgroundColor: 'lightgray'}}
                                 containerStyle={{marginRight: 12}}
                             /> 
@@ -62,12 +110,12 @@ export default ErrandRating = (props) => {
                             {/* Errander 닉네임, 등급 */}
                             <View style={{flexDirection: 'column'}}>
                                 <Text style={{fontSize: 16, fontWeight: '700', color: '#090909', marginBottom: 8}}>
-                                    {props.erranderInfo[0]}
+                                    {props.errander}
                                 </Text>
                                 <View style={{flexDirection: 'row'}}>
                                     <FIcon name="graduation-cap" size={16} color="#4CA374" style={{marginRight: 4}}/>
                                     <Text style={{fontSize: 14, fontFamily: 'Roboto-Medium', color: 'black'}}>
-                                        {props.erranderInfo[1]}
+                                        {props.erranderGrade}
                                     </Text>
                                 </View>
                             </View>
@@ -122,7 +170,7 @@ export default ErrandRating = (props) => {
                     </View>
 
                     <View style={styles.submitWrap}>
-                        <TouchableOpacity style={styles.submitButton} onPress={() => props.addScore(rating[0])}>
+                        <TouchableOpacity style={styles.submitButton} onPress={() => addScore(rating[0])}>
                             <Text style={styles.submitButtonText}>심부름 완료</Text>
                         </TouchableOpacity>
                     </View>

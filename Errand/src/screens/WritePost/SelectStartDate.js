@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Platform, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage';
 import {LocaleConfig, Calendar} from 'react-native-calendars';
 
 import Container from '../../components/Container';
 
 export default SelectStartDate = (props) => {
-  const { category, price, title, content } = props.route.params;
+  const { category, price, title, content, uploadUri } = props.route.params;
 
   LocaleConfig.locales['fr'] = {
     monthNames: [
@@ -72,6 +73,7 @@ export default SelectStartDate = (props) => {
   const addPostData = () => {
     if(startDate) {
       var id = docID.toString();
+
       posts
       .doc(id)
       .set({
@@ -97,6 +99,13 @@ export default SelectStartDate = (props) => {
           console.log('post added!');
       })
       .catch(error => {console.error(error);})
+
+      storage()
+      .ref('Posts/'+ id)
+      .putFile(uploadUri)
+      .on('state_changed', taskSnapshot => {
+          console.log(taskSnapshot.state);
+      })
 
     } else {
       alert("선택해 주세요.")

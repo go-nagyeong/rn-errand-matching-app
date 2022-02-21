@@ -6,10 +6,10 @@ import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import auth from '@react-native-firebase/auth';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import Container from '../../components/Container';
-import storage from '@react-native-firebase/storage';
 
 export default WriteContent = (props) => {
   const [content, setContent] = useState("");
+  const [uploadUri, setUploadUri] = useState("");
   
   const [contentFocus, setContentFocus] = useState("");
   
@@ -17,7 +17,7 @@ export default WriteContent = (props) => {
 
   const onPress = () => {
     if(content){
-      props.navigation.navigate('SelectStartDate', {category: category, price: price, title: title, content: content, })
+      props.navigation.navigate('SelectStartDate', {category: category, price: price, title: title, content: content, uploadUri: uploadUri, })
     }
     else{
       alert("최소 한글자 이상 작성해 주세요.")
@@ -48,23 +48,7 @@ export default WriteContent = (props) => {
       } else {
         const source = response['assets'][0]['uri']; 
         const filename = source.substring(source.lastIndexOf('/') + 1);
-        const uploadUri = Platform.OS === 'ios' ? source.replace('file://', '') : source;
-
-        const task = storage()
-            .ref('Posts/'+ title) // storage에 저장될 경로
-            .putFile(uploadUri); // 보낼 이미지의 경로
-                // set progress state
-        task.on('state_changed', taskSnapshot => {
-            console.log(taskSnapshot.state);
-        });
-        task.then(() => {
-            console.log('Task complete');
-            // firebase에서 이미지 다운로드
-            //downloadImg()
-        })
-        .catch((error) => {
-            console.error(error.message);
-        });
+        setUploadUri(Platform.OS === 'ios' ? source.replace('file://', '') : source)
       } 
     });
   };
