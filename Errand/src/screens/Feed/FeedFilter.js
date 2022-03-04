@@ -38,7 +38,6 @@ export default FilterModal = (props) => {
         {en: 'id', ko: '작성순'},
         {en: 'endDate', ko: '마감일순'}, 
         {en: 'price', ko: '금액순'}, 
-        {en: 'writerGrade', ko: '성적순'}
     ]
     const sortButton = columns.map((col, index) => {
         return (
