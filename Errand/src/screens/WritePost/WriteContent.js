@@ -1,34 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Platform, StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
-import { TextInput } from 'react-native-paper';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import AntDesignIcon from 'react-native-vector-icons/AntDesign';
-import auth from '@react-native-firebase/auth';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, TextInput } from 'react-native';
+import Icon from 'react-native-vector-icons/AntDesign';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+
 import Container from '../../components/Container';
+import SpeechBalloon from '../../components/SpeechBalloon';
+import PostSubmitButton from '../../components/PostSubmitButton';
 
 export default WriteContent = (props) => {
   const [content, setContent] = useState("");
-  const [uploadUri, setUploadUri] = useState("");
-  
   const [contentFocus, setContentFocus] = useState("");
   
-  const { category, price, title } = props.route.params;
+  const [image, setImage] = useState("");
+  
+  const { color, category, price, title } = props.route.params;
 
-  const onPress = () => {
-    if(content){
-      props.navigation.navigate('SelectStartDate', {category: category, price: price, title: title, content: content, uploadUri: uploadUri, })
-    }
-    else{
-      alert("최소 한글자 이상 작성해 주세요.")
+  const writeContent = () => {
+    if (content) {
+      props.navigation.navigate('SelectStartDate', {color: color, category: category, price: price, title: title, content: content, image: image, })
+    } else {
+      alert("내용을 최소 한 글자 이상 작성해 주세요.")
     }
   }
 
-  const [image, setImage] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [transferred, setTransferred] = useState(0);
 
-  const selectImage =  async () => {
+  const selectImage =  () => {
     const options = {
       maxWidth: 2000,
       maxHeight: 2000,
@@ -38,7 +34,7 @@ export default WriteContent = (props) => {
       }
     };
 
-    await launchImageLibrary(options, response => {
+    launchImageLibrary(options, response => {
       if (response["didCancel"]) {
         console.log('User cancelled image picker');
       } else if (response.error) {
@@ -48,110 +44,78 @@ export default WriteContent = (props) => {
       } else {
         const source = response['assets'][0]['uri']; 
         const filename = source.substring(source.lastIndexOf('/') + 1);
-        setUploadUri(Platform.OS === 'ios' ? source.replace('file://', '') : source)
+        setImage(Platform.OS === 'ios' ? source.replace('file://', '') : source)
       } 
     });
   };
 
+  const speechBallon = (content) => (
+    <View style={styles.speechBalloon}>
+      <View style={styles.triangle}></View>
+      <View style={styles.oval}>
+        <Text style={styles.speechBalloonText}>{content}</Text>
+      </View>
+    </View>
+  )
+
   return (
     <Container>
-      <View style={styles.titleMargin}>
-        <View style={styles.titleWrapper}>
-            <Text style={styles.title}>내용</Text>
-            <Text style={styles.subTitle}>게시글의 내용을 작성해 주세요.</Text>
-        </View>
+       <View style={styles.previousState}>
+        <SpeechBalloon prev='category' content={category} />
+        <SpeechBalloon prev='price' content={price} />
+        <SpeechBalloon prev='title' content={title} />
+      </View>
 
+      <View style={styles.centerView}>
         <View style={styles.inputWrapper}>
-          <TextInput
-            style={[contentFocus ? styles.focusedInput : styles.input, {height:200, }]}
-            textAlignVertical="top"
-            multiline={true}
-            numberOfLines={4}
-            placeholder="Title"
+          <Icon name='right' size={20} color={contentFocus ? color : 'black'} />
+
+          <TextInput 
+            style={[styles.input, contentFocus && {fontWeight: '600'}]}
+            placeholder="내용 입력"
+            value={content}
             autoCapitalize='none'
             autoCorrect={false}
             autoFocus={true}
-            blurOnSubmit={false}
-            onFocus={() => {setContentFocus(true)}}
-            onBlur={() => {setContentFocus(false)}}
+            onFocus={() => setContentFocus(true)}
+            onBlur={() => setContentFocus(false)}
             onChangeText={text => setContent(text)}
-            selectionColor="#292929"
-            // react-native-paper
-            underlineColor='transparent'
-            activeUnderlineColor="transparent"
-            theme={{ roundness: 7, colors: {text: setContentFocus ? "black" : "#999899", placeholder: setContentFocus ? "transparent" : "#999899"} }}
-            left={<TextInput.Icon name={() => <AntDesignIcon name="right" size={20} color="#53B77C" />} />}
+            multiline={true}
+            returnKeyType="done"
           />
-              <TouchableOpacity style={styles.selectButton} onPress={selectImage}>
-                <Text style={styles.buttonText}>Pick an image</Text>
-              </TouchableOpacity>
-          <TouchableOpacity style={[{marginTop: 30, marginBottom: 100, alignItems: 'center', justifyContent: 'center'}]} onPress={() => onPress()}>
-            <Image
-              style = {styles.item}
-              source={require('../../assets/img/Ok.png')}
-            />
-          </TouchableOpacity>
         </View>
+
+        <TouchableOpacity style={[styles.imageUploadButton, {borderColor: image ? color : 'gray'}]} onPress={() => selectImage()}>
+          <Icon name='camera' size={20} color={image ? color : 'gray'} style={{marginLeft: 2, marginRight: 1}} />
+          <Icon name={image ? 'check' : 'close'} size={16} color={image ? color : 'gray'} />
+        </TouchableOpacity>
+
+        <PostSubmitButton backgroundColor={color} onPress={() => writeContent()}/>
       </View>
     </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  titleMargin: {
-    marginTop: "20%"
+  previousState: {
+    flex: 1,
+    paddingTop: 20,
+    marginBottom: 40,
   },
-  titleWrapper: {
-    marginTop: Platform.OS === "ios" ? "10%" : "5%",
-    marginBottom: 30,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontFamily: 'Roboto-Bold',
-    color: 'black',
-    fontSize: 24,
-    padding: 10,
-  },
-  subTitle: {
-    marginBottom: 20,
-    fontFamily: 'Roboto',
-    color: 'black',
-    fontSize: 18,
-    padding: 10,
+
+  centerView: {
+    flex: 1,
+    paddingHorizontal: 30,
   },
   inputWrapper: {
-    paddingHorizontal: 30,
-    marginBottom: 10,
-  },
-  input: {
-    backgroundColor: '#fff',
-    marginBottom: 12,
-  },
-  buttonWrapper: {
-    paddingHorizontal: 35,
-  },
-  squareButton: {
-    backgroundColor: '#53B77C',
-    paddingVertical: 13,
-    alignItems: 'center',
-    borderRadius: 5,
-  },
-  squareButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  textButtonText: {
-    color: "#53B77C",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  focusedInput: {
+    // alignItems: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 15,
+    paddingVertical: 20,
+    marginBottom: 15,
+
     backgroundColor: "#fff",
-    marginBottom: 12,
-    fontWeight: "600",
-    borderRadius: 7,
+    borderRadius: 10,
     ...Platform.select({
       ios: {
         shadowOpacity: 0.3,
@@ -163,32 +127,23 @@ const styles = StyleSheet.create({
       },
     })
   },
-  item: {
-    marginTop: "10%",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 50, 
-    height: 50, 
-  },
-});
-  
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
+  input: {
+    top: Platform.OS === 'ios' ? '-1.1%':'-0.5%',
+    width: '85%',
     fontSize: 16,
-    height: 50, 
-    width: 300, 
-    color: '#000000',
-    borderColor: '#000000', 
-    borderRadius: 12,
-    padding: 10
+    marginHorizontal: 10,
+    padding: 0,  // input 높이 맞추기 위해 안드로이드에만 있는 기본 padding 제거
   },
-  inputAndroid: {
-    fontSize: 16,
-    height: 50, 
-    width: 300, 
-    color: '#000000',
-    borderColor: '#000000', 
-    borderRadius: 12,
-    padding: 10
+
+  imageUploadButton: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+    marginBottom: 40,
+    marginRight: 3,
+    borderRadius: 30,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
 });

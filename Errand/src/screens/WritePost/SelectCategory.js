@@ -1,42 +1,56 @@
-import React, { useState } from 'react';
-import { Platform, Image, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import Icon from 'react-native-vector-icons/EvilIcons';
+import auth from '@react-native-firebase/auth';
 
 import Container from '../../components/Container';
 
+const width = Dimensions.get('window').width;
+
 export default SelectCategory = (props) => {
-    const setCategory = (category, content) => {
-        props.navigation.navigate('InputPrice', {category: category, content: content,})
+    const user = auth().currentUser;
+
+    const selectCategory = (color, category) => {
+        props.navigation.navigate('InputPrice', {color: color, category: category, })
     }
 
     const categories = [
-        {title: '마트', content: '대신 장을 좀 봐주세요.', image: 'Home.png'}, 
-        {title: '과제', content: '과제를 도와주세요.', image: 'Pen.png'}, 
-        {title: '탐색', content: '물건을 찾아주세요.', image: 'Search.png'}, 
-        {title: '서류', content: '서류를 배달해주세요.', image: 'Folder.png'}, 
-        {title: '공구', content: '맥가이버가 되어보세요.', image: 'ToolBox.png'}, 
-        {title: '짐', content: '무거운 짐을 옮겨주세요.', image: 'Box.png'}, 
-        {title: '생각', content: '생각을 공유해보세요.', image: 'Idea.png'}, 
-        {title: '기타', content: '~을 해주세요.', image: 'Chat.png'}
+        {title: '마트', content: '대신 장을 좀 봐주세요.', icon: 'cart', color: 'lightsalmon', layout: ['top', 'right']}, 
+        {title: '과제', content: '과제를 도와주세요.', icon: 'pencil', color: 'mediumaquamarine', layout: ['bottom', 'left']}, 
+        {title: '탐색', content: '물건을 찾아주세요.', icon: 'search', color: 'mediumpurple', layout: ['bottom', 'left']}, 
+        {title: '서류', content: '서류를 배달해주세요.', icon: 'paperclip', color: 'lightskyblue', layout: ['top', 'left']}, 
+        {title: '공구', content: '맥가이버가 되어주세요.', icon: 'gear', color: 'burlywood', layout: ['bottom', 'right']}, 
+        {title: '짐', content: '무거운 짐을 옮겨주세요.', icon: 'archive', color: 'steelblue', layout: ['top', 'right']}, 
+        {title: '생각', content: '생각을 공유해보세요.', icon: 'comment', color: 'lightcoral', layout: ['top', 'right']}, 
+        {title: '기타', content: '{ ... }을 해주세요.', icon: 'navicon', color: 'darkgray', layout: ['bottom', 'right']}
     ]
     const categoryBox = categories.map((category, index) => 
-        <TouchableOpacity key={String(index)} style={styles.boxView} onPress={() => {setCategory(category.title, category.content)}}>
-            <Text style={styles.itemText}>{category.title}</Text>
-            <Text style={styles.itemTextContent}>{category.content}</Text>
-            <Image
-                source={require('../../assets/img/Home.png')}  // 파라미터로 변수 사용 불가 (icon으로 변경 ?)
-                style={styles.itemImage}
-            />
+        <TouchableOpacity key={String(index)} style={styles.boxWrapper} onPress={() => {selectCategory(category.color, category.title)}}>
+            <View>
+                <Text style={styles.boxTitle}>{category.title}</Text>
+                <Text style={styles.boxContent}>{category.content}</Text>
+                <Icon name={category.icon} size={100} color='black' style={styles.boxIcon} />
+                <View style={{
+                    position: 'absolute',
+                    top: category.layout[0] === 'top' ? (width-65)/4-20 : (width-65)/4+10,
+                    left: category.layout[1] === 'left' ? (width-65)/6-20 : (width-65)/6+10,
+                    width: 40,
+                    height: 40, 
+                    backgroundColor: category.color, 
+                    borderRadius: 30,
+                    opacity: 0.4,
+                }} />
+            </View>
         </TouchableOpacity>
     )
 
     return (
         <Container>
             <View style={styles.titleWrapper}>
-                <Text style={styles.title}>카테고리</Text>
-                <Text style={styles.subTitle}>카테고리를 선택해 주세요.</Text>
+                <Text style={styles.title}>심부름 종류를 골라주세요.</Text>
             </View>
 
-            <View style={styles.centerView}>
+            <View style={styles.categoryView}>
                 {categoryBox}
             </View>
         </Container>
@@ -45,54 +59,51 @@ export default SelectCategory = (props) => {
 
 const styles = StyleSheet.create({
     titleWrapper: {
-        alignItems: 'center',
-        marginTop: Platform.OS === "ios" ? "18%" : "8%",
-        marginBottom: Platform.OS === "ios" ? "7%" : "5%",
+        paddingTop: 15,
+        paddingBottom: 5,
+        paddingHorizontal: 20,
     },
     title: {
-        fontFamily: 'Roboto-Bold',
+        fontFamily: 'NotoSansKR-Regular',
         color: 'black',
-        fontSize: 24,
-        padding: 10,
+        fontSize: Platform.OS === 'ios' ? 17:16,
     },
-    subTitle: {
-        fontFamily: 'Roboto',
-        color: 'black',
-        fontSize: 18,
-        padding: 10,
-    },
-
-    centerView: {
+    categoryView: {
         flex: 1,
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        backgroundColor: '#53B77C',
-        borderRadius: 10,
-        padding: 15,
+        padding: 20,
     },
-    boxView: {
+    boxWrapper: {
         backgroundColor: '#fff',
         borderRadius: 20,
-        width: 170, 
-        height: 170, 
-        marginBottom: 15,
-        padding: 5,
+        width: (width-60)/2,
+        height: (width-60)/2, 
+        marginBottom: 20,
+        padding: 15,
+        ...Platform.select({
+            ios: {
+                shadowOpacity: 0.2,
+                shadowRadius: 5,
+                shadowOffset: {width: 2, height: 2},
+            },
+            android: {
+                elevation: 6,
+            },
+        })
     },
-    itemText: {
-        marginTop : 10,
-        marginLeft : 10,
+    boxTitle: {
         fontSize: 18,
+        color: 'black',
     },
-    itemTextContent: {
-        margin : 5,
-        marginLeft : 10,
+    boxContent: {
+        marginVertical: 7,
         fontSize: 14,
+        color: 'black',
     },
-    itemImage: {
-        marginLeft: "45%",
-        marginTop: "15%",
-        width: 70, 
-        height: 70, 
+    boxIcon: {
+        alignSelf: 'center',
+        marginTop: 7,
     },
   });

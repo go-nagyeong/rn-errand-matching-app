@@ -1,145 +1,133 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity,  Image, Alert } from 'react-native';
-import { TextInput } from 'react-native-paper';
+import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native';
+import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
-import SelectDropdown from 'react-native-select-dropdown'
 
 import Container from '../../components/Container';
+import SpeechBalloon from '../../components/SpeechBalloon';
+import PostSubmitButton from '../../components/PostSubmitButton';
 
-export default InputPrice = (props ) => {
-  const [price, setPrice] = useState("");
+export default InputPrice = (props) => {
+  const [price, setPrice] = useState('');
+  const [minusIsDisabled, setMinusIsDisabled] = useState(false)
   
-  const { category, content } = props.route.params;
+  const { color, category } = props.route.params;
 
-  const priceList = [1000, 2000, 3000, 4000, 5000]
+  const inputPrice = () => {
+    if (price) {
+      props.navigation.navigate('WriteTitle', {color: color, category: category, price: price, }) 
+    } else {
+      alert('금액을 입력해주세요.')
+    }
+  }
+
+
+  // 최소/최대 금액을 제한하는 부분
+  useEffect(() => {
+    let priceNum = Number(price.replace(',', ''))
+
+    if (priceNum <= 0) {
+      setMinusIsDisabled(true)
+    } else if (priceNum >= 100000) {
+      onChangePrice('99,999')
+    } else {
+      setMinusIsDisabled(false)
+    }
+  }, [price])
+
+
+  const onChangePrice = (text) => {
+    let text1 = text.replace(/[^0-9]/g, '')  // 숫자 외 입력 제한
+    let text2 = text1.replace(/\B(?=(\d{3})+(?!\d))/g, ",")  // 금액 단위(,) 표시
+    setPrice(text2)
+  }
+
+  const upAndDownPrice = (upAndDown) => {
+    let priceNum = Number(price.replace(',', ''))
+
+    if (upAndDown === 'minus') {
+      return (priceNum-500).toString()
+    } else if (upAndDown === 'plus') {
+      return (priceNum+500).toString()
+    }
+  }
 
   return (
     <Container>
-      <View style={styles.titleMargin}>
+      <View style={styles.previousState}>
+        <SpeechBalloon prev='category' content={category} />
+      </View>
+
+      <View style={styles.centerView}>
         <View style={styles.titleWrapper}>
-          <Text style={styles.title}>{category}</Text>
-          <Text style={styles.subTitle}>{content}</Text>
+          <Text style={styles.title}>심부름 가격</Text>
         </View>
 
         <View style={styles.inputWrapper}>
-          <View style={{alignItems: "center", justifyContent: "center",}}>
-            <SelectDropdown
-              data={priceList}
-              onSelect={(selectedItem, index) => {
-                setPrice(selectedItem)
-              }}
-              buttonTextAfterSelection={(selectedItem, index) => {
-                // text represented after item is selected
-                // if data array is an array of objects then return selectedItem.property to render after item is selected
-                return selectedItem
-              }}
-              rowTextForSelection={(item, index) => {
-                // text represented for each item in dropdown
-                // if data array is an array of objects then return item.property to represent item in dropdown
-                return item
-              }}
-            />
-          </View>
-        </View>
+          <FontAwesomeIcon name='won' size={20} color='black' />
 
-        <View>
-          <TouchableOpacity style={[{marginTop: 30, marginBottom: 100, alignItems: 'center', justifyContent: 'center'}]} onPress={() => { 
-              if(price){
-                props.navigation.navigate('WriteTitle', {category: category,price: price,}) 
-              }
-              else{
-                alert("선택해 주세요.")
-              }
-            }}>
-            <Image
-              style = {styles.item}
-              source={require('../../assets/img/Ok.png')}
-            />
+          <TextInput 
+            style={styles.input}
+            keyboardType='numeric'
+            placeholder="금액 입력"
+            value={price}
+            autoCapitalize='none'
+            autoCorrect={false}
+            blurOnSubmit={true}
+            onChangeText={text => onChangePrice(text)}
+            maxLength={6}
+            returnKeyType="done"
+            onSubmitEditing={() => inputPrice()}
+          />
+
+          <TouchableOpacity disabled={minusIsDisabled} style={{marginRight: 8}} onPress={() => onChangePrice(upAndDownPrice('minus'))}>
+            <AntDesignIcon name='minuscircleo' size={24} color={minusIsDisabled ? 'gray' : color} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => onChangePrice(upAndDownPrice('plus'))}>
+            <AntDesignIcon name='pluscircleo' size={24} color={color} />
           </TouchableOpacity>
         </View>
+
+        <PostSubmitButton backgroundColor={color} onPress={() => inputPrice()}/>
       </View>
     </Container>
   );
 };
 
 const styles = StyleSheet.create({
-  titleMargin: {
-    marginTop: "20%"
+  previousState: {
+    flex: 1,
+    paddingTop: 20,
+    marginBottom: 20,
+  },
+
+  centerView: {
+    flex: 1,
+    paddingHorizontal: 30,
   },
   titleWrapper: {
-    marginTop: Platform.OS === "ios" ? "10%" : "5%",
-    marginBottom: 30,
     alignItems: "center",
-    justifyContent: "center",
+    marginBottom: 30,
   },
   title: {
-    fontFamily: 'Roboto-Bold',
+    fontFamily: 'NotoSansKR-Medium',
     color: 'black',
     fontSize: 24,
     padding: 10,
   },
-  subTitle: {
-    marginBottom: 20,
-    fontFamily: 'Roboto',
-    color: 'black',
-    fontSize: 18,
-    padding: 10,
-  },
   inputWrapper: {
-    paddingHorizontal: 30,
-    marginBottom: 10,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'gray',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    paddingHorizontal: 10,
+    paddingVertical: Platform.OS === 'ios' ? 20:10,
+    marginBottom: 70,
   },
   input: {
-    backgroundColor: '#fff',
-    marginBottom: 12,
-  },
-  buttonWrapper: {
-    paddingHorizontal: 35,
-  },
-  squareButton: {
-    backgroundColor: '#53B77C',
-    paddingVertical: 13,
-    alignItems: 'center',
-    borderRadius: 5,
-  },
-  squareButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  textButtonText: {
-    color: "#53B77C",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  item: {
-    marginTop: "10%",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 50, 
-    height: 50, 
-  },
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-      fontSize: 16,
-      height: 50, 
-      width: 250, 
-      color: '#000000',
-      borderColor: '#000000', 
-      borderWidth: 1,
-      borderRadius: 12,
-      padding: 10
-  },
-  inputAndroid: {
-      fontSize: 16,
-      height: 50, 
-      width: 250, 
-      color: '#000000',
-      borderColor: '#000000', 
-      borderWidth: 1,
-      borderRadius: 12,
-      padding: 10
+    width: '65%',
+    fontSize: 18,
+    marginHorizontal: 10,
   },
 });
