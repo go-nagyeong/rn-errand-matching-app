@@ -117,6 +117,13 @@ export default RegisterAction = (props) => {
                     grade: 2.3,
                     grade_t: 2.3,
                     grade_n: 1,
+                    data: {
+                        비매너: 0,
+                        사기: 0,
+                        성희롱: 0,
+                        연애목적: 0,
+                        욕설: 0
+                    }
                 })
                 .then(() => console.log('User added!'))
                 .catch(error => console.error(error));

@@ -13,8 +13,9 @@ import FeedAction from './src/actions/FeedAction';
 import ShowDetailPost from './src/screens/Feed/ShowDetailPost';
 
 // 나의심부름
-import MyErrandScreen from './src/screens/MyErrand/MyErrandScreen';
-import ShowAcceptPost from './src/screens/MyErrand/ShowAcceptPost';
+import MyErrandAction from './src/actions/MyErrandAction';
+import ShowDetailMyList from './src/screens/MyErrand/ShowDetailMyList';
+import ShowDetailPerformList from './src/screens/MyErrand/ShowDetailPerformList';
 
 // 마이페이지
 import MypageAction from './src/actions/MypageAction';
@@ -22,7 +23,7 @@ import LoginAction from './src/actions/LoginAction';
 import RegisterAction from './src/actions/RegisterAction';
 import FindPwAction from './src/actions/FindPwAction';
 import ReNameAction from './src/actions/ReNameAction';
-import MyRegisteredErrand from './src/actions/MyRegisteredErrandAction';
+import MyCompletedErrand from './src/actions/MyCompletedErrandAction';
 
 // 게시물 작성
 import SelectCategory from './src/screens/WritePost/SelectCategory';
@@ -30,6 +31,9 @@ import InputPrice from './src/screens/WritePost/InputPrice';
 import WriteTitle from './src/screens/WritePost/WriteTitle';
 import WriteContent from './src/screens/WritePost/WriteContent';
 import SelectStartDate from './src/screens/WritePost/SelectStartDate';
+
+// 채팅
+import Chat from './src/screens/Mypage/Chat';
 
 LogBox.ignoreAllLogs();
 
@@ -41,8 +45,7 @@ const TabNavigator = () => {
 
   const [badgeNum, setBadgeNum] = useState(0)
 
-  useEffect(() => {
-    firestore()
+  firestore()
     .collection('Posts')
     .where('writerEmail', '==', user.email)
     .onSnapshot(querySnapshot => {
@@ -50,7 +53,7 @@ const TabNavigator = () => {
 
       querySnapshot.forEach(doc => {
         if (doc.exists) { 
-          if (doc.data()['process'] === 'request') {
+          if (doc.data()['process'] === 'request' || doc.data()['process'] === 'finishRequest') {
             count += 1
           }
         }
@@ -58,7 +61,6 @@ const TabNavigator = () => {
 
       setBadgeNum(count)
     })
-  }, []);
 
   return (
     <Tab.Navigator screenOptions={({ route }) => ({
@@ -80,7 +82,7 @@ const TabNavigator = () => {
       tabBarShowLabel: false,
     })}>
       <Tab.Screen name="Home" component={FeedAction} />
-      <Tab.Screen name="MyErrand" component={MyErrandScreen} options={badgeNum!=0 && { tabBarBadge: badgeNum }} />
+      <Tab.Screen name="MyErrand" component={MyErrandAction} options={badgeNum!=0 && { tabBarBadge: badgeNum }} />
       <Tab.Screen name="Mypage" component={MypageAction} />
     </Tab.Navigator>
   )
@@ -104,24 +106,27 @@ export default App = () => {
       <Stack.Navigator screenOptions={{ headerBackTitle: null }}>
         {user 
           ? <>
-              <Stack.Screen name="Tab" component={TabNavigator} options={{headerShown: false}} />
-              <Stack.Screen name="ShowDetailPost" component={ShowDetailPost} />
-              <Stack.Screen name="ShowAcceptPost" component={ShowAcceptPost} />
-              <Stack.Screen name="FindPw" component={FindPwAction} />
-              <Stack.Screen name="ReName" component={ReNameAction} />
-              <Stack.Screen name="MyRegisteredErrand" component={MyRegisteredErrand} />
-      
-              <Stack.Screen name="SelectCategory" component={SelectCategory} />
-              <Stack.Screen name="InputPrice" component={InputPrice} />
-              <Stack.Screen name="WriteTitle" component={WriteTitle} />
-              <Stack.Screen name="WriteContent" component={WriteContent} />
-              <Stack.Screen name="SelectStartDate" component={SelectStartDate} />
-            </>
+            <Stack.Screen name='Tab' component={TabNavigator} options={{ headerShown: false }} />
+            <Stack.Screen name='ShowDetailPost' component={ShowDetailPost} />
+            <Stack.Screen name='ShowDetailMyList' component={ShowDetailMyList} />
+            <Stack.Screen name='ShowDetailPerformList' component={ShowDetailPerformList} />
+            <Stack.Screen name='FindPw' component={FindPwAction} />
+            <Stack.Screen name='ReName' component={ReNameAction} />
+            <Stack.Screen name='MyCompletedErrand' component={MyCompletedErrand} />
+
+            <Stack.Screen name='SelectCategory' component={SelectCategory} />
+            <Stack.Screen name='InputPrice' component={InputPrice} />
+            <Stack.Screen name='WriteTitle' component={WriteTitle} />
+            <Stack.Screen name='WriteContent' component={WriteContent} />
+            <Stack.Screen name='SelectStartDate' component={SelectStartDate} />
+
+            <Stack.Screen name='Chat' component={Chat} />
+          </>
           : <>
-              <Stack.Screen name="Login" component={LoginAction} />
-              <Stack.Screen name="Register" component={RegisterAction} />
-              <Stack.Screen name="FindPw" component={FindPwAction} />
-            </>
+            <Stack.Screen name='Login' component={LoginAction} />
+            <Stack.Screen name='Register' component={RegisterAction} />
+            <Stack.Screen name='FindPw' component={FindPwAction} />
+          </>
         }
       </Stack.Navigator>
     </NavigationContainer>

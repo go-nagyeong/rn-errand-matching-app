@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import {StyleSheet, Platform, Modal, View, Text, TouchableOpacity, Animated} from 'react-native';
+import { StyleSheet, Platform, Modal, View, Text, TouchableOpacity, Animated } from 'react-native';
 import { Avatar } from 'react-native-elements';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
+import { Alert } from 'react-native';
+import auth from '@react-native-firebase/auth';
 
 export default ErrandRating = (props) => {
     const navigation = useNavigation()
@@ -29,7 +31,7 @@ export default ErrandRating = (props) => {
                 useNativeDriver: true
             })
         ]).start();
-    
+
         setGrade(props.calculateGrade(rating))
     };
     const resetMarks = () => {
@@ -50,6 +52,7 @@ export default ErrandRating = (props) => {
                 giveGrades(score, newGrade)
             })
     }
+
     const giveGrades = (score, newGrade) => {
         const grade_t_increment = firestore.FieldValue.increment(score);
         const grade_n_increment = firestore.FieldValue.increment(1);
@@ -64,15 +67,55 @@ export default ErrandRating = (props) => {
             })
             .then(() => {
                 console.log('errand grade updated')
-                finishErrand()
+
+                if (props.btnErrandRating == true) {
+                    {/* 완료 요청 */ }
+                    Alert.alert(
+                        "심부름 완료 요청",
+                        "요청이 전송되었습니다.",
+                        [{
+                            text: "확인",
+                            style: "cancel",
+                        }],
+                    );
+                    finishRequestErrand()
+                }
+                else {
+                    {/* 완료 */ }
+                    Alert.alert(
+                        "심부름 완료",
+                        "심부름이 완료 되었습니다.",
+                        [{
+                            text: "확인",
+                            style: "cancel",
+                        }],
+                    );
+                    finishErrand()
+                }
+
             })
     }
+
+    const finishRequestErrand = () => {
+        firestore()
+            .collection('Posts')
+            .doc(props.id.toString())
+            .update({
+                process: "finishRequest",
+            })
+            .then(() => {
+                props.onRequestClose()
+                navigation.navigate('MyErrand')
+            })
+            .catch(err => { console.log(err) })
+    }
+
     const finishErrand = () => {
         firestore()
             .collection('Posts')
             .doc(props.id.toString())
             .update({
-              process: "finished",
+                process: "finished",
             })
             .then(() => {
                 props.onRequestClose()
@@ -82,7 +125,7 @@ export default ErrandRating = (props) => {
     }
 
     return (
-        <Modal 
+        <Modal
             visible={props.visible}
             onRequestClose={props.onRequestClose}
             animationType="fade"
@@ -97,24 +140,24 @@ export default ErrandRating = (props) => {
                     </View>
 
                     <View style={styles.profileWrap}>
-                        <View style={{flexDirection: 'row', marginRight: 80, alignItems: 'center'}}>
+                        <View style={{ flexDirection: 'row', marginRight: 80, alignItems: 'center' }}>
                             {/* Errander 프로필 사진 */}
-                            <Avatar 
+                            <Avatar
                                 rounded
                                 size="medium"
-                                source={{uri: props.erranderImage}} 
-                                overlayContainerStyle={{backgroundColor: 'lightgray'}}
-                                containerStyle={{marginRight: 12}}
-                            /> 
+                                source={{ uri: props.erranderImage }}
+                                overlayContainerStyle={{ backgroundColor: 'lightgray' }}
+                                containerStyle={{ marginRight: 12 }}
+                            />
 
                             {/* Errander 닉네임, 등급 */}
-                            <View style={{flexDirection: 'column'}}>
-                                <Text style={{fontSize: 16, fontWeight: '700', color: '#090909', marginBottom: 8}}>
+                            <View style={{ flexDirection: 'column' }}>
+                                <Text style={{ fontSize: 16, fontWeight: '700', color: '#090909', marginBottom: 8 }}>
                                     {props.errander}
                                 </Text>
-                                <View style={{flexDirection: 'row'}}>
-                                    <FIcon name="graduation-cap" size={16} color="#4CA374" style={{marginRight: 4}}/>
-                                    <Text style={{fontSize: 14, fontFamily: 'Roboto-Medium', color: 'black'}}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <FIcon name="graduation-cap" size={16} color="#4CA374" style={{ marginRight: 4 }} />
+                                    <Text style={{ fontSize: 14, fontFamily: 'Roboto-Medium', color: 'black' }}>
                                         {props.erranderGrade}
                                     </Text>
                                 </View>
@@ -122,31 +165,32 @@ export default ErrandRating = (props) => {
                         </View>
 
                         {/* 심부름 금액 */}
-                        <View style={{flexDirection: 'column'}}>
-                            <Text style={{fontSize: 14, color: "gray", marginBottom: 9}}>
+                        <View style={{ flexDirection: 'column' }}>
+                            <Text style={{ fontSize: 14, color: "gray", marginBottom: 9 }}>
                                 금액
                             </Text>
-                            <Text style={{fontSize: 15, fontWeight: '600', color: "black"}}>
+                            <Text style={{ fontSize: 15, fontWeight: '600', color: "black" }}>
                                 {props.errandPrice}
                             </Text>
                         </View>
-                        
+
                         {/* 심부름 소요 시간 */}
-                        <View style={{flexDirection: 'column'}}>
-                            <Text style={{fontSize: 14, color: "gray", marginBottom: 9}}>
+                        <View style={{ flexDirection: 'column' }}>
+                            {/* co */}
+                            <Text style={{ fontSize: 14, color: "gray", marginBottom: 9 }}>
                                 소요시간
                             </Text>
-                            <Text style={{fontSize: 15, fontWeight: '600', color: "black"}}>
+                            <Text style={{ fontSize: 15, fontWeight: '600', color: "black" }}>
                                 27m
                             </Text>
                         </View>
                     </View>
 
                     <View style={styles.ratingWrap}>
-                        <Text style={{fontSize: 17, fontWeight: '600', color: "black", marginBottom: 15}}>
+                        <Text style={{ fontSize: 17, fontWeight: '600', color: "black", marginBottom: 15 }}>
                             Errander의 점수를 매겨주세요!
                         </Text>
-                        <MultiSlider 
+                        <MultiSlider
                             values={rating}
                             onValuesChange={value => setRating(value)}
                             onValuesChangeStart={() => resetMarks()}
@@ -157,22 +201,62 @@ export default ErrandRating = (props) => {
                             step={0.5}
                             snapped={true}
                             // enableLabel={true}
-                            trackStyle={{height: 30, backgroundColor: '#d1d1d1'}}
-                            selectedStyle={{backgroundColor: 'orange'}}
-                            unselectedStyle={{backgroundColor: '#e0e0e0'}}
-                            customMarker={() => (<Icon name="edit" size={34} color='black' style={styles.ratingSliderBar}/>)}
+                            trackStyle={{ height: 30, backgroundColor: '#d1d1d1' }}
+                            selectedStyle={{ backgroundColor: 'orange' }}
+                            unselectedStyle={{ backgroundColor: '#e0e0e0' }}
+                            customMarker={() => (<Icon name="edit" size={34} color='black' style={styles.ratingSliderBar} />)}
                             // customLabel={CustomLabel}
                         />
 
-                        <Animated.View style={{opacity: opacityAnim, transform: [{scale: scaleAnim}]}}>
+                        <Animated.View style={{ opacity: opacityAnim, transform: [{ scale: scaleAnim }] }}>
                             <Text style={styles.grade}>{grade}</Text>
                         </Animated.View>
                     </View>
 
                     <View style={styles.submitWrap}>
-                        <TouchableOpacity style={styles.submitButton} onPress={() => addScore(rating[0])}>
-                            <Text style={styles.submitButtonText}>심부름 완료</Text>
-                        </TouchableOpacity>
+
+
+                        {/* 완료 요청 */}
+                        {props.btnErrandRating == true && props.errandProcess != 'finishRequest' &&
+                            <>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#fff', marginHorizontal: 100, padding: 10, alignItems: 'center' }}
+                                    onPress={() => { setShowRatingModal(true) }}
+                                >
+                                    <Text>완료</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.submitButton} onPress={() => {
+                                    addScore(rating[0])
+                                }
+                                }>
+                                    <Text style={styles.submitButtonText}>요청</Text>
+                                </TouchableOpacity>
+                            </>
+                        }
+
+
+                        {/* 완료 */}
+                        {props.btnErrandRating == false && props.errandProcess == 'finishRequest' &&
+                            <>
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#fff', marginHorizontal: 100, padding: 10, alignItems: 'center' }}
+                                    onPress={() => { setShowRatingModal(true) }}
+                                >
+                                    <Text>완료</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.submitButton} onPress={() => {
+                                    addScore(rating[0])
+                                }
+                                }>
+                                    <Text style={styles.submitButtonText}>완료</Text>
+                                </TouchableOpacity>
+                            </>
+                        }
+
+
+
                     </View>
                 </View>
             </View>
@@ -217,12 +301,12 @@ const styles = StyleSheet.create({
         backgroundColor: 'transparent',
         bottom: -15,
         right: -13,
-        transform: [{ rotate: '90deg'}]
+        transform: [{ rotate: '90deg' }]
     },
     grade: {
         minWidth: 80,
         fontSize: 60,
-        fontFamily: 'Caveat-Bold', 
+        fontFamily: 'Caveat-Bold',
         color: 'red',
         textAlign: 'center',
     },

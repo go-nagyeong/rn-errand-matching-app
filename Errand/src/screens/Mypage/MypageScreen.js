@@ -9,6 +9,7 @@ import InfoText from '../../components/InfoText'
 import { BottomSheet } from 'react-native-btr';
 
 import Container from '../../components/Container'
+import { List } from 'react-native-paper'
 
 // import {checkNotifications, requestNotifications, openSettings} from 'react-native-permissions';
 // import {PushNotificationPermissions, PushNotification} from 'react-native-push-notification';
@@ -44,13 +45,13 @@ export default SettingsScreen = (props) => {
         setwithdrawalVisible(!withdrawalVisible)
     };
     
-    // const launchSettings = () => {
-    //     if(Platform.OS === 'ios'){
-    //         Linking.openURL('app-settings://')
-    //     }else{
-    //         Linking.openSettings();
-    //     }
-    // }
+    const launchSettings = () => {
+        if(Platform.OS === 'ios'){
+            Linking.openURL('app-settings://')
+        }else{
+            Linking.openSettings();
+        }
+    }
 
     return (
         <Container>
@@ -103,6 +104,12 @@ export default SettingsScreen = (props) => {
                 </View>
             </BottomSheet>
             
+            <View>
+                <TouchableOpacity onPress={() => props.navi.navigate('Chat')}>
+                    <Text>채팅 테스트</Text>
+                </TouchableOpacity>
+            </View>
+
             <TouchableOpacity onPress={toggleUpdateProfileView}>
                 <View style={styles.userRow}>
                     <View style={styles.userImage}>
@@ -131,29 +138,34 @@ export default SettingsScreen = (props) => {
         
             <InfoText text="Account" />
             <View>
+                <ListItem>
+                    <ListItem.Content>
+                        <ListItem.Title>
+                            하나둘
+                        </ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
                 <ListItem
-                hideChevron
-                title="알림 설정"
-                containerStyle={styles.listItemContainer}
-                // rightElement={
-                    // <Switch
-                    //     onValueChange={() => {launchSettings(); console.log(1);}} //setPushNotifications(!pushNotifications)
-                    //     value={pushNotifications}
-                    // />
-                // }
-                // onPress={() => {launchSettings();}}
-                rightIcon={<Chevron />}
-                leftIcon={
-                    <BaseIcon
-                    containerStyle={{
-                        backgroundColor: '#FFADF2',
-                    }}
-                    icon={{
-                        type: 'material',
-                        name: 'notifications',
-                    }}
-                    />
-                }
+                  hideChevron
+                  title="알림 설정"
+                  containerStyle={styles.listItemContainer}
+                  // rightElement={
+                      // <Switch
+                      //     onValueChange={() => {launchSettings(); console.log(1);}} //setPushNotifications(!pushNotifications)
+                      //     value={pushNotifications}
+                      // />
+                  // }
+                  onPress={() => {launchSettings();}}
+                  rightIcon={<Chevron />}
+                  leftIcon={
+                      <BaseIcon
+                          containerStyle={{ backgroundColor: '#FEA8A1' }}
+                          icon={{
+                              type: 'material',
+                              name: 'notifications',
+                          }}
+                      />      
+                  }
                 />
                 <ListItem
                 title="비밀번호 수정"
@@ -181,7 +193,7 @@ export default SettingsScreen = (props) => {
                     containerStyle={{ backgroundColor: '#FEA8A1' }}
                     icon={{
                         type: 'material',
-                        name: 'language',
+                        name: 'logout',
                     }}
                     />
                 }
@@ -196,8 +208,8 @@ export default SettingsScreen = (props) => {
                     <BaseIcon
                     containerStyle={{ backgroundColor: '#FEA8A1' }}
                     icon={{
-                        type: 'material',
-                        name: 'language',
+                        type: 'material', // react-native-vector-icons directory - materialicons chapter
+                        name: 'person-remove', //delete-forever
                     }}
                     />
                 }
@@ -208,15 +220,15 @@ export default SettingsScreen = (props) => {
             <InfoText text="More" />
             <View>
                 <ListItem
-                    title="게시물 목록"
-                    onPress={() => {props.navi.navigate('MyRegisteredErrand')}}
+                    title="완료된 심부름"
+                    onPress={() => {props.navi.navigate('MyCompletedErrand')}}
                     containerStyle={styles.listItemContainer}
                     leftIcon={
                         <BaseIcon
                         containerStyle={{ backgroundColor: '#A4C8F0' }}
                         icon={{
                             type: 'ionicon',
-                            name: 'md-information-circle',
+                            name: 'list',
                         }}
                         />
                     }

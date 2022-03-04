@@ -1,3 +1,9 @@
+/*
+    작업자 : shan
+    
+    나의 리스트
+    나의 리스트 자세하게 보기
+*/
 import React, { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import Container from '../../components/Container';
@@ -5,7 +11,9 @@ import { Avatar, ListItem } from 'react-native-elements'
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 
-export default ShowAcceptPost = (props) => {
+import ErrandRating from './ErrandRating'
+
+export default ShowDetailMyList = (props) => {
   const { id, erranderEmail, errandPrice, errander, errandProcess } = props.route.params;
 
   const [erranderGrade, setErranderGrade] = useState(0)
@@ -13,47 +21,39 @@ export default ShowAcceptPost = (props) => {
 
   const [showRatingModal, setShowRatingModal] = useState(false);
 
+  const [btnErrandRating, setBtnErrandRating] = useState(false);
+
   const calculateGrade = (gradeNum) => {
     if (gradeNum >= 4.1) {
-        return 'A+';
+      return 'A+';
     } else if (gradeNum >= 3.6) {
-        return 'A0';
+      return 'A0';
     } else if (gradeNum >= 3.1) {
-        return 'B+';
+      return 'B+';
     } else if (gradeNum >= 2.6) {
-        return 'B0';
+      return 'B0';
     } else if (gradeNum >= 2.1) {
-        return 'C+';
+      return 'C+';
     } else if (gradeNum >= 1.6) {
-        return 'C0';
+      return 'C0';
     } else if (gradeNum >= 1.1) {
-        return 'D+';
+      return 'D+';
     } else if (gradeNum >= 0.6) {
-        return 'D0';
+      return 'D0';
     } else {
-        return 'F';
+      ``
+      return 'F';
     }
   }
 
-  useEffect(() => {
-    firestore()
-      .collection('Users')
-      .doc(erranderEmail)
-      .get()
-      .then(doc => {
-        let grade = doc.data()['grade'];
-        setErranderGrade(calculateGrade(grade))
-      })
-      .catch(e => console.log(e));
-
-    storage()
-      .ref('Users/' + erranderEmail)
-      .getDownloadURL()
-      .then(url => {
-        setErranderImage(url)
-      })
-      .catch(e => console.log(e));
-  }, [])
+  storage()
+    .ref('Users/' + erranderEmail)
+    .getDownloadURL()
+    .then(url => {
+      setErranderImage(url)
+    })
+    .catch(e => console.log("에러"));
+  console.log("hello", erranderEmail);
 
 
   const accept = () => {
@@ -69,6 +69,7 @@ export default ShowAcceptPost = (props) => {
             .doc(id.toString())
             .update({
               process: "matching",
+              matchingTime: new Date(),
             })
             .then(() => {
               Alert.alert(
@@ -129,49 +130,88 @@ export default ShowAcceptPost = (props) => {
       }],
     );
   }
-  
+
+  const deletePost = () => {
+    Alert.alert(
+      "심부름 게시물 삭제",
+      "심부름 삭제를 진행하셨습니다.\n정말로 진행하시겠습니까?",
+      [{
+        text: "확인",
+        onPress: () => {
+
+          firestore()
+            .collection('Posts')
+            .doc(id.toString())
+            .delete()
+        },
+        style: "default",
+      },
+      {
+        text: "취소",
+        style: "default",
+      }],
+    );
+  }
+
 
   return (
     <Container>
-      {errandProcess == 'request' && 
-      <>
-        <Text style={{ fontSize: 16 }}>{errander} </Text>
-        <Text style={{ fontSize: 16 }}>{erranderEmail} </Text>
+      {errandProcess == 'request' &&
+        <>
+          <Text style={{ fontSize: 16 }}>{errander} </Text>
+          <Text style={{ fontSize: 16 }}>{erranderEmail} </Text>
 
-        <TouchableOpacity onPress={() => accept()}>
-          <Text> 허락하기 </Text>
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => accept()}>
+            <Text> 허락하기 </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => reject()}>
-          <Text> 거부하기 </Text>
-        </TouchableOpacity>
-      </>
+          <TouchableOpacity onPress={() => reject()}>
+            <Text> 거부하기 </Text>
+          </TouchableOpacity>
+        </>
       }
 
-      {errandProcess == 'matching' && 
-      <>
-        <Text style={{ fontSize: 16 }}>{errander} </Text>
-        <Text style={{ fontSize: 16 }}>{erranderEmail} </Text>
-        
-        <TouchableOpacity
-          style={{ backgroundColor: '#fff', marginHorizontal: 100, padding: 10, alignItems: 'center' }}
-          onPress={() => { setShowRatingModal(true) }}
-        >
-          <Text>완료</Text>
-        </TouchableOpacity>
+      {errandProcess == 'matching' &&
+        <>
 
-        <ErrandRating
-          visible={showRatingModal}
-          onRequestClose={() => setShowRatingModal(false)}
-          id={id}
-          erranderEmail={erranderEmail}
-          errandPrice={errandPrice}
-          errander={errander}
-          erranderGrade={erranderGrade}
-          erranderImage={erranderImage}
-          calculateGrade={calculateGrade}
-        />
-      </>
+
+        </>
+      }
+
+      {errandProcess == 'regist' &&
+        <>
+          <TouchableOpacity
+            style={{ backgroundColor: '#fff', marginHorizontal: 100, padding: 10, alignItems: 'center' }}
+            onPress={() => { deletePost() }}
+          >
+            <Text>삭제</Text>
+          </TouchableOpacity>
+        </>
+      }
+
+      {errandProcess == 'finishRequest' &&
+        <>
+          <TouchableOpacity
+            style={{ backgroundColor: '#fff', marginHorizontal: 100, padding: 10, alignItems: 'center' }}
+            onPress={() => { setShowRatingModal(true) }}
+          >
+            <Text>완료</Text>
+          </TouchableOpacity>
+
+          <ErrandRating
+            visible={showRatingModal}
+            onRequestClose={() => setShowRatingModal(false)}
+            id={id}
+            erranderEmail={erranderEmail}
+            errandPrice={errandPrice}
+            errander={errander}
+            erranderGrade={erranderGrade}
+            erranderImage={erranderImage}
+            errandProcess={errandProcess}
+            calculateGrade={calculateGrade}
+            btnErrandRating={btnErrandRating}
+          />
+        </>
       }
     </Container >
   );

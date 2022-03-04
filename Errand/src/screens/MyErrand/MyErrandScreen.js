@@ -1,49 +1,37 @@
-import 'moment/locale/ko';
+/*
+    작업자 : shan
+    
+    2번 째 탭
+    나의 리스트 및 수행리스트 화면
+*/
 import React, { useState, useEffect } from 'react';
-import { FlatList, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, useColorScheme, useWindowDimensions, View } from 'react-native';
-import "react-native-gesture-handler";
-import { TabView } from "react-native-tab-view";
-import ErrandRating from './ErrandRating';
-import RenderItemMyList from './RenderItemMyList';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
+import { StyleSheet, FlatList, View, Text, useWindowDimensions, RefreshControl, Animated } from 'react-native';
+import { TabView, TabBar } from "react-native-tab-view";
+import LinearGradient from 'react-native-linear-gradient';
 
+import RenderItemMyList from './RenderItemMyList';
+import RenderItemPerformList from './RenderItemPerformList';
 
 export default MyErrandScreen = (props) => {
-    const isDarkMode = useColorScheme() === 'dark';
-    
     const layout = useWindowDimensions();
 
     const [index, setIndex] = useState(0);
     const [routes] = useState([
-        { key: "first", title: "나의 리스트" },
-        { key: "second", title: "수행 리스트" },
+        { key: "first", title: "나의 심부름" },
+        { key: "second", title: "내가 하는 심부름" },
     ]);
-    
+
+    // tab 바꿀 때 해당 탭의 리스트만 다시 새로고침
+    useEffect(() => {
+        if (index == 0) {
+            props.getMyErrand()  
+        } else {
+            props.getMyPerformErrand()
+        }
+    }, [index])
+
 
     // First Screen
-    const [requestPosts, setRequestPosts] = useState();
-    useEffect(() => {
-        const unsubscribe = props.navigation.addListener('focus', () => {
-            firestore()
-                .collection('Posts')
-                .where('writerEmail', '==', auth().currentUser.email)
-                .where('process', '!=', 'finished')
-                .get()
-                .then(querySnapshot => {
-                    let documentData = [];
-                    querySnapshot.forEach(documentSnapshot => {
-                        documentData.push({
-                            ...documentSnapshot.data()
-                        })
-                    })
-                    setRequestPosts(documentData);
-                })
-        });
-      
-        return unsubscribe;
-    }, [props.navigation]);
-    
     const renderItemMyList = ({ item }) => {
         return <RenderItemMyList item={item} />
     }
@@ -51,74 +39,55 @@ export default MyErrandScreen = (props) => {
         <View style={styles.boardView} >
             <FlatList
                 keyExtractor={item => item.id}
-                data={requestPosts}
+                data={props.myErrand}
                 renderItem={renderItemMyList}
+                refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getMyErrand} />}
             />
         </View>
     );
 
 
     // Second Screen
-    const [title, setTitle] = useState("");
-    const [writerEmail, setWriterEmail] = useState("");
-    const [writerGrade, setWriterGrade] = useState("");
-    const [writer, setWriter] = useState("");
-    const [process, setProcess] = useState("");
-    const [id, setId] = useState("");
-
-    firestore()
-        .collection('Posts')
-        .where('erranderEmail', '==', auth().currentUser.email)
-        .onSnapshot(querySnapshot => {
-            querySnapshot.forEach(documentSnapshot => {
-                setWriterEmail(documentSnapshot.data()["writerEmail"])
-                setWriter(documentSnapshot.data()["writer"])
-                setId(documentSnapshot.data()["id"])
-                setProcess(documentSnapshot.data()["process"])
-                setTitle(documentSnapshot.data()["title"])
-
-            });
-        })
-
-    const requestCancle = () => {
-        firestore()
-        .collection('Posts')
-        .doc(id.toString())
-        .update({
-            process: "regist",
-            errander: "",
-            erranderEmail: "",
-        })
-        .then(() => {
-            console.log('errand grade updated')
-        })
+    const renderItemPerformList = ({ item }) => {
+        return <RenderItemPerformList item={item} />
     }
-    const ThirdRoute = () => (
+    const SecondRoute = () => (
         <View style={styles.boardView} >
-            <Text> {title} </Text>
-            <Text> {writerEmail} </Text>
-            <Text> {writer} </Text>
-            <Text> {process} </Text>
-
-            {(process === 'request') &&
-                <TouchableOpacity onPress={() => {
-                    requestCancle()
-                }} >
-
-                    <Text> 요청 취소 </Text>
-                </TouchableOpacity>
-            }
-
-            {(process === "matching") &&
-                <TouchableOpacity onPress={() => {
-
-                }} >
-
-                    <Text> 진행 중 </Text>
-                </TouchableOpacity>
-            }
-
+            <FlatList
+                keyExtractor={item => item.id}
+                data={props.myPerformErrand}
+                renderItem={renderItemPerformList}
+                refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getMyPerformErrand} />}
+            />
         </View>
+    );
+
+
+    // Tab View
+    const renderIndicator = (props) => {
+        const { getTabWidth, layout, navigationState } = props;
+        const width = getTabWidth();
+        const translateX = Animated.multiply(navigationState.index, getTabWidth());
+
+        return (
+            <Animated.View style={{ width: width, height: 3, bottom: -layout.height+3, transform: [{ translateX: translateX }] }}>
+                <LinearGradient
+                    start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}}
+                    colors={['#5B86E5', '#36D1DC']}
+                >
+                    <Text></Text>
+                </LinearGradient>
+            </Animated.View>
+        )
+    }
+    const renderTabBar = (props) => (
+        <TabBar
+            {...props}
+            labelStyle={{ color: 'black' }}
+            // indicatorStyle={{ backgroundColor: '#5B86E5' }}
+            renderIndicator={renderIndicator}
+            style={{ backgroundColor: '#fff' }}
+        />
     );
 
     const renderScene = ({ route }) => {
@@ -126,34 +95,26 @@ export default MyErrandScreen = (props) => {
             case "first":
                 return <FirstRoute />;
             case "second":
-                return <ThirdRoute />;
+                return <SecondRoute />;
             default:
                 return null;
         }
     };
+
     return (
         <TabView
             navigationState={{ index, routes }}
             renderScene={renderScene}
+            renderTabBar={renderTabBar}
             onIndexChange={setIndex}
             initialLayout={{ width: layout.width }}
         />
     );
-
-
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#53B77C',
-    },
     boardView: {
-        flex: Platform.OS === 'ios' ? 2.6 : 2,
         backgroundColor: '#EDF1F5',
-        paddingHorizontal: 12,
-        paddingTop: 40,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        paddingTop: 20,
     },
 })
