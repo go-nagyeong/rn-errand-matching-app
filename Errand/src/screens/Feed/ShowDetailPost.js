@@ -21,8 +21,7 @@ export default ShowDetailPost = (props) => {
   const [processIsRequested, setProcessIsRequested] = useState(false)
   // 본인 게시물인지 체크
   const [confirmMyPost, setConfirmMyPost] = useState(false)
-  // 진행중인 다른 심부름 존재 여부 체크
-  const [isOtherErrander, setIsOtherErrander] = useState(false)
+
 
 
   useEffect(() => {
@@ -57,26 +56,16 @@ export default ShowDetailPost = (props) => {
       }
       if (doc.data()['writerEmail'] === auth().currentUser.email) {
         setConfirmMyPost(true)
+        // TODO: sh writeremail
       } else {
         setConfirmMyPost(false)
       }
     })
 
-    // 사용자가 현재 다른 심부름을 하고 있는지 확인
-    firestore()
-    .collection('Posts')
-    .where('erranderEmail', '==', auth().currentUser.email)
-    .get()
-    .then(querySnapshot => {
-      if (querySnapshot.size >= 1) {
-        setIsOtherErrander(true)
-      } else {
-        setIsOtherErrander(false)
-      }
-    })
+
   }, [])
 
-
+  
   const requestErrand = () => {
     firestore()
     .collection('Posts')
@@ -102,8 +91,6 @@ export default ShowDetailPost = (props) => {
 
   const updatePostState = () => {
     if (!processIsRequested) {
-
-      if (!isOtherErrander){
         Alert.alert(
           "심부름 수행 요청",
           "심부름 요청을 수행하셨습니다.\n정말로 진행하시겠습니까?",
@@ -116,18 +103,6 @@ export default ShowDetailPost = (props) => {
             style: "default",
           }],
         );
-      } else {
-        Alert.alert(
-          "진행중인 심부름이 존재합니다.",
-          "다른 심부름을 먼저 진행해 주세요.",
-          [{
-            text: "확인",
-            onPress: () => props.navigation.navigate('Home'),
-            style: "cancel",
-          }],
-        );
-      }
-
     } else {
       Alert.alert(
         "심부름 수행 요청 실패",
