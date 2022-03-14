@@ -22,10 +22,10 @@ export default SelectCategory = (props) => {
         {title: '공구', content: '맥가이버가 되어주세요.', icon: 'gear', color: 'burlywood', layout: ['bottom', 'right']}, 
         {title: '짐', content: '무거운 짐을 옮겨주세요.', icon: 'archive', color: 'steelblue', layout: ['top', 'right']}, 
         {title: '생각', content: '생각을 공유해보세요.', icon: 'comment', color: 'lightcoral', layout: ['top', 'right']}, 
-        {title: '기타', content: '{ ... }을 해주세요.', icon: 'navicon', color: 'darkgray', layout: ['bottom', 'right']}
+        {title: '기타', content: '{ ... }을 해주세요.', icon: 'question', color: 'darkgray', layout: ['bottom', 'right']}
     ]
     const categoryBox = categories.map((category, index) => 
-        <TouchableOpacity key={String(index)} style={styles.boxWrapper} onPress={() => {selectCategory(category.color, category.title)}}>
+        <TouchableOpacity key={index} style={styles.boxWrapper} onPress={() => {selectCategory(category.color, category.title)}}>
             <View>
                 <Text style={styles.boxTitle}>{category.title}</Text>
                 <Text style={styles.boxContent}>{category.content}</Text>

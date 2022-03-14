@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect, useLayoutEffect } from 'react'
-import { TouchableOpacity, View, Button, Modal } from 'react-native'
+import {TouchableOpacity, View, Button, Modal} from 'react-native'
 import { GiftedChat } from 'react-native-gifted-chat'
 import firestore from '@react-native-firebase/firestore';
 import { Avatar } from 'react-native-elements';
 import ShowBottomSheet from './ShowBottomSheet';
-import { launchCamera, launchImageLibrary } from 'react-native-image-picker'; // Migration from 2.x.x to 3.x.x => showImagePicker API is removed.
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker'; // Migration from 2.x.x to 3.x.x => showImagePicker API is removed.
 import storage from '@react-native-firebase/storage';
 import ImageModal from './ImageModal'
 import auth from "@react-native-firebase/auth";
@@ -13,6 +13,10 @@ import auth from "@react-native-firebase/auth";
 /*
 받아야 하는 값
 - 게시글 id 필드 값
+
+
+ LOG  1
+ LOG  VirtualizedList: You have a large list that is slow to update - make sure your renderItem function renders components that follow React performance best practices like PureComponent, shouldComponentUpdate, etc. {"contentLength": 4452.72705078125, "dt": 1141, "prevDt": 1274}
 */
 
 export default function Chat(props) {
@@ -30,7 +34,7 @@ export default function Chat(props) {
   const options = {
     title: 'Select Avatar',
     storageOptions: {
-      skipBackup: true,
+    skipBackup: true,
     },
   };
   const [incrementId, setIncrementId] = useState();
@@ -40,7 +44,7 @@ export default function Chat(props) {
   useEffect(() => {
       // load id of image post
       firestore()
-      .collection('Chats2')
+      .collection('Chats')
       .doc('img_id')
       .get()
       .then((snapshot) => {
@@ -48,7 +52,7 @@ export default function Chat(props) {
         setIncrementId(snapshot.data()['incrementID'])
         console.log('id updated')
       })
-      .catch((err) => { console.log(err, 'incrementID를 불러오는데 실패하였습니다') })
+      .catch((err) => {console.log(err, 'incrementID를 불러오는데 실패하였습니다')})
   }, [trigger])
 
   // download profile img
@@ -63,88 +67,43 @@ export default function Chat(props) {
         .catch((e) => console.log('Errors while downloading => ', e));
   }, [])
 
-  useLayoutEffect(() => {
-  // useLayoutEffect(() => { // 변경 후 화면을 띄운다 useLayoutEffect
+  // useLayoutEffect(() => {
+  useLayoutEffect(() => { // 변경 후 화면을 띄운다 useLayoutEffect
       // Load messages
     const collectionRef = firestore().collection('Chats')
-    const query = collectionRef.doc('1') //.orderBy('createdAt', 'desc')
-    let a = 0;
+    const query = collectionRef.where('post', '==', postId).orderBy('createdAt', 'desc') // .where('post', '==', postId)
+
     const unsubscribe =  query.onSnapshot(snapshot => {
       try {
-        
-        for (let [key, value] of Object.entries(snapshot.data())) {
-          console.log('zzzzzzzzzzzzzzzzzzz',value)
-          // () => ( 
-          //   console.log(value)
-            // {
-            //   _id: key,
-            //   createdAt: value.createdAt.toDate(),
-            //   text: value.text,
-            //   user: value.user,
-            //   image: value.image,
-            // }
-          // )
-        }
-      } catch (e) {console.log(e);}
-    })
-    console.log(a)
-    return unsubscribe;
-        // snapshot.data().map(doc => {
-        //   console.log(doc)
-          // createdAt: doc.createdAt.toDate(),
-          // text: doc.text,
-          // user: doc.user,
-          // image: doc.image,
-        // });
-        // setMessages( // setMessages에 firestore에서 가져온 데이터 저장
-        //   snapshot.docs.map(doc => ({
-        //     _id: doc.data()._id,
-        //     createdAt: doc.data().createdAt.toDate(),
-        //     text: doc.data().text,
-        //     user: doc.data().user,
-        //     image: doc.data().image,
-        //   })));
+        setMessages( // setMessages에 firestore에서 가져온 데이터 저장
+          snapshot.docs.map(doc => ({
+            _id: doc.data()._id,
+            createdAt: doc.data().createdAt.toDate(),
+            text: doc.data().text,
+            user: doc.data().user,
+            image: doc.data().image,
+          })));
           // console.log(snapshot.docs[0].data().text);
+        } catch (e) {console.log(e);}
+      })
+    console.log(1)
+    return unsubscribe;
   });
-  // document를 미리 생성해야 한다
-  const addChat = () => {
-    const _id = 'chat2' // 메시지 고유 id
-    const chat = {
-      [_id]: {
-        _id: 0,
-        createdAt: 0,
-        text: 0,
-        image: 0,
-        user: {
-          _id: 0,
-          avatar: 0,
-          name: 0,
-        }
-      }
-    }
-    firestore().collection('Chats')
-    .doc('2')
-    .update(chat)
-    .then(() => {console.log('update 성공')});
-  }
   
+
   const onSend = useCallback((messages = []) => {
     setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
     const { _id, createdAt, text, user, } = messages[0];
-    const chatId = _id // 메시지 고유 id
-    const chat = {
-      [chatId]: {
-        // _id: 0,
-        createdAt: createdAt,
-        text: text,
-        image: "",
-        user: user
-      }
-    }
     firestore()
     .collection('Chats')
-    .doc('1') // 채팅방 id (== 게시글 id)
-    .update(chat)
+    .add({
+      post: postId, // 수정
+      _id: _id,
+      createdAt: createdAt,
+      text: text,
+      user: user,
+      // image: "https://picsum.photos/id/237/200/300",
+    })
   })
 
   // download img url from storage & add img post in firestore/Chats
@@ -159,7 +118,7 @@ export default function Chat(props) {
       setUrl(url)
       // firestore Chats에 이미지 게시글 생성
       firestore()
-      .collection('Chats2')
+      .collection('Chats')
       .add({
         post: postId, // 수정
         _id: incrementId, // unique id issue
@@ -173,11 +132,11 @@ export default function Chat(props) {
 
       // +1 incrementID field in firestore
       const increment = firestore.FieldValue.increment(1);
-      firestore().collection('Chats2').doc('img_id').update({ incrementID: increment });
+      firestore().collection('Chats').doc('img_id').update({ incrementID: increment });
     })
     .catch((e) => console.log('Errors while downloading => ', e));
   }
-
+  
   const importFromCamera = () => {
       launchCamera(options, (response) => { // Use launchImageLibrary to open image gallery
           if (response.didCancel) {
@@ -216,7 +175,7 @@ export default function Chat(props) {
       });
       
   }
-
+  
   const importFromAlbum = () => {
       launchImageLibrary(options, (response) => {
           if (response["didCancel"] !== true) { // 뒤로가기 시 에러 처리
@@ -241,8 +200,26 @@ export default function Chat(props) {
               });
           }
       })
+  }
+  const addChat = () => {
+    const data = {
+      'test': {
+        _id: 0,
+        createdAt: 0,
+        text: 0,
+        image: 0,
+        user: {
+          _id: 0,
+          avatar: 0,
+          name: 0,
+        }
+      }
     }
-
+    firestore().collection('Chats')
+    .doc('1')
+    .set(data)
+    .then(() => {console.log('update 성공')});
+  }
 
 // code map 관련 확장 프로그램 알아보기
   return (
@@ -250,7 +227,7 @@ export default function Chat(props) {
       <GiftedChat
         // showAvatarForEveryMessage={true}
         messages={messages}
-        onSend={messages => { onSend(messages); }}
+        onSend={messages => {onSend(messages);}}
         user={userInfo}
         renderActions={() => {
           return(
@@ -269,7 +246,7 @@ export default function Chat(props) {
           )}
         }
       />
-      <ImageModal visible={imgSelectVisible} setVisible={setImgSelectVisible} importFromCamera={importFromCamera} importFromAlbum={importFromAlbum} />
+      <ImageModal visible={imgSelectVisible} setVisible={setImgSelectVisible} importFromCamera={importFromCamera} importFromAlbum={importFromAlbum}/>
       {/* 사진 첨부 메뉴  */}
       {/* {imgSelectVisible && <ShowBottomSheet importFromCamera={importFromCamera}/>} */}
       {/* <ShowBottomSheet importFromCamera={importFromCamera}/> */}
@@ -280,13 +257,13 @@ export default function Chat(props) {
 
 
 
-
+  
 
   // useEffect(() => {
   //   setMessages([      {
   //       _id: 1, // 게시글 id
   //       text: 'Hello developer', // content
-  //       createdAt: new Date(),
+  //       createdAt: new Date(), 
   //       user: { // user info
   //         _id: 2,
   //         name: 'React Native',

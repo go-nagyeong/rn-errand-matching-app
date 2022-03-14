@@ -9,10 +9,10 @@ import MyCompletedErrandScreen from '../screens/Mypage/MyCompletedErrandScreen'
 
 export default MyCompletedErrandAction = (props) => {
     const myEmail = auth().currentUser.email
-    const query = firestore().collection('Posts').where('process', '==', 'finished'); //auth().currentUser.email
+    const query = firestore().collection('Posts').where('process.title', '==', 'finished'); //auth().currentUser.email
     
-    const [writerPosts, setWriterPosts] = useState(); // 본인이 작성자인 게시글
-    const [erranderPosts, setErranderPosts] = useState(); // 본인이 심부름꾼인 게시글
+    const [writerPosts, setWriterPosts] = useState([]); // 본인이 작성자인 게시글
+    const [erranderPosts, setErranderPosts] = useState([]); // 본인이 심부름꾼인 게시글
 
     const [refreshingA, setRefreshingA] = useState(false);
     const [lastVisibleA, setLastVisibleA] = useState(false);
@@ -24,12 +24,23 @@ export default MyCompletedErrandAction = (props) => {
     const [isListEndB, setIsListEndB] = useState(false);
     const [loadingB, setLoadingB] = useState(false);
 
+    const erranderData = query.where('erranderEmail', '==', myEmail).orderBy('id', 'desc')
+    const writerData = query.where('writerEmail', '==', myEmail).orderBy('id', 'desc')
+
+
+    useEffect(() => {
+      const unsubscribe = props.navigation.addListener('focus', () => {
+        erranderPostsFunc();
+        writerPostsFunc();
+      })
+      return unsubscribe;
+    }, [props.navigation]);
+
     // 본인이 심부름꾼인 게시글
     const erranderPostsFunc = () => {
         setRefreshingA(true);
-        let data = query.where('erranderEmail', '==', myEmail).orderBy('id', 'desc')
         
-        data
+        erranderData
         .limit(5)
         .get()
         .then(querySnapshot => {
@@ -85,12 +96,11 @@ export default MyCompletedErrandAction = (props) => {
     }
 
     const moreErranderPosts = () => {
-      let data = query.where('erranderEmail', '==', myEmail).orderBy('id', 'desc')
       setLoadingA(true);
 
-      data
+      erranderData
       .startAfter(lastVisibleA)
-      .limit(1)
+      .limit(4)
       .get()
       .then(querySnapshot => {
         const documentData = [];
@@ -115,12 +125,11 @@ export default MyCompletedErrandAction = (props) => {
     }
 
     const moreWriterPosts = () => {
-      let data = query.where('writerEmail', '==', myEmail).orderBy('id', 'desc')
       setLoadingB(true);
 
-      data
+      writerData
       .startAfter(lastVisibleB)
-      .limit(1)
+      .limit(4)
       .get()
       .then(querySnapshot => {
         const documentData = [];

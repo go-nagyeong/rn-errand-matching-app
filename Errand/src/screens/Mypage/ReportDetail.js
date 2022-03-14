@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import { Text, View, Button, Modal, SafeAreaView } from 'react-native'
+import { Text, View, Button, Modal, SafeAreaView, StyleSheet, Alert } from 'react-native'
 import SelectBox from 'react-native-multi-selectbox'
 import { xorBy } from 'lodash'
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
-import GestureRecognizer from 'react-native-swipe-gestures'
+import auth from '@react-native-firebase/auth';
 
 
 const K_OPTIONS = [{
@@ -31,18 +31,54 @@ const K_OPTIONS = [{
 
 const ReportDetail = (props) => {
   const [selectedTeam, setSelectedTeam] = useState({})
-  const {reportDetailVisible, setReportDetailVisible, opponentEmail, opponentNickname} = props;
+  const {reportDetailVisible, setReportDetailVisible, opponentEmail, opponentNickname, postId} = props;
   const navigation = useNavigation();
-  
+
   // 항목 선택 유무 판단 method
   const checkItem = (selectedItem) => { 
-    // 선택 0
-    if (Object.keys(selectedItem) != false) { 
-      return selectedItem['id'];
-    }
-    // 선택 X
-    alert('신고내용을 선택해주세요')
-    return false;
+    const doc = postId.toString() + 'omg'
+    firestore()
+    .collection('Posts')
+    .doc(doc)
+    .get()
+    .then(documentSnapshot => {
+        if (documentSnapshot.data()['reported']) {
+          // 중복 신고 여부 검사
+          if (documentSnapshot.data()['reported'].includes(auth().currentUser.email)) {
+            console.log('이미 신고하였습니다');
+            // Alert.alert('이미 신고하였습니다');
+            return false;
+          } else {
+            // 신고 항목 선택 여부 검사
+            if (Object.keys(selectedItem) != false) { 
+              update(selectedItem['id'], opponentEmail); // 신고 함수
+              navigation.reset({routes: [{name:'Mypage'}]}) // 뒤로가기 못하도록, 마이페이지 이동
+            } else {alert('신고내용을 선택해주세요');}
+          }
+        } else {
+          console.log('reported 속성을 가져오지 못했습니다. reported 속성을 새로 생성합니다')
+          firestore()
+          .collection('Posts')
+          .doc(doc)
+          .update({
+            reported: firestore.FieldValue.arrayUnion(), // 신고한 유저 리스트에 자신의 이메일 추가
+          })
+        }
+      })
+      .catch(error => console.log('checkItem에서 오류 발생', error))
+
+    // 신고완료하면 게시글에 자신의 이메일을 신고한 유저 property에 추가
+    // firestore()
+    // .collection('Posts')
+    // .doc(doc)
+    // .update({
+    //   reported: firestore.FieldValue.arrayUnion(auth().currentUser.email), // 신고한 유저 리스트에 자신의 이메일 추가
+    // })
+    // .then(() => {
+
+      
+    // })
+
   }
   
   // 신고 로직(All) (get data from firestore + update data to firestore)
@@ -90,7 +126,15 @@ const ReportDetail = (props) => {
       data
     })
     .then(() => {
+      const doc = postId.toString() + 'omg'
       console.log('신고 횟수가 수정되었습니다')
+      firestore()
+        .collection('Posts')
+        .doc(doc)
+        .update({
+          reported: firestore.FieldValue.arrayUnion(auth().currentUser.email), // 신고한 유저 리스트에 자신의 이메일 추가
+        })
+        .then(() => console.log('이제 다시 신고할 수 없습니다'))
     })
     .catch(((err) => {
       console.log('신고 횟수 추가에 실패하였습니다 : ', err)
@@ -103,42 +147,55 @@ const ReportDetail = (props) => {
 
   return (
     <SafeAreaView>
-      <GestureRecognizer
-        style={{flex: 1}}
-        onSwipeDown={() => {setReportDetailVisible(false)}}>
-        <Modal
-          visible={reportDetailVisible}
-          onRequestClose={() => {setReportDetailVisible(false);}}
-          animationType={'fade'}
-          // statusBarTranslucent={true} // 상태창 투명
-          >
-          <View style={{ margin: 30 }}>
-            <Text>{opponentNickname}님을 신고합니다</Text>
-            <Text style={{ fontSize: 20, paddingBottom: 10 }}>신고 내용</Text>
+      <Modal
+        visible={reportDetailVisible}
+        onRequestClose={() => {setReportDetailVisible(false);}}
+        animationType={'fade'}
+        // statusBarTranslucent={true} // 상태창 투명
+        >
+        <View 
+          style={styles.background}
+          onStartShouldSetResponder={() => {setReportDetailVisible(false);}}
+        ></View>
+        {/* margin: 30 */}
+        <View style={styles.content}> 
+          <Text>{opponentNickname}님을 신고합니다</Text>
+          <Text style={{ fontSize: 20, paddingBottom: 10 }}>신고 내용</Text>
 
-            <SelectBox
-              label=""
-              options={K_OPTIONS}
-              value={selectedTeam}
-              onChange={onChange()}
-              hideInputFilter={false}
-            />
+          <SelectBox
+            label=""
+            options={K_OPTIONS}
+            value={selectedTeam}
+            onChange={onChange()}
+            hideInputFilter={false}
+          />
 
-            <Button 
-              title={'신고하기'} 
-              onPress={() => {
-                if (checkItem(selectedTeam) !== false) { // 선택 유무 파악
-                  update(checkItem(selectedTeam), opponentEmail); // 신고 함수
-                  navigation.reset({routes: [{name:'Mypage'}]}) // 뒤로가기 못하도록, 마이페이지 이동
-                }
-              }}
-            /> 
-          </View>
-        </Modal>
-      </GestureRecognizer>
+          <Button 
+            title={'신고하기'} 
+            onPress={() => { checkItem(selectedTeam); }}
+          /> 
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transparent: true,
+    backgroundColor: 'rgba(52, 52, 52, 0.8)'
+    // backgroundColor: '#00000080',
+  },
+  content: {
+    width: 400, // 기기 별 사이즈 조정 필요
+    height: 300, // 기기 별 사이즈 조정 필요
+    backgroundColor: '#fff', padding: 20,
+  }
+})
 
 export default ReportDetail
 

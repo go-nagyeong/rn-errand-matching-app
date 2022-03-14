@@ -6,6 +6,7 @@
 */
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, FlatList, View, Text, useWindowDimensions, RefreshControl, Animated } from 'react-native';
+import { Badge } from 'react-native-elements'
 import { TabView, TabBar } from "react-native-tab-view";
 import LinearGradient from 'react-native-linear-gradient';
 
@@ -14,6 +15,8 @@ import RenderItemPerformList from './RenderItemPerformList';
 
 export default MyErrandScreen = (props) => {
     const layout = useWindowDimensions();
+
+    const { myErrandBadgeNum, myPerformErrandBadgeNum, getMyErrand, getMyPerformErrand } = props;
 
     const [index, setIndex] = useState(0);
     const [routes] = useState([
@@ -33,7 +36,7 @@ export default MyErrandScreen = (props) => {
 
     // First Screen
     const renderItemMyList = ({ item }) => {
-        return <RenderItemMyList item={item} />
+        return <RenderItemMyList item={item} getMyErrand={getMyErrand} />
     }
     const FirstRoute = () => (
         <View style={styles.boardView} >
@@ -49,7 +52,7 @@ export default MyErrandScreen = (props) => {
 
     // Second Screen
     const renderItemPerformList = ({ item }) => {
-        return <RenderItemPerformList item={item} />
+        return <RenderItemPerformList item={item} getMyPerformErrand={getMyPerformErrand} />
     }
     const SecondRoute = () => (
         <View style={styles.boardView} >
@@ -64,6 +67,15 @@ export default MyErrandScreen = (props) => {
 
 
     // Tab View
+    const renderBadge = (props) => {
+        const { route } = props;
+
+        return (
+            route.key === 'first'
+            ? myErrandBadgeNum != 0 && <Badge value={myErrandBadgeNum} status="error" />
+            : myPerformErrandBadgeNum != 0 && <Badge value={myPerformErrandBadgeNum} status="error" />
+        )
+    }
     const renderIndicator = (props) => {
         const { getTabWidth, layout, navigationState } = props;
         const width = getTabWidth();
@@ -84,9 +96,9 @@ export default MyErrandScreen = (props) => {
         <TabBar
             {...props}
             labelStyle={{ color: 'black' }}
-            // indicatorStyle={{ backgroundColor: '#5B86E5' }}
             renderIndicator={renderIndicator}
             style={{ backgroundColor: '#fff' }}
+            renderBadge={renderBadge}
         />
     );
 

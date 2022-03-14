@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native'
 import { Icon } from 'react-native-elements'
 import PropTypes from 'prop-types'
 
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
@@ -12,7 +13,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: 34,
     justifyContent: 'center',
-    marginLeft: 10,
+    marginLeft: 15,
     marginRight: 18,
     width: 34,
   },

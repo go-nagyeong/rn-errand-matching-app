@@ -69,6 +69,7 @@ export default RegisterAction = (props) => {
     
     const validatePassword = (password) => {
         var pwReg = /^.*(?=^.{6,16}$)(?=.*\d)(?=.*[a-zA-Z])(?=.*[!@#$%^&+=]).*$/;
+        const blank_pattern = /\s/;
 
         setPwEdited(true)
 
@@ -76,6 +77,8 @@ export default RegisterAction = (props) => {
             setPwErr('비밀번호를 입력해주세요.');
         } else if (!pwReg.test(password)) {
             setPwErr('영문, 숫자, 특수문자를 모두 포함 (6~16자 이내)');
+        } else if (blank_pattern.test(password)) {
+            setPwErr('공백이 포함되어 있습니다.')
         } else {
             setPwErr("");
         }

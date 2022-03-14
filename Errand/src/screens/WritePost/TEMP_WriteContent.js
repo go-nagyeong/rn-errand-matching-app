@@ -17,37 +17,14 @@ export default WriteContent = (props) => {
 
   const writeContent = () => {
     if (content) {
-      props.navigation.navigate('SelectStartDate', {color: color, category: category, price: price, title: title, content: content, image: image, })
+      props.navigation.navigate('SelectLocation', {color: color, category: category, price: price, title: title, content: content, image: image, })
     } else {
       alert("내용을 최소 한 글자 이상 작성해 주세요.")
     }
   }
 
 
-  const selectImage =  () => {
-    const options = {
-      maxWidth: 2000,
-      maxHeight: 2000,
-      storageOptions: {
-        skipBackup: true,
-        path: 'images'
-      }
-    };
-
-    launchImageLibrary(options, response => {
-      if (response["didCancel"]) {
-        console.log('User cancelled image picker');
-      } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
-      } else if (response.customButton) {
-        console.log('User tapped custom button: ', response.customButton);
-      } else {
-        const source = response['assets'][0]['uri']; 
-        const filename = source.substring(source.lastIndexOf('/') + 1);
-        setImage(Platform.OS === 'ios' ? source.replace('file://', '') : source)
-      } 
-    });
-  };
+ 
 
   const speechBallon = (content) => (
     <View style={styles.speechBalloon}>
@@ -66,32 +43,7 @@ export default WriteContent = (props) => {
         <SpeechBalloon prev='title' content={title} />
       </View>
 
-      <View style={styles.centerView}>
-        <View style={styles.inputWrapper}>
-          <Icon name='right' size={20} color={contentFocus ? color : 'black'} />
-
-          <TextInput 
-            style={[styles.input, contentFocus && {fontWeight: '600'}]}
-            placeholder="내용 입력"
-            value={content}
-            autoCapitalize='none'
-            autoCorrect={false}
-            autoFocus={true}
-            onFocus={() => setContentFocus(true)}
-            onBlur={() => setContentFocus(false)}
-            onChangeText={text => setContent(text)}
-            multiline={true}
-            returnKeyType="done"
-          />
-        </View>
-
-        <TouchableOpacity style={[styles.imageUploadButton, {borderColor: image ? color : 'gray'}]} onPress={() => selectImage()}>
-          <Icon name='camera' size={20} color={image ? color : 'gray'} style={{marginLeft: 2, marginRight: 1}} />
-          <Icon name={image ? 'check' : 'close'} size={16} color={image ? color : 'gray'} />
-        </TouchableOpacity>
-
-        <PostSubmitButton backgroundColor={color} onPress={() => writeContent()}/>
-      </View>
+      
     </Container>
   );
 };

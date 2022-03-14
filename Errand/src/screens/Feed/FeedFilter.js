@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {StyleSheet, Platform, View, Text, TouchableOpacity, Modal} from 'react-native';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import MaskedView from '@react-native-community/masked-view';
+import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
+import IOIcon from 'react-native-vector-icons/Ionicons';
 
 import CustomLabel from '../../components/CustomLabel';
 
@@ -56,8 +59,12 @@ export default FilterModal = (props) => {
 
     return (
         <View style={styles.filter}>
-            <TouchableOpacity style={styles.filterButton} activeOpacity={0.5} onPress={() => setShowFilterModal(true)}>
-                <FIcon name='filter' size={30} color="white" />
+            <TouchableOpacity style={styles.filterButton} onPress={() => setShowFilterModal(true)}>
+                <MaskedView maskElement={<IOIcon name='options-sharp' size={22} color="#000" />}>
+                    <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']}>
+                        <IOIcon name='options-sharp' size={24} color="transparent" />
+                    </LinearGradient> 
+                </MaskedView>
             </TouchableOpacity>
 
             <Modal 
@@ -69,7 +76,7 @@ export default FilterModal = (props) => {
                 <View style={styles.modalContainer}>
                     <View style={{marginBottom: 30}}>
                         <TouchableOpacity style={{alignSelf: 'flex-end'}} onPress={() => setShowFilterModal(false)}>
-                            <Icon name='close' size={28} />
+                            <Icon style={{includeFontPadding: false,}} name='close' size={28} />
                         </TouchableOpacity>
                     </View>
                     
@@ -125,12 +132,24 @@ export default FilterModal = (props) => {
 const styles = StyleSheet.create({
     filter: {
         flexDirection: 'row',
-        paddingVertical: 15,
-        paddingLeft: 20
+        paddingVertical: 18, 
     },
     filterButton: {
-        backgroundColor: 'tranparent',
-        marginRight: 15,
+        backgroundColor: '#fff',
+        borderRadius: 6,
+        paddingVertical: 2,
+        paddingLeft: 6,
+        paddingRight: 2,
+        ...Platform.select({
+            ios: {
+              shadowOpacity: 0.2,
+              shadowRadius: 4,
+              shadowOffset: {width: 3, height: 3},
+            },
+            android: {
+              elevation: 6,
+            },
+        }),
     },
 
     modalContainer: {
@@ -138,6 +157,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F6F8FA',
         padding: 12,
     },
+    
     filterWrap: {
         borderBottomWidth: 1,
         borderBottomColor: 'lightgray',

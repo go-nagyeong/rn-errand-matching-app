@@ -7,6 +7,7 @@ import Moment from 'moment';
 import { useNavigation } from '@react-navigation/native';
 import ReportDetail from './ReportDetail'
 import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 
 export default RenderItem = ({ item, reportButtonVisible }) => {
@@ -15,37 +16,50 @@ export default RenderItem = ({ item, reportButtonVisible }) => {
     
     let opponentEmail =  auth().currentUser.email === item.writerEmail ?  item.erranderEmail : item.writerEmail; // 상대방 이메일
     let opponentNickname = auth().currentUser.displayName === item.writer ? item.errander : item.writer; // 상대방 닉네임
+    
+    const [writerGrade, setWriterGrade] = useState(0)
+    firestore()
+        .collection('Users')
+        .doc(item.writerEmail)
+        .get()
+        .then(doc => {
+            if (doc.exists) {
+                setWriterGrade(doc.data()['grade'])
+            }
+        })
+
     let grade = '',
         gradeColor = '';
 
-    if (item.writerGrade >= 4.1) {
+    if (writerGrade >= 4.1) {
         grade = 'A+';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 3.6) {
+    } else if (writerGrade >= 3.6) {
         grade = 'A0';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 3.1) {
+    } else if (writerGrade >= 3.1) {
         grade = 'B+';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 2.6) {
+    } else if (writerGrade >= 2.6) {
         grade = 'B0';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 2.1) {
+    } else if (writerGrade >= 2.1) {
         grade = 'C+';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 1.6) {
+    } else if (writerGrade >= 1.6) {
         grade = 'C0';
         gradeColor = '#4CA374';
-    } else if (item.writerGrade >= 1.1) {
+    } else if (writerGrade >= 1.1) {
         grade = 'D+';
         gradeColor = '#EB4E3D';
-    } else if (item.writerGrade >= 0.6) {
+    } else if (writerGrade >= 0.6) {
         grade = 'D0';
         gradeColor = '#EB4E3D';
     } else {
         grade = 'F';
         gradeColor = '#EB4E3D';
     }
+
 
     categoryIconStyle = {
         마트: ['green', 'shoppingcart'],
@@ -60,7 +74,7 @@ export default RenderItem = ({ item, reportButtonVisible }) => {
 
     return (
         // runErrandVisible : 심부름 수행하기 버튼 활성화/비활성화
-        <TouchableOpacity   title = { item.title  +  ' ' + item.content }   onPress={() => {navigation.navigate('ShowDetailPost', {runErrandVisible: true, title: item.title, content: item.content, writerName : item.writer, writergrade : grade, price : item.price, email : item.writerEmail, id : item.id });} } >  
+        <TouchableOpacity   title = { item.title  +  ' ' + item.content }   onPress={() => {navigation.navigate('CompletedDetailPost', {runErrandVisible: true, title: item.title, content: item.content, writerName : item.writer, writergrade : grade, price : item.price, email : item.writerEmail, id : item.id });} } >  
             <View style={{flexDirection: 'row', backgroundColor: '#fff', height: 100, marginBottom: 15, padding: 15, borderRadius: 10}}>
                 {/* 카테고리 아이콘 */}
                 <View style={{backgroundColor: categoryIconStyle[item.category][0], borderRadius: 30, padding: 10, marginRight: 15, alignSelf: 'center'}}>
@@ -94,23 +108,22 @@ export default RenderItem = ({ item, reportButtonVisible }) => {
                       </View>
                     }   
                     {/* 신고버튼 */}
-                    {reportButtonVisible && // alarm-light
-                      <TouchableOpacity onPress={() => {setReportDetailVisible(true);}}>
+                    {reportButtonVisible && // <MIcon>:alarm-light, <Icon>:notification
+                      <TouchableOpacity onPress={() => {setReportDetailVisible(true);}} style={{padding: 8, paddingBottom: 15}}>
                         <View>
-                          <Icon name='notification' size={20} color={'red'}/> 
+                          <MIcon name='alarm-light' size={21} color={'red'}/> 
                         </View>
                       </TouchableOpacity>
                     }
-                    {/* 신고 내용 작성하는 Modal */}
-                    <ReportDetail reportDetailVisible={reportDetailVisible} setReportDetailVisible={setReportDetailVisible} opponentEmail={opponentEmail} opponentNickname={opponentNickname}/>
                     <Text style={{fontSize: 13, color: '#C2C2C2'}}>
                         {Moment(item.date.toDate()).diff(Moment(), 'days') >= -2
                             ? Moment(item.date.toDate()).fromNow()
                             : Moment(item.date.toDate()).format('YY/MM/DD')}
                     </Text>
+                    {/* 신고 내용 작성하는 Modal */}
+                    <ReportDetail reportDetailVisible={reportDetailVisible} setReportDetailVisible={setReportDetailVisible} opponentEmail={opponentEmail} opponentNickname={opponentNickname} postId={item.id}/>
                 </View>
             </View>
         </TouchableOpacity   >  
-       
     );
 }

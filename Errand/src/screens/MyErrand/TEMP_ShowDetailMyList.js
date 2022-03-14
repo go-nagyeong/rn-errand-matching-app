@@ -11,8 +11,6 @@ import { Avatar, ListItem } from 'react-native-elements'
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 
-import ErrandRating from './ErrandRating'
-
 export default ShowDetailMyList = (props) => {
   const { id, erranderEmail, errandPrice, errander, errandProcess } = props.route.params;
 
@@ -143,6 +141,8 @@ export default ShowDetailMyList = (props) => {
             .collection('Posts')
             .doc(id.toString())
             .delete()
+
+          props.navigation.navigate('MyErrand')
         },
         style: "default",
       },

@@ -6,18 +6,21 @@ import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import Container from '../../components/Container';
 import SpeechBalloon from '../../components/SpeechBalloon';
 import PostSubmitButton from '../../components/PostSubmitButton';
+import PriceButton from '../../components/PriceButton';
 
 export default InputPrice = (props) => {
   const [price, setPrice] = useState('');
   const [minusIsDisabled, setMinusIsDisabled] = useState(false)
-  
+
+  const [message, setMessage] = useState("")
+
   const { color, category } = props.route.params;
 
   const inputPrice = () => {
     if (price) {
-      props.navigation.navigate('WriteTitle', {color: color, category: category, price: price, }) 
+      props.navigation.navigate('WriteTitle', { color: color, category: category, price: price, })
     } else {
-      alert('금액을 입력해주세요.')
+      setMessage('금액을 입력해주세요.')
     }
   }
 
@@ -25,7 +28,7 @@ export default InputPrice = (props) => {
   // 최소/최대 금액을 제한하는 부분
   useEffect(() => {
     let priceNum = Number(price.replace(',', ''))
-
+    setMessage('')
     if (priceNum <= 0) {
       setMinusIsDisabled(true)
     } else if (priceNum >= 100000) {
@@ -46,9 +49,9 @@ export default InputPrice = (props) => {
     let priceNum = Number(price.replace(',', ''))
 
     if (upAndDown === 'minus') {
-      return (priceNum-500).toString()
+      return (priceNum - 500).toString()
     } else if (upAndDown === 'plus') {
-      return (priceNum+500).toString()
+      return (priceNum + 500).toString()
     }
   }
 
@@ -66,7 +69,7 @@ export default InputPrice = (props) => {
         <View style={styles.inputWrapper}>
           <FontAwesomeIcon name='won' size={20} color='black' />
 
-          <TextInput 
+          <TextInput
             style={styles.input}
             keyboardType='numeric'
             placeholder="금액 입력"
@@ -80,7 +83,8 @@ export default InputPrice = (props) => {
             onSubmitEditing={() => inputPrice()}
           />
 
-          <TouchableOpacity disabled={minusIsDisabled} style={{marginRight: 8}} onPress={() => onChangePrice(upAndDownPrice('minus'))}>
+
+          <TouchableOpacity disabled={minusIsDisabled} style={{ marginRight: 8 }} onPress={() => onChangePrice(upAndDownPrice('minus'))}>
             <AntDesignIcon name='minuscircleo' size={24} color={minusIsDisabled ? 'gray' : color} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => onChangePrice(upAndDownPrice('plus'))}>
@@ -88,7 +92,16 @@ export default InputPrice = (props) => {
           </TouchableOpacity>
         </View>
 
-        <PostSubmitButton backgroundColor={color} onPress={() => inputPrice()}/>
+        {message !== "" && <Text style={styles.message} >{message}</Text>}
+
+        <View style={{flexDirection: 'row', marginBottom: 70}}>
+          <PriceButton price='1000' borderColor={color} onPress={() => onChangePrice('1000')} />
+          <PriceButton price='2000' borderColor={color} onPress={() => onChangePrice('2000')} />
+          <PriceButton price='3000' borderColor={color} onPress={() => onChangePrice('3000')} />
+          <PriceButton price='5000' borderColor={color} onPress={() => onChangePrice('5000')} />
+        </View>
+
+        <PostSubmitButton backgroundColor={color} onPress={() => inputPrice()} />
       </View>
     </Container>
   );
@@ -122,12 +135,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     flexDirection: 'row',
     paddingHorizontal: 10,
-    paddingVertical: Platform.OS === 'ios' ? 20:10,
-    marginBottom: 70,
+    paddingVertical: Platform.OS === 'ios' ? 20 : 10,
+    marginBottom: 15,
   },
   input: {
     width: '65%',
     fontSize: 18,
     marginHorizontal: 10,
   },
+  message: {
+    fontSize: 14,
+    marginLeft: 10,
+    marginBottom: 20,
+    color: 'red'
+  }
 });

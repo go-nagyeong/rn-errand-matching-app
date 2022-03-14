@@ -7,66 +7,77 @@ import ReNameScreen from '../screens/Mypage/ReNameScreen';
 const users = firestore().collection('Users');
 
 export default ReNameAction = (props) => {
-    const [err, setErr] = useState('');
-    const nicknameReg  =  /^[\w\Wㄱ-ㅎㅏ-ㅣ가-힣]{2,20}$/
+    const [nameErr, setNameErr] = useState('');
+    const nameReg = /^[a-zA-Z0-9ㄱ-힣-_.]{2,10}$/;
+
+    // const nicknameReg  =  /^[\w\Wㄱ-ㅎㅏ-ㅣ가-힣]{2,20}$/ // 2~20 자 이내 
+    const blank_pattern = /\s/;
+
+    const validateName = (nickname) => {
+      if(!nickname) {
+        setNameErr('이름을 입력해주세요.');
+        console.log('이름을 입력해주세요.');
+        return false;
+      } else if (!nameReg.test(nickname)) {
+        setNameErr('2~10자 한글, 영문, 숫자, 특수문자 -_.만 사용 가능');
+        console.log('2~10자 한글, 영문, 숫자, 특수문자 -_.만 사용 가능');
+        return false;
+      } else {
+        setNameErr('');
+        return true;
+      }
+    }
     
     const changeName = (nickname) => {
-        // auth().onAuthStateChanged((user) => {doc = user.email});
-        // 로그인 되어있다는 전제에서 동작가능! 
+      // auth().onAuthStateChanged((user) => {doc = user.email});
+      // 로그인 되어있다는 전제에서 동작가능!
+      if (validateName(nickname)) {
         users
         .where('nickname', '==', nickname)
         .get()
         .then(querySnapshot => {
-            if(querySnapshot.size >= 1) { // 중복 검사
-                console.log('값이 이미 존재합니다');
-            } else { // 유효성 검사
-                if(!nickname) {
-                    console.log('이름을 입력해주세요.');
-                }
-                else if(!nicknameReg.test(nickname)){
-                    console.log('글자 수 (2~20자 이내)');
-                }else {
-                    // firestore에 존재하는 nickname 변경
-                    firestore()
-                        .collection('Users')
-                        .doc(auth().currentUser.email)
-                        .update({
-                            'nickname': nickname,
-                        })
-                        .then(() => {
-                            console.log('이름 변경완료');
-                        })
-                        .catch(err => {console.log(err)})
-                    
-                    // auth에 존재하는 nickname 변경
-                    auth()
-                    .currentUser
-                    .updateProfile({
-                        displayName: nickname
-                    })
-                    .then(() => {
-                        console.log('success')
-                        Alert.alert(
-                            "이름 변경",
-                            "이름 변경이 완료되었습니다.",
-                            [{
-                                text: "확인",
-                                onPress: () => props.navigation.navigate('Mypage'),
-                                style: "cancel",
-                            }],
-                        );
-                    })
-                }
-            }
+          if(querySnapshot.size >= 1) { // 중복 검사
+            setNameErr('이미 사용 중인 이름입니다.');
+            console.log('이미 사용 중인 이름입니다.');
+          } 
+          else {
+            // firestore에 존재하는 nickname 변경
+            firestore()
+                .collection('Users')
+                .doc(auth().currentUser.email)
+                .update({'nickname': nickname,})
+                .then(() => {
+                    console.log('이름 변경완료');
+                })
+                .catch(err => {console.log(err)})
+            
+            // auth에 존재하는 nickname 변경
+            auth()
+            .currentUser
+            .updateProfile({displayName: nickname})
+            .then(() => {
+                console.log('success')
+                Alert.alert(
+                    "이름 변경",
+                    "이름 변경이 완료되었습니다.",
+                    [{
+                        text: "확인",
+                        onPress: () => props.navigation.navigate('Mypage'),
+                        style: "cancel",
+                    }],
+                );
+            })
+          }
         })
-        
-    }
+      }
+  }
 
-    return <ReNameScreen
-        // navi = {props.navigation} 
-        err = {err}
-        changeName = {changeName}
-        />
+  return <ReNameScreen
+      // navi = {props.navigation} 
+      nameErr = {nameErr}
+      validateName = {validateName}
+      changeName = {changeName}
+      />
 }
 
 /*

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Fontisto';
@@ -7,9 +7,15 @@ import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 import Container from '../../components/Container';
 
 export default ReNameScreen = (props) => {
-    console.log('이름 수정 페이지 입니다');
-    const [name, setName] = useState('');
-    //var admin = require('firebase-admin');*
+    const [nickname, setNickname] = useState('');
+    const [nicknameFocus, setNicknameFocus] = useState(false);
+
+    useEffect(() => {
+      if(nicknameFocus) {
+        props.validateName(nickname);
+      }
+    }, [nickname]);
+
     return (
         <Container>
             <View style={styles.titleWrapper}>
@@ -20,28 +26,41 @@ export default ReNameScreen = (props) => {
                 <TextInput 
                     style={styles.input}
                     placeholder="Name"
-                    value={name}
+                    value={nickname}
                     autoCapitalize='none'
                     autoCorrect={false}
-                    onChangeText={text => {setName(text)}}
                     blurOnSubmit={false}
-                    onSubmitEditing={() => {props.changeName(name)}}
+                    onFocus={() => {setNicknameFocus(true);}}
+                    onBlur={() => {setNicknameFocus(false);}}
+                    onChangeText={text => {setNickname(text)}}
+                    onSubmitEditing={() => {props.changeName(nickname)}}
                     selectionColor="#292929"
                     // react-native-paper
                     activeUnderlineColor='#53B77C'
                     left={<TextInput.Icon name={() => <Icon name="email" size={20} color="#53B77C" />} />}
+                    right={
+                        <TextInput.Icon name={() => 
+                          <AntDesignIcon 
+                            name={props.nameErr ? "warning":"checkcircleo"} 
+                            size={15} 
+                            color={props.nameErr ? "red":"green"} 
+                          />} 
+                        />
+                      }
                 />
-                <Text style={{
+                <Text style={{fontSize: 14, marginBottom: props.nameErr ? 10 : -10, color: 'red'}}>{props.nameErr}</Text>
+
+                {/* <Text style={{
                     fontSize: 14,
                     // marginBottom: props.err ? 30 : 0, 
                     // color: props.err.charAt(0) === "비" ? 'green' : 'red'
                 }}>
                 {props.err}
-                </Text>
+                </Text> */}
             </View>
             <View style={styles.buttonWrapper}>
-                <TouchableOpacity style={styles.squareButton} onPress={() => {props.changeName(name)}}>
-                    <Text style={styles.squareButtonText}>{name && !props.err ? "전송" : "이름 변경하기"}</Text>
+                <TouchableOpacity style={styles.squareButton} onPress={() => {props.changeName(nickname)}}>
+                    <Text style={styles.squareButtonText}>{nickname && !props.err ? "전송" : "이름 변경하기"}</Text>
                 </TouchableOpacity>
             </View>
         </Container>
