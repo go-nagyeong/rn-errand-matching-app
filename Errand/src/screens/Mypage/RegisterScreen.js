@@ -3,7 +3,9 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
+import Colors from '../../constants/Colors';
 import Container from '../../components/Container';
+import SubmitButton from '../../components/SubmitButton';
 
 export default RegisterScreen = (props) => {
   const [nicknameFocus, setNicknameFocus] = useState(false);
@@ -45,7 +47,7 @@ export default RegisterScreen = (props) => {
   return (
     <Container>
       <View style={styles.titleWrapper}>
-        <Text style={styles.title}>Register</Text>
+        <Text style={styles.title}>회원가입</Text>
       </View>
 
       <View style={styles.inputWrapper}>
@@ -60,26 +62,26 @@ export default RegisterScreen = (props) => {
           onBlur={() => {setNicknameFocus(false)}}
           onChangeText={text => {setNickname(text)}}
           onSubmitEditing={() => {this.secondTextInput.focus()}}
-          selectionColor="#292929"
+          selectionColor={Colors.darkGray2}
           // react-native-paper
-          underlineColor={props.nameIsEdited ? (props.nameErr ? 'red':'#53B77C') : null}
-          activeUnderlineColor={props.nameErr ? 'red':'#53B77C'}
+          underlineColor={props.nameIsEdited ? (props.nameErr ? Colors.red : Colors.cyan) : null}
+          activeUnderlineColor={props.nameErr ? Colors.red : Colors.cyan}
           right={props.nameIsEdited && 
             <TextInput.Icon name={() => 
               <AntDesignIcon 
-                name={props.nameErr ? "warning":"checkcircleo"} 
+                name={props.nameErr ? "warning" : "checkcircleo"} 
                 size={15} 
-                color={props.nameErr ? "red":"green"} 
+                color={props.nameErr ? Colors.red : Colors.cyan} 
               />} 
             />
           }
         />
-        <Text style={{fontSize: 14, marginBottom: props.nameErr ? 10 : -10, color: 'red'}}>{props.nameErr}</Text>
+        <Text style={{fontSize: 14, marginBottom: props.nameErr ? 10 : -10, color: Colors.red}}>{props.nameErr}</Text>
 
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <TextInput 
             style={[styles.input, {width: '50%'}]}
-            placeholder="이메일"
+            placeholder="학교 이메일"
             value={id}
             autoCapitalize='none'
             autoCorrect={false}
@@ -88,24 +90,24 @@ export default RegisterScreen = (props) => {
             onBlur={() => {setIdFocus(false)}}
             onChangeText={text => {setId(text)}}
             onSubmitEditing={() => {this.thirdTextInput.focus()}}
-            selectionColor="#292929"
+            selectionColor={Colors.darkGray2}
             ref={(input) => { this.secondTextInput = input; }}
             // react-native-paper
-            underlineColor={props.idIsEdited ? (props.idErr ? 'red':'#53B77C') : null}
-            activeUnderlineColor={props.idErr ? 'red':'#53B77C'}
+            underlineColor={props.idIsEdited ? (props.idErr ? Colors.red : Colors.cyan) : null}
+            activeUnderlineColor={props.idErr ? Colors.red : Colors.cyan}
             right={props.idIsEdited && 
               <TextInput.Icon name={() => 
                 <AntDesignIcon 
-                  name={props.idErr ? "warning":"checkcircleo"} 
+                  name={props.idErr ? "warning" : "checkcircleo"} 
                   size={15} 
-                  color={props.idErr ? "red":"green"} 
+                  color={props.idErr ? Colors.red : Colors.cyan} 
                 />} 
               />
             }
           />
           <Text style={{fontSize: 16, paddingBottom: 12}}> @student.anu.ac.kr</Text>
         </View>
-        <Text style={{fontSize: 14, marginBottom: props.idErr ? 10 : -10, color: 'red'}}>{props.idErr}</Text>
+        <Text style={{fontSize: 14, marginBottom: props.idErr ? 10 : -10, color: Colors.red}}>{props.idErr}</Text>
 
         <TextInput 
           style={styles.input}
@@ -118,23 +120,23 @@ export default RegisterScreen = (props) => {
           onBlur={() => {setPwFocus(false)}}
           onChangeText={text => {setPassword(text)}}
           onSubmitEditing={() => {this.fourthTextInput.focus()}}
-          selectionColor="#292929"
+          selectionColor={Colors.darkGray2}
           secureTextEntry={true}
           ref={(input) => { this.thirdTextInput = input; }}
           // react-native-paper
-          underlineColor={props.pwIsEdited ? (props.pwErr ? 'red':'#53B77C') : null}
-          activeUnderlineColor={props.pwErr ? 'red':'#53B77C'}
+          underlineColor={props.pwIsEdited ? (props.pwErr ? Colors.red : Colors.cyan) : null}
+          activeUnderlineColor={props.pwErr ? Colors.red : Colors.cyan}
           right={props.pwIsEdited && 
             <TextInput.Icon name={() => 
               <AntDesignIcon 
-                name={props.pwErr ? "warning":"checkcircleo"} 
+                name={props.pwErr ? "warning" : "checkcircleo"} 
                 size={15} 
-                color={props.pwErr ? "red":"green"} 
+                color={props.pwErr ? Colors.red : Colors.cyan} 
               />} 
             />
           }
         />
-        <Text style={{fontSize: 14, marginBottom: props.pwErr ? 10 : -10, color: 'red'}}>{props.pwErr}</Text>
+        <Text style={{fontSize: 14, marginBottom: props.pwErr ? 10 : -10, color: Colors.red}}>{props.pwErr}</Text>
 
         <TextInput 
           style={styles.input}
@@ -147,38 +149,36 @@ export default RegisterScreen = (props) => {
           onBlur={() => {setRePwFocus(false)}}
           onChangeText={text => {setConfirmPassword(text)}}
           onSubmitEditing={() => {props.createUser(nickname, id, password, confirmPassword)}}
-          selectionColor="#292929"
+          selectionColor={Colors.darkGray2}
           secureTextEntry={true}
           ref={(input) => { this.fourthTextInput = input; }}
           // react-native-paper
-          underlineColor={props.rePwIsEdited ? (props.rePwErr ? 'red':'#53B77C') : null}
-          activeUnderlineColor={props.rePwErr ? 'red':'#53B77C'}
+          underlineColor={props.rePwIsEdited ? (props.rePwErr ? Colors.red : Colors.cyan) : null}
+          activeUnderlineColor={props.rePwErr ? Colors.red : Colors.cyan}
           right={props.rePwIsEdited && 
             <TextInput.Icon name={() => 
               <AntDesignIcon 
-                name={props.rePwErr ? "warning":"checkcircleo"} 
+                name={props.rePwErr ? "warning" : "checkcircleo"} 
                 size={15} 
-                color={props.rePwErr ? "red":"green"} 
+                color={props.rePwErr ? Colors.red : Colors.cyan} 
               />} 
             />
           }
         />
-        <Text style={{fontSize: 14, marginBottom: props.rePwErr ? 10 : -10, color: 'red'}}>{props.rePwErr}</Text>
+        <Text style={{fontSize: 14, marginBottom: props.rePwErr ? 10 : -10, color: Colors.red}}>{props.rePwErr}</Text>
 
         <Text style={{
           fontSize: 14, 
           marginLeft: 10, 
           marginBottom: props.err ? 20 : 0, 
-          color: 'red'
+          color: Colors.red
         }}>
         {props.err}
         </Text>
       </View>
 
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={[styles.squareButton, {marginBottom: 30}]} onPress={() => {props.createUser(nickname, id, password, confirmPassword)}}>
-          <Text style={styles.squareButtonText}>REGISTER</Text>
-        </TouchableOpacity>
+        <SubmitButton title="REGISTER" onPress={() => props.createUser(nickname, id, password, confirmPassword)} />
       </View>
     </Container>
   );
@@ -191,35 +191,20 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   title: {
-    fontFamily: 'Roboto-Bold',
-    color: 'black',
-    fontSize: 30,
+    includeFontPadding: false,
+    fontFamily: 'NotoSansKR-Medium',
+    color: Colors.black,
+    fontSize: 28,
   },
   inputWrapper: {
     paddingHorizontal: 30,
-    marginBottom: 10,
+    marginBottom: 30,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     marginBottom: 12,
   },
   buttonWrapper: {
     paddingHorizontal: 35,
-  },
-  squareButton: {
-    backgroundColor: '#53B77C',
-    paddingVertical: 13,
-    alignItems: 'center',
-    borderRadius: 5,
-  },
-  squareButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  textButtonText: {
-    color: "#53B77C",
-    fontSize: 16,
-    fontWeight: "600",
   },
 });

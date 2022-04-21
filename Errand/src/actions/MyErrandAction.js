@@ -1,31 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 
+import * as Firebase from '../utils/Firebase';
 import MyErrandScreen from '../screens/MyErrand/MyErrandScreen';
 
 export default MyErrandAction = (props) => {
-    const user = auth().currentUser;
-
     const [myErrandBadgeNum, setMyErrandBadgeNum] = useState(0);
     const [myPerformErrandBadgeNum, setMyPerformErrandBadgeNum] = useState(0);
   
-    const posts = firestore().collection("Posts");
-    posts
-        .where("writerEmail", "==", user.email)
-        .where("process.title", "in", ["request", "finishRequest"])
-        .onSnapshot((querySnapshot) => {
-            setMyErrandBadgeNum(querySnapshot.size);
-        });
-    posts
-        .where("erranderEmail", "==", user.email)
-        .where("process.title", "==", "matching")
-        .onSnapshot((querySnapshot) => {
-            setMyPerformErrandBadgeNum(querySnapshot.size);
-        });
+    useEffect(() => {
+        const unsubscribe1 = Firebase.postsRef
+            .where("writerEmail", "==", Firebase.currentUser.email)
+            .where("process.title", "in", ["request", "finishRequest"])
+            .onSnapshot((querySnapshot) => {
+                setMyErrandBadgeNum(querySnapshot.size);
+            });
+        const unsubscribe2 = Firebase.postsRef
+            .where("erranderEmail", "==", Firebase.currentUser.email)
+            .where("process.title", "==", "matching")
+            .onSnapshot((querySnapshot) => {
+                setMyPerformErrandBadgeNum(querySnapshot.size);
+            });
+        
+        return unsubscribe1, unsubscribe2;
+    }, [])
 
 
-    const [refreshing, setRefreshing] = useState(false)
+    const [refreshingL, setRefreshingL] = useState(false)
+    const [refreshingR, setRefreshingR] = useState(false)
     const [myErrand, setMyErrand] = useState();
     const [myPerformErrand, setMyPerformErrand] = useState();
 
@@ -40,11 +41,11 @@ export default MyErrandAction = (props) => {
     }, [props.navigation]);
 
 
-    const getMyErrand = async () => {
-        setRefreshing(true)
+    const getMyErrand = () => {
+        setRefreshingL(true)
         
-        posts
-            .where('writerEmail', '==', auth().currentUser.email)
+        Firebase.postsRef
+            .where('writerEmail', '==', Firebase.currentUser.email)
             .where('process.myErrandOrder', '!=', 5)
             .orderBy('process.myErrandOrder', 'asc')
             .orderBy('id', 'desc')
@@ -59,14 +60,14 @@ export default MyErrandAction = (props) => {
                 })
                 setMyErrand(documentData);
 
-                setRefreshing(false)
+                setRefreshingL(false)
             })
     }
     const getMyPerformErrand = () => {
-        setRefreshing(true)
+        setRefreshingR(true)
 
-        posts
-            .where('erranderEmail', '==', auth().currentUser.email)
+        Firebase.postsRef
+            .where('erranderEmail', '==', Firebase.currentUser.email)
             .where('process.myPerformErrandOrder', '<=', 3)
             .orderBy('process.myPerformErrandOrder', 'asc')
             .orderBy('id', 'desc')
@@ -81,7 +82,7 @@ export default MyErrandAction = (props) => {
                 })
                 setMyPerformErrand(documentData);
                 
-                setRefreshing(false)
+                setRefreshingR(false)
             })
     }
 
@@ -92,6 +93,7 @@ export default MyErrandAction = (props) => {
                 getMyPerformErrand={getMyPerformErrand}
                 myErrand={myErrand}
                 myPerformErrand={myPerformErrand}
-                refreshing={refreshing}
+                refreshingL={refreshingL}
+                refreshingR={refreshingR}
             />
 }

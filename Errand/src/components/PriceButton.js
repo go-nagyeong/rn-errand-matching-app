@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 
-const width = Dimensions.get('window').width;
+import Colors from '../constants/Colors';
 
 export default PriceButton = (props) => {
     const {price, borderColor, onPress} = props;
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     buttonText: {
-        color: '#090909',
+        color: Colors.black,
         fontSize: 14,
     }
 });

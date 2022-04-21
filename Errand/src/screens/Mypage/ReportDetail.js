@@ -1,203 +1,169 @@
-import React, { useState } from 'react'
-import { Text, View, Button, Modal, SafeAreaView, StyleSheet, Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Text, View, Modal, StyleSheet, Alert, TouchableOpacity, TouchableWithoutFeedback, Button, Animated} from 'react-native'
+import Icon from 'react-native-vector-icons/Ionicons';
 import SelectBox from 'react-native-multi-selectbox'
-import { xorBy } from 'lodash'
 import firestore from '@react-native-firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
-import auth from '@react-native-firebase/auth';
 
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
+import * as Firebase from '../../utils/Firebase';
 
-const K_OPTIONS = [{
-    item: '성희롱을 해요',
-    id: '성희롱',
-  },
+const modalHeight = parseInt(Common.height/2.8);
+
+const K_OPTIONS = [
   {
-    item: '비매너 사용자예요',
+    item: '비매너 사용자예요.',
     id: '비매너',
   },
   {
-    item: '욕설을 해요',
-    id: '욕설',
-  },
-  {
-    item: '사기 사용자예요',
+    item: '사기를 당했어요.',
     id: '사기',
   },
   {
-    item: '연애 목적의 대화를 시도해요',
-    id: '연애목적',
+    item: '불건전한 만남 및 대화를 요구해요.',
+    id: '성희롱',
+  },
+  {
+    item: '욕설 및 비하를 해요.',
+    id: '욕설',
   },
 ]
 
-const ReportDetail = (props) => {
-  const [selectedTeam, setSelectedTeam] = useState({})
-  const {reportDetailVisible, setReportDetailVisible, opponentEmail, opponentNickname, postId} = props;
+export default ReportDetail = (props) => {
   const navigation = useNavigation();
 
-  // 항목 선택 유무 판단 method
-  const checkItem = (selectedItem) => { 
-    const doc = postId.toString() + 'omg'
-    firestore()
-    .collection('Posts')
-    .doc(doc)
-    .get()
-    .then(documentSnapshot => {
-        if (documentSnapshot.data()['reported']) {
-          // 중복 신고 여부 검사
-          if (documentSnapshot.data()['reported'].includes(auth().currentUser.email)) {
-            console.log('이미 신고하였습니다');
-            // Alert.alert('이미 신고하였습니다');
-            return false;
-          } else {
-            // 신고 항목 선택 여부 검사
-            if (Object.keys(selectedItem) != false) { 
-              update(selectedItem['id'], opponentEmail); // 신고 함수
-              navigation.reset({routes: [{name:'Mypage'}]}) // 뒤로가기 못하도록, 마이페이지 이동
-            } else {alert('신고내용을 선택해주세요');}
-          }
-        } else {
-          console.log('reported 속성을 가져오지 못했습니다. reported 속성을 새로 생성합니다')
-          firestore()
-          .collection('Posts')
-          .doc(doc)
-          .update({
-            reported: firestore.FieldValue.arrayUnion(), // 신고한 유저 리스트에 자신의 이메일 추가
-          })
-        }
-      })
-      .catch(error => console.log('checkItem에서 오류 발생', error))
-
-    // 신고완료하면 게시글에 자신의 이메일을 신고한 유저 property에 추가
-    // firestore()
-    // .collection('Posts')
-    // .doc(doc)
-    // .update({
-    //   reported: firestore.FieldValue.arrayUnion(auth().currentUser.email), // 신고한 유저 리스트에 자신의 이메일 추가
-    // })
-    // .then(() => {
-
-      
-    // })
-
-  }
-  
-  // 신고 로직(All) (get data from firestore + update data to firestore)
-  const update = (selectedItem, email) => { // 신고
-    firestore()
-    .collection('Users')
-    .doc(email)
-    .get()
-    .then((documentSnapshot) => {
-      let reportCnt_0 = documentSnapshot.data()['data'][K_OPTIONS[0].id]; // 성희롱
-      let reportCnt_1 = documentSnapshot.data()['data'][K_OPTIONS[1].id]; // 비매너
-      let reportCnt_2 = documentSnapshot.data()['data'][K_OPTIONS[2].id]; // 욕설
-      let reportCnt_3 = documentSnapshot.data()['data'][K_OPTIONS[3].id]; // 사기
-      let reportCnt_4 = documentSnapshot.data()['data'][K_OPTIONS[4].id]; // 연애 목적
-      
-      switch (selectedItem) {
-        case('성희롱') : reportCnt_0++; break;
-        case('비매너') : reportCnt_1++; break;
-        case('욕설') : reportCnt_2++; break;
-        case('사기') : reportCnt_3++; break;
-        case('연애목적') : reportCnt_4++; break;
-      }
-      updateReportCount(email, reportCnt_0, reportCnt_1, reportCnt_2, reportCnt_3, reportCnt_4) // 비동기라 then에서 작업 필요
-    })
-    .catch((err => {
-      console.log('report_cnt 값을 가져오는데 실패하였습니다 : ', err)
-    }))
-  }
-
-  // 신고 로직 (firestore에 업데이트)
-  const updateReportCount = (email, reportCnt_0, reportCnt_1, reportCnt_2, reportCnt_3, reportCnt_4) => {
-    let data = {
-      '성희롱' : reportCnt_0,
-      '비매너' : reportCnt_1,
-      '욕설' : reportCnt_2,
-      '사기' : reportCnt_3,
-      '연애목적' : reportCnt_4,
+  // 모달 바텀시트로 만들기
+  const [modalYAnim, setmodalYAnim] = useState(new Animated.Value(modalHeight));
+  useEffect(() => {
+    if (props.visible) {
+      showModal()
     }
-    console.log(data) // firestore에서 데이터 가져온것 확인
-    
-    firestore()
-    .collection('Users')
-    .doc(email)
-    .update({
-      data
-    })
-    .then(() => {
-      const doc = postId.toString() + 'omg'
-      console.log('신고 횟수가 수정되었습니다')
-      firestore()
-        .collection('Posts')
-        .doc(doc)
-        .update({
-          reported: firestore.FieldValue.arrayUnion(auth().currentUser.email), // 신고한 유저 리스트에 자신의 이메일 추가
-        })
-        .then(() => console.log('이제 다시 신고할 수 없습니다'))
-    })
-    .catch(((err) => {
-      console.log('신고 횟수 추가에 실패하였습니다 : ', err)
-    }))
-  }
+  }, [props.visible])
+  const showModal = () => {
+    Animated.timing(modalYAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true
+    }).start();
+  };
+  const hideModal = () => {
+    Animated.timing(modalYAnim, {
+      toValue: modalHeight,
+      duration: 200,
+      useNativeDriver: true
+    }).start(() => props.onRequestClose());
+  };
   
-  function onChange() {
-    return (val) => {setSelectedTeam(val);}
+
+  const docId = props.postId + '%' + props.writerEmail;
+  const [selectedItem, setSelectedItem] = useState({});
+  
+  const updateReportCount = () => {
+    if (Object.keys(selectedItem) != false) {
+      let updateDate = {}
+      updateDate[`data.${selectedItem.id}`] = firestore.FieldValue.increment(1);
+
+      Firebase.usersRef
+        .doc(props.opponentEmail)
+        .update(updateDate)
+        .then(() => {
+          props.getPosts()
+
+          // 신고 중복 여부 검사를 위한 필드 업데이트
+          Firebase.postsRef
+            .doc(docId)
+            .update({
+              reported: firestore.FieldValue.arrayUnion(Firebase.currentUser.email), // 신고한 유저 리스트에 자신의 이메일 추가
+            })
+            .then(() => console.log('이제 다시 신고할 수 없습니다'))
+        })
+        .catch(err => console.log(err))
+    } else {
+      alert('신고 사유를 선택해주세요.')
+    }
   }
 
   return (
-    <SafeAreaView>
-      <Modal
-        visible={reportDetailVisible}
-        onRequestClose={() => {setReportDetailVisible(false);}}
-        animationType={'fade'}
-        // statusBarTranslucent={true} // 상태창 투명
-        >
-        <View 
-          style={styles.background}
-          onStartShouldSetResponder={() => {setReportDetailVisible(false);}}
-        ></View>
-        {/* margin: 30 */}
-        <View style={styles.content}> 
-          <Text>{opponentNickname}님을 신고합니다</Text>
-          <Text style={{ fontSize: 20, paddingBottom: 10 }}>신고 내용</Text>
+    <Modal
+      visible={props.visible}
+      onRequestClose={() => hideModal()}
+      animationType='fade'
+      transparent={true}
+    >
+      <TouchableOpacity style={styles.modalBackground} onPress={() => hideModal()}>
+        <TouchableWithoutFeedback>
+          <Animated.View style={[styles.modalView, {transform: [{translateY: modalYAnim}]}]}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => hideModal()}>
+              <Icon name='close' size={26} />
+            </TouchableOpacity>
 
-          <SelectBox
-            label=""
-            options={K_OPTIONS}
-            value={selectedTeam}
-            onChange={onChange()}
-            hideInputFilter={false}
-          />
+            <View style={styles.selectBox}>
+              <SelectBox
+                label="신고 사유"
+                options={K_OPTIONS}
+                value={selectedItem}
+                onChange={(val) => setSelectedItem(val)}
+                hideInputFilter={true}
+                containerStyle={{alignItems: 'center'}}
+                labelStyle={{fontSize: 13}}
+                optionsLabelStyle={{includeFontPadding: false, fontSize: 14, fontFamily: 'NotoSansKR-Regular'}}
+                selectedItemStyle={{includeFontPadding: false, fontSize: 15, fontFamily: 'NotoSansKR-Regular'}}
+              />
+            </View>
 
-          <Button 
-            title={'신고하기'} 
-            onPress={() => { checkItem(selectedTeam); }}
-          /> 
-        </View>
-      </Modal>
-    </SafeAreaView>
+            <TouchableOpacity style={styles.submitButton} onPress={() => updateReportCount()}>
+              <Text style={styles.buttonText}>완료</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </TouchableWithoutFeedback>
+      </TouchableOpacity>
+    </Modal>
   )
 }
 
 const styles = StyleSheet.create({
-  background: {
+  modalBackground: {
     flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    transparent: true,
-    backgroundColor: 'rgba(52, 52, 52, 0.8)'
-    // backgroundColor: '#00000080',
+    backgroundColor: Colors.translucent,
+    justifyContent: 'flex-end',
   },
-  content: {
-    width: 400, // 기기 별 사이즈 조정 필요
-    height: 300, // 기기 별 사이즈 조정 필요
-    backgroundColor: '#fff', padding: 20,
+  modalView: {
+    height: modalHeight,
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    marginHorizontal: 20,
+    marginVertical: 40,
+    padding: 22,
+    overflow: 'hidden',
+  },
+
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+  },
+  selectBox: {
+    paddingHorizontal: 10,
+    marginVertical: 24,
+  },
+  submitButton: {
+    marginHorizontal: '32%',
+    backgroundColor: Colors.white,
+    borderWidth: 0.6,
+    borderColor: Colors.red,
+    padding: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 10,
+  },
+  buttonText: {
+    includeFontPadding: false,
+    color: Colors.red,
+    fontFamily: 'NotoSansKR-Regular',
+    fontSize: 15,
   }
 })
-
-export default ReportDetail
 
 // 다중 선택 Select Box
 

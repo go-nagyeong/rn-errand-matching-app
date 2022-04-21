@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityIndicator, Dimensions } from 'react-native';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, TextInput, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
-import Container from '../../components/Container';
-import PostSubmitButton from '../../components/PostSubmitButton';
-import SpeechBalloon from '../../components/SpeechBalloon';
-import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 
-const height = Dimensions.get('screen').height;
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
+import * as Firebase from '../../utils/Firebase';
+import Container from '../../components/Container';
+import SpeechBalloon from '../../components/SpeechBalloon';
+import MiniSubmitButton from '../../components/MiniSubmitButton';
 
 export default WriteTitle = (props) => {
   const [loading, setLoading] = useState(false);
@@ -20,44 +21,32 @@ export default WriteTitle = (props) => {
   const [contentFocus, setContentFocus] = useState("");
 
   const [image, setImage] = useState("");
-  const { color, category, price } = props.route.params;
+
+  const { color, category, price, arrive, destination } = props.route.params;
 
   const [titleMessage, setTitleMessage] = useState("");
   const [contentMessage, setContentMessage] = useState("");
 
-  const user = auth().currentUser;
-  const users = firestore().collection('Users')
-  const posts = firestore().collection('Posts')
-  // const [userGrade, setUserGrade] = useState();
   const [docID, setDocID] = useState(0)
 
-
   useEffect(() => {
-    // users
-    //   .where('nickname', '==', user.displayName)
-    //   .get()
-    //   .then(querySnapshot => {
-    //     querySnapshot.forEach(function (doc) {
-    //       setUserGrade(doc.data()["grade"])
-    //     })
-    //   })
-
-    posts
+    const unsubscribe = Firebase.postsRef
       .doc('doc_id')
       .onSnapshot(doc => {
         setDocID(doc.data()['incrementID'])
       })
+
+    return unsubscribe
   }, []);
 
   useEffect(() => {
-    console.log(titleMessage.length)
     if (title.length >= 2) {
       setTitleMessage('')
     }
   }, [title]);
 
   useEffect(() => {
-    if (content.length >= 10) {
+    if (content.length >= 2) {
       setContentMessage('')
     }
   }, [content]);
@@ -90,66 +79,83 @@ export default WriteTitle = (props) => {
 
   const addPostData = () => {
     if (title.length >= 2) {
-      if (content.length >= 10) {
-        var stringDocID = docID.toString() + "%" +  auth().currentUser.email;
+      if (content.length >= 2) {
+        setLoading(true)
+        var stringDocID = docID.toString() + "%" + Firebase.currentUser.email;
 
-        posts
-          .doc(stringDocID)
-          .set({
-            id: docID,
-            category: category,
-            price: price,
-            title: title,
-            content: content,
-            date: new Date(Date.parse(new Date())),
-            writer: user.displayName,
-            writerEmail: user.email,
-            errander: "",
-            erranderEmail: "",
-            // process: "regist",
-            process: {
-              title: 'regist',          // regist > request > matching > finishRequest > finished
-              myErrandOrder: 4,         // 4    > 1 > 3 > 2 > 5(X) (나의 심부름 정렬 기준)
-              myPerformErrandOrder: 4,  // 4(X) > 2 > 1 > 3 > 5(X) (내가 하고 있는 심부름 정렬 기준)
-            }
-          })
-          .then(() => {
-            const increment = firestore.FieldValue.increment(1);
-            posts.doc('doc_id').update({ incrementID: increment });
-
-            if (image) {
-              storage()
-                .ref('Posts/' + stringDocID)
-                .putFile(image)
-                .on('state_changed', taskSnapshot => {
-                  setLoading(true)
-    
-                  if (taskSnapshot.state === 'success') {
-                    setLoading(false)
-                    props.navigation.navigate("Home")
-                  }
-                })
-            } else {
-              props.navigation.navigate("Home")
-            }
-          })
-          .catch(error => { console.error(error); })
+        if (image) {
+          storage()
+            .ref('Posts/' + stringDocID)
+            .putFile(image)
+            .on('state_changed', async (taskSnapshot) => {
+              if (taskSnapshot.state === 'success') {
+                await storage()
+                  .ref('Posts/' + stringDocID)
+                  .getDownloadURL()
+                  .then((url) => {
+                    addPostData2(stringDocID, url)
+                  })
+                  .catch((e) => console.log('게시물 사진 다운로드 실패 => ', e));
+              }
+            })
+        } else {
+          addPostData2(stringDocID, "")
+        }
 
       } else {
-        setContentMessage("내용을 최소 열 글자 이상 작성해 주세요.")
+        setContentMessage("내용을 최소 두 글자 이상 작성해 주세요.")
       }
     } else {
       setTitleMessage("제목을 최소 두 글자 이상 작성해 주세요.")
     }
-
-
   }
+  const addPostData2 = (stringDocID, url) => {
+    Firebase.postsRef
+      .doc(stringDocID)
+      .set({
+        id: docID,
+        category: category,
+        price: price,
+        title: title,
+        content: content,
+        date: new Date(Date.parse(new Date())),
+        writer: Firebase.currentUser.displayName,
+        writerEmail: Firebase.currentUser.email,
+        errander: "",
+        erranderEmail: "",
+        views: 0,
+        hearts: 0,
+        image: url,
+        arrive: arrive,
+        destination: destination,
+        image: url,
+        process: {
+          title: 'regist',          // regist > request > matching > finishRequest > finished
+          myErrandOrder: 4,         // 4    > 1 > 3 > 2 > 5(X) (나의 심부름 정렬 기준)
+          myPerformErrandOrder: 4,  // 4(X) > 2 > 1 > 3 > 5(X) (내가 하고 있는 심부름 정렬 기준)
+        },
+        reported: firestore.FieldValue.arrayUnion() // 게시글에 대한 신고 항목(배열) (신고한 사람 목록)
+      })
+      .then(() => {
+        const increment = firestore.FieldValue.increment(1);
+        Firebase.postsRef.doc('doc_id').update({ incrementID: increment });
+
+        setLoading(false)
+        props.navigation.navigate("Home")
+      })
+      .catch(error => { console.error(error); })
+  }
+
 
   return (
     <Container>
       <View style={styles.previousState}>
         <SpeechBalloon prev='category' content={category} />
         <SpeechBalloon prev='price' content={price} />
+        {(destination !== "" && arrive !== "") && <SpeechBalloon prev='location' content={[destination, arrive]} />
+        || destination !== "" && <SpeechBalloon prev='destination' content={destination} />
+        || arrive !== "" && <SpeechBalloon prev='arrive' content={arrive} />
+        }
       </View>
 
       <View style={styles.centerView}>
@@ -178,7 +184,7 @@ export default WriteTitle = (props) => {
         </View>
         <Text style={styles.message}>{titleMessage}</Text>
 
-        <View style={[styles.inputWrapper, {marginHorizontal: 0}]}>
+        <View style={[styles.inputWrapper, { marginHorizontal: 0 }]}>
           <Icon name='right' size={20} color={contentFocus ? color : 'black'} />
 
           <TextInput
@@ -195,19 +201,19 @@ export default WriteTitle = (props) => {
             multiline={true}
           />
         </View>
-        {contentMessage !== "" && <Text style={[styles.message, {marginLeft: 10, marginBottom: 10}]}>{contentMessage}</Text>}
+        {contentMessage !== "" && <Text style={[styles.message, { marginLeft: 10, marginBottom: 10 }]}>{contentMessage}</Text>}
 
         <TouchableOpacity style={[styles.imageUploadButton, { borderColor: image ? color : 'gray' }]} onPress={() => image ? setImage("") : selectImage()}>
           <Icon name='camera' size={20} color={image ? color : 'gray'} style={{ marginLeft: 2, marginRight: 1 }} />
           <Icon name={image ? 'check' : 'close'} size={16} color={image ? color : 'gray'} />
         </TouchableOpacity>
 
-        <PostSubmitButton backgroundColor={color} onPress={() => addPostData()} />
+        <MiniSubmitButton backgroundColor={color} onPress={() => addPostData()} />
       </View>
 
       {loading &&
-        <View style={{position: 'absolute', opacity: 0.3, backgroundColor: '#000', width: '100%', height: height, elevation: 4}}>
-          <ActivityIndicator size="large" style={{top: '35%'}} />
+        <View style={{ position: 'absolute', opacity: 0.3, backgroundColor: Colors.black, width: '100%', height: Common.height, elevation: 4 }}>
+          <ActivityIndicator size="large" style={{ top: '35%' }} />
         </View>
       }
     </Container>
@@ -218,7 +224,7 @@ const styles = StyleSheet.create({
   previousState: {
     flex: 1,
     paddingTop: 20,
-    marginBottom: 10,
+    marginBottom: 20,
   },
 
   centerView: {
@@ -231,7 +237,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'NotoSansKR-Medium',
-    color: 'black',
+    color: Colors.black,
     fontSize: 24,
     padding: 10,
   },
@@ -243,7 +249,7 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === 'ios' ? 20 : 10,
     marginBottom: 15,
 
-    backgroundColor: "#fff",
+    backgroundColor: Colors.white,
     borderRadius: 10,
     ...Platform.select({
       ios: {
@@ -272,7 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 30,
     marginBottom: 20,
-    color: 'red'
+    color: Colors.red,
   },
 
   imageUploadButton: {

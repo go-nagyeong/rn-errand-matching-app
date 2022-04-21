@@ -1,81 +1,43 @@
-import React, { useState } from 'react';
-import { StyleSheet, Platform, View, Text, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, Platform, View, Text, TouchableOpacity, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { BottomSheet, ListItem } from 'react-native-elements'
+import ActionSheet from 'react-native-actionsheet';
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome5';
 import IOIcon from 'react-native-vector-icons/Ionicons';
 import Moment from 'moment';
 import 'moment/locale/ko';
-import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { useNavigation } from '@react-navigation/native';
 
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
+import * as Firebase from '../../utils/Firebase';
 import ErrandRating from './ErrandRating';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-const width = Dimensions.get('window').width;
 
 export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
     const navigation = useNavigation()
 
+    const actionSheet = useRef(null)
+
+    const [isVisibleRatingModal, setIsVisibleRatingModal] = useState(false);
+
     const [writerGrade, setWriterGrade] = useState("")
-    const [erranderGrade, setErranderGrade] = useState("");
-    const [erranderImage, setErranderImage] = useState("");
+    const [writerImage, setWriterImage] = useState("")
 
-    const calculateGrade = (gradeNum) => {
-        if (gradeNum >= 4.1) {
-            return 'A+';
-        } else if (gradeNum >= 3.6) {
-            return 'A0';
-        } else if (gradeNum >= 3.1) {
-            return 'B+';
-        } else if (gradeNum >= 2.6) {
-            return 'B0';
-        } else if (gradeNum >= 2.1) {
-            return 'C+';
-        } else if (gradeNum >= 1.6) {
-            return 'C0';
-        } else if (gradeNum >= 1.1) {
-            return 'D+';
-        } else if (gradeNum >= 0.6) {
-            return 'D0';
-        } else {
-            return 'F';
-        }
-    }
-
-    // 게시물 보기 페이지의 작성자 등급
-    firestore()
-        .collection('Users')
-        .doc(item.writerEmail)
-        .get()
-        .then(doc => {
-            if (doc.exists) {
-                setWriterGrade(calculateGrade(doc.data()['grade']))
-            }
-        })
-    // 심부름 완료 요청 페이지의 Errander 정보
-    if (item.process.title === 'matching') {
-        firestore()
-            .collection('Users')
-            .doc(item.erranderEmail)
+    useEffect(() => {
+        // 게시물 보기 페이지의 Writer 정보 + 심부름 완료 요청 페이지의 Writer 정보
+        Firebase.usersRef
+            .doc(item.writerEmail)
             .get()
             .then(doc => {
                 if (doc.exists) {
                     let gradeNum = doc.data()['grade'];
-                    setErranderGrade(calculateGrade(gradeNum))
+                    setWriterGrade(Common.calculateGrade(gradeNum))
+                    setWriterImage(doc.data()['image'])
                 }
             })
-    
-        storage()
-            .ref('Users/' + item.erranderEmail)
-            .getDownloadURL()
-            .then(url => {
-                setErranderImage(url)
-            })
-            .catch(err => console.log(err.code));
-    }
+    }, [])
 
 
     const requestCancle = () => {
@@ -85,8 +47,7 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
             [{
                 text: "확인",
                 onPress: () => {
-                    firestore()
-                        .collection('Posts')
+                    Firebase.postsRef
                         .doc(item.id + '%' + item.writerEmail)
                         .update({
                             process: {
@@ -98,6 +59,30 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
                             erranderEmail: "",
                         })
                         .then(() => getMyPerformErrand())
+                        .catch(err => console.log(err));
+                    
+                    // 채팅 삭제 (firestore에 있는 텍스트)
+                    Firebase.chatsRef
+                        .where('post', '==', item.id + '%' + item.writerEmail)
+                        .get()
+                        .then(querySnapshot => { 
+                            querySnapshot.forEach(doc => doc.ref.delete())
+                        })
+                        .catch(err => console.log(err));
+
+                    // 채팅 삭제 (storage에 있는 이미지 & 폴더)
+                    storage()
+                        .ref('Chats/' + item.id + '%' + item.writerEmail)
+                        .listAll()
+                        .then(dir => {
+                            dir.items.forEach(fileRef => {
+                                storage()
+                                    .ref(fileRef.path)
+                                    .delete()
+                                    .then(() => console.log('성공'))
+                                
+                            })
+                        })
                         .catch(err => console.log(err));
                 },
                 style: "default",
@@ -116,8 +101,7 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
             [{
                 text: "확인",
                 onPress: () => {
-                    firestore()
-                        .collection('Posts')
+                    Firebase.postsRef
                         .doc(item.id + '%' + item.writerEmail)
                         .delete()
                         .then(() => {
@@ -131,29 +115,7 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
                 style: "default",
             }],
         );
-    }
-
-    const [isVisibleBottomSheet, setIsVisibleBottomSheet] = useState(false);
-    const list = [
-        { 
-            title: '게시물 상세보기',
-            containerStyle: { borderTopLeftRadius: 15, borderTopRightRadius: 15, borderBottomWidth: StyleSheet.hairlineWidth },
-            titleStyle: { alignSelf: 'center' },
-            onPress: () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : writerGrade, price : item.price, email : item.writerEmail, id : item.id }),
-        },
-        { 
-            title: '삭제',
-            containerStyle: { borderBottomWidth: 0.5 },
-            titleStyle: { color: 'red', alignSelf: 'center' },
-            onPress: () => deletePost(),
-        },
-        {
-            title: '닫기',
-            titleStyle: { alignSelf: 'center', fontWeight: '600' },
-            onPress: () => setIsVisibleBottomSheet(false),
-        },
-    ];
-    const [isVisibleRatingModal, setIsVisibleRatingModal] = useState(false);
+    }   
 
 
     const processIndex = {
@@ -169,7 +131,7 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
     const customTrack = steps.map((step, index) =>
         <View key={index}>
             {index < processIndex[item.process.title]
-            ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']} style={styles.currentMarkerPoint} style={styles.trackLine} />
+            ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint} style={styles.trackLine} />
             : <View style={styles.trackLine} />}
         </View>
     )
@@ -177,12 +139,12 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
         <View key={index} style={styles.marker}>
             {item.process.title === step.title
             ? (item.process.title !== 'matching'
-                ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']} style={styles.markerPoint} />
-                : <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']} style={styles.currentMarkerPoint}>
-                        <FIcon name='running' size={18} color='#fff' />
+                ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.markerPoint} />
+                : <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint}>
+                        <FIcon name='running' size={18} color={Colors.white} />
                     </LinearGradient>)
             : (index < processIndex[item.process.title]
-                ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']} style={styles.currentMarkerPoint} style={styles.trackLine} style={styles.markerPoint} />
+                ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint} style={styles.trackLine} style={styles.markerPoint} />
                 : <View style={styles.markerPoint} />)
             }
         </View>
@@ -195,34 +157,41 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
             {step.koTitle}
         </Text>
     )
+
     return (
         <View style={styles.itemView}>
             <View style={styles.infoView}>
-                <Text style={{fontSize: 13, color: '#C2C2C2'}}>
+                <Text style={{fontSize: 13, color: Colors.midGray}}>
                     {Moment(item.date.toDate()).diff(Moment(), 'days') >= -2
                         ? Moment(item.date.toDate()).fromNow()
                         : Moment(item.date.toDate()).format('YY/MM/DD')}
                 </Text>
 
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <TouchableOpacity style={styles.chatButton} onPress={() => navigation.navigate("Chat", {id : item.id})}>
+                    <TouchableOpacity
+                        style={styles.chatButton}
+                        onPress={() => navigation.navigate("Chat", {
+                            id: item.id, writerEmail: item.writerEmail, erranderEmail: item.erranderEmail, errandInfo: item
+                        })}
+                    >
                         <Text style={styles.chatButtonText}>채팅</Text>
                     </TouchableOpacity>
                     
-                    <TouchableOpacity onPress={() => setIsVisibleBottomSheet(true)}>
-                        <IOIcon name='ellipsis-horizontal' size={20} color='#7d7d7d' />
+                    <TouchableOpacity onPress={() => actionSheet.current.show()}>
+                        <IOIcon name='ellipsis-horizontal' size={20} color={Colors.gray} />
                     </TouchableOpacity>
                 </View>
                 
-                <BottomSheet isVisible={isVisibleBottomSheet}>
-                    {list.map((l, i) => (
-                        <ListItem key={i} containerStyle={l.containerStyle} onPress={l.onPress}>
-                        <ListItem.Content>
-                            <ListItem.Title style={l.titleStyle}>{l.title}</ListItem.Title>
-                        </ListItem.Content>
-                        </ListItem>
-                    ))}
-                </BottomSheet>
+                <ActionSheet
+                    ref={actionSheet}
+                    options={['게시물 상세보기', '취소']}
+                    cancelButtonIndex={1}
+                    onPress={(index) => {
+                        if (index == 0) {
+                            navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : writerGrade, price : item.price, email : item.writerEmail, id : item.id, image: item.image, writerImage: writerImage, views: item.views});
+                        }
+                    }}
+                />
             </View>
 
             <View style={styles.titleView}>
@@ -259,13 +228,13 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
             {item.process.title === 'request' &&
                 <View style={styles.responseView}>
                     <TouchableOpacity style={{alignSelf: 'flex-end'}} onPress={() => requestCancle()}>
-                        <Text style={{includeFontPadding: false, color: 'gray', fontFamily: 'NotoSansKR-Regular'}}>요청 취소</Text>
+                        <Text style={{includeFontPadding: false, color: Colors.gray, fontFamily: 'NotoSansKR-Regular'}}>요청 취소</Text>
                     </TouchableOpacity>
                 </View>
             || item.process.title === 'matching' &&
                 <View style={styles.responseView}>
-                    <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']} style={styles.finishRequestButtonBorder}>
-                        <View style={{backgroundColor: '#fff', borderRadius: 30}}>
+                    <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.finishRequestButtonBorder}>
+                        <View style={{backgroundColor: Colors.white, borderRadius: 30}}>
                             <TouchableOpacity style={styles.finishRequestButton} onPress={() => setIsVisibleRatingModal(true)}>
                                 <Text style={styles.finishRequestButtonText}>평점 작성</Text>
                             </TouchableOpacity>
@@ -275,15 +244,17 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
                     <ErrandRating
                         visible={isVisibleRatingModal}
                         onRequestClose={() => setIsVisibleRatingModal(false)}
-                        calculateGrade={calculateGrade}
                         id={item.id}
                         writerEmail={item.writerEmail}
                         errandPrice={item.price}
-                        errander={item.errander}
-                        erranderEmail={item.erranderEmail}
-                        erranderGrade={erranderGrade}
-                        erranderImage={erranderImage}
+                        opponentName={item.writer}
+                        opponentEmail={item.writerEmail}
+                        opponentGrade={writerGrade}
+                        opponentImage={writerImage}
                         errandProcess={item.process.title}
+                        errandDestination={item.destination}
+                        errandArrive={item.arrive}
+                        errandCategory={item.category}
                         getMyPerformErrand={getMyPerformErrand}
                     />
                 </View>
@@ -295,7 +266,7 @@ export default RenderItemMyPerformList = ({ item, getMyPerformErrand }) => {
 const styles = StyleSheet.create({
     itemView: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: Colors.white,
         marginVertical: 12,
         marginHorizontal: 20,
         borderRadius: 10,
@@ -322,7 +293,7 @@ const styles = StyleSheet.create({
     },
     chatButton: {
         borderWidth: StyleSheet.hairlineWidth,
-        borderColor: 'gray',
+        borderColor: Colors.darkGray,
         borderRadius: 15,
         paddingTop: 1,
         paddingBottom: 2,
@@ -332,7 +303,7 @@ const styles = StyleSheet.create({
     chatButtonText: {
         includeFontPadding: false,
         fontSize: 12,
-        color: 'black',
+        color: Colors.black,
         fontFamily: 'NotoSansKR-Light',
     },
     
@@ -344,11 +315,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 18,
         fontWeight: '600',
-        color: '#090909',
+        color: Colors.black,
     },
     content: {
         fontSize: 14,
-        color: '#89888c',
+        color: Colors.gray,
         marginTop: 10,
     },
 
@@ -358,24 +329,23 @@ const styles = StyleSheet.create({
         marginBottom: 26,
     },
     trackLine: {
-        backgroundColor: '#d3d3d3',
-        width: (width-94)/3,
+        backgroundColor: Colors.lightGray,
+        width: (Common.width-94)/3,
         height: 2,
     },
     marker: {
-        width: (width-94)/3,
+        width: (Common.width-94)/3,
         height: 36,
         justifyContent: 'center',
     },
     markerPoint: {
-        backgroundColor: '#d3d3d3',
+        backgroundColor: Colors.lightGray,
         width: 12,
         height: 12,
         borderRadius: 30,
         left: -7,
     },
     currentMarkerPoint: {
-        backgroundColor: '#d3d3d3',
         width: 36,
         height: 36,
         borderRadius: 30, 
@@ -385,15 +355,15 @@ const styles = StyleSheet.create({
     },
     stepLabel: {
         includeFontPadding: false,
-        width: (width-94)/3,
-        color: '#d3d3d3',
+        width: (Common.width-94)/3,
+        color: Colors.midGray,
         fontFamily: 'NotoSansKR-Medium',
         left: -14,
     },
     currentStepLabel: {
         includeFontPadding: false,
-        width: (width-94)/3,
-        color: '#7d7d7d',
+        width: (Common.width-94)/3,
+        color: Colors.darkGray,
         fontFamily: 'NotoSansKR-Bold',
         left: -14,
     },
@@ -402,31 +372,31 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 14,
         fontFamily: 'NotoSansKR-Medium',
-        color: '#636363',
+        color: Colors.darkGray,
         marginTop: 10,
     },
 
     responseView: {
         borderTopWidth: StyleSheet.hairlineWidth,
-        borderTopColor: 'darkgray',
+        borderTopColor: Colors.gray,
         paddingVertical: 12,
         paddingHorizontal: 18,
     },
     finishRequestButtonBorder: {
-        width: (width-60)/3,
+        width: (Common.width-60)/3,
         padding: 1,
         borderRadius: 30,
         alignSelf: 'center',
     },
     finishRequestButton: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.white,
         borderRadius: 30,
         paddingVertical: 6,
         alignItems: 'center',
     },
     finishRequestButtonText: {
         includeFontPadding: false,
-        color: '#262626',
+        color: Colors.darkGray2,
         fontFamily: 'NotoSansKR-Regular'
     },
 })

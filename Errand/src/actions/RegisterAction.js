@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 
+import * as Firebase from '../utils/Firebase';
 import RegisterScreen from '../screens/Mypage/RegisterScreen';
 
 export default RegisterAction = (props) => {
@@ -19,10 +19,8 @@ export default RegisterAction = (props) => {
     const [rePwErr, setRePwErr] = useState("")
     const [rePwIsEdited, setRePwEdited] = useState(false)
     
-    const users = firestore().collection('Users')
-    
-    useEffect(()=>{ 
-        if(isDuplicatedName) {
+    useEffect(() => { 
+        if (isDuplicatedName) {
             setNameErr('이미 사용 중인 이름입니다.');
         }
     }, [isDuplicatedName])
@@ -34,23 +32,23 @@ export default RegisterAction = (props) => {
         setNameEdited(true)
 
         // 닉네임 중복 검사
-        users
-        .where('nickname', '==', nickname)
-        .get()
-        .then(querySnapshot => {
-            if(querySnapshot.size >= 1) {
-                setDuplicatedName(true);
-            } else {
-                setDuplicatedName(false);
-                if(!nickname) {
-                    setNameErr('이름을 입력해주세요.');
-                } else if (!nameReg.test(nickname)) {
-                    setNameErr('2~10자 한글, 영문, 숫자, 특수문자 -_.만 사용 가능');
+        Firebase.usersRef
+            .where('nickname', '==', nickname)
+            .get()
+            .then(querySnapshot => {
+                if(querySnapshot.size >= 1) {
+                    setDuplicatedName(true);
                 } else {
-                    setNameErr("");
+                    setDuplicatedName(false);
+                    if(!nickname) {
+                        setNameErr('이름을 입력해주세요.');
+                    } else if (!nameReg.test(nickname)) {
+                        setNameErr('2~10자 한글, 영문, 숫자, 특수문자 -_.만 사용 가능');
+                    } else {
+                        setNameErr("");
+                    }
                 }
-            }
-        })
+            })
     }
     
     const validateId = (id) => {
@@ -112,31 +110,29 @@ export default RegisterAction = (props) => {
             .createUserWithEmailAndPassword(email, password)
             .then(async (userCredential) => {
                 // firestore에 이메일, 닉네임, 등급 저장
-                await users
-                .doc(email)
-                .set({
-                    email: email,
-                    nickname: nickname,
-                    grade: 2.3,
-                    grade_t: 2.3,
-                    grade_n: 1,
-                    data: {
-                        비매너: 0,
-                        사기: 0,
-                        성희롱: 0,
-                        연애목적: 0,
-                        욕설: 0
-                    }
-                })
-                .then(() => console.log('User added!'))
-                .catch(error => console.error(error));
+                await Firebase.usersRef
+                    .doc(email)
+                    .set({
+                        email: email,
+                        nickname: nickname,
+                        grade: 2.3,
+                        grade_t: 2.3,
+                        grade_n: 1,
+                        data: {
+                            비매너: 0,
+                            사기: 0,
+                            성희롱: 0,
+                            욕설: 0,
+                        }
+                    })
+                    .then(() => console.log('User added!'))
+                    .catch(error => console.error(error));
                 
                 // auth에도 아이디, 비번 뿐 아니라 닉네임도 저장
-                auth()
-                .currentUser
-                .updateProfile({
-                    displayName: nickname
-                });
+                Firebase.currentUser
+                    .updateProfile({
+                        displayName: nickname
+                    });
 
                 // 인증 메일 전송
                 userCredential.user?.sendEmailVerification();

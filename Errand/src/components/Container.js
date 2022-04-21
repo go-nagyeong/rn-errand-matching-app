@@ -1,13 +1,12 @@
 import React from 'react';
-import { KeyboardAvoidingView, ScrollView, StatusBar, useColorScheme } from 'react-native';
+import { Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+
+import Colors from '../constants/Colors';
 
 export default Container = (props) => {
-  const isDarkMode = useColorScheme() === 'dark';
-
   return (
-    <KeyboardAvoidingView style={{flex: 1, backgroundColor: '#fff'}} keyboardVerticalOffset={-200} behavior="padding">
+    <KeyboardAvoidingView style={{flex: 1, backgroundColor: Colors.white}} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : -200} behavior="padding">
       <ScrollView>
-        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         {props.children}
       </ScrollView>
     </KeyboardAvoidingView>

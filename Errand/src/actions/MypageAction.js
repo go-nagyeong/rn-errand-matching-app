@@ -1,29 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker'; // Migration from 2.x.x to 3.x.x => showImagePicker API is removed.
 
+import * as Firebase from '../utils/Firebase';
 import MypageScreen from '../screens/Mypage/MypageScreen'
 
 export default MypageAction = (props) => {
-  console.log('설정 액션 화면입니다')
-  let email = auth().currentUser.email
+  // const [email, setEmail] = useState(auth().currentUser.email)
   const [nickname, setNickname] = useState(null)
-  const [url, setUrl] = useState(null)
+
+  const [score, setScore] = useState(null)
+  const [scorePosition, setScorePosition] = useState(null)
+  const [grade, setGrade] = useState(null)
+  const [nextGrade, setNextGrade] = useState(null)
+
+  const [userImage, setUserImage] = useState(null)
 
   // 해당 화면에 focus가 있을 때 수행하는 작업
   useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
-      updateNickname();
-      downloadImg();
+      updateUserInfo();
+      updateUserImage();
     });
 
     return unsubscribe;
   }, [props.navigation]);
 
-  const nicknameReg = /^[\w\Wㄱ-ㅎㅏ-ㅣ가-힣]{2,20}$/
+
+  const calculateGrade = (gradeNum) => {
+    let nonDecimal = gradeNum * 100;
+    
+    if (gradeNum >= 4.1) {
+        return [nonDecimal-410, 'A+', null];
+    } else if (gradeNum >= 3.6) {
+        return [nonDecimal-360, 'A0', 'A+'];
+    } else if (gradeNum >= 3.1) {
+        return [nonDecimal-310, 'B+', 'A0'];
+    } else if (gradeNum >= 2.6) {
+        return [nonDecimal-260, 'B0', 'B+'];
+    } else if (gradeNum >= 2.1) {
+        return [nonDecimal-210, 'C+', 'B0'];
+    } else if (gradeNum >= 1.6) {
+        return [nonDecimal-160, 'C0', 'C+'];
+    } else if (gradeNum >= 1.1) {
+        return [nonDecimal-110, 'D+', 'C0'];
+    } else if (gradeNum >= 0.6) {
+        return [nonDecimal-60, 'D0', 'D+'];
+    } else {
+        return [nonDecimal, 'F', 'D0'];
+    }
+  }
+
+  const updateUserInfo = () => {
+    Firebase.usersRef
+    .doc(Firebase.currentUser.email)
+    .get()
+    .then(doc => {
+      if (doc.exists) {
+        let nickname = doc.data().nickname;
+        let gradeNum = doc.data().grade;
+        setNickname(nickname)
+        setScore(gradeNum)
+        setScorePosition(calculateGrade(gradeNum)[0])
+        setGrade(calculateGrade(gradeNum)[1])
+        setNextGrade(calculateGrade(gradeNum)[2])
+      }
+    })
+  }
+  const updateUserImage = () => {
+    storage()
+      .ref('Users/' + Firebase.currentUser.email) //name in storage in firebase console
+      .getDownloadURL()
+      .then((url) => {
+        Firebase.usersRef.doc(Firebase.currentUser.email).update({ image: url });
+        setUserImage(url)
+      })
+      .catch((e) => console.log('Errors while downloading => ', e));
+  }
+
+
   const options = {
     mediaType: "photo",
     maxWidth: 100,
@@ -33,90 +90,6 @@ export default MypageAction = (props) => {
       skipBackup: true,
     },
   };
-
-  const signOut = () => {
-    Alert.alert(
-      "로그아웃",
-      "정말 로그아웃 하시겠습니까?",
-      [{
-        text: "로그아웃",
-        onPress: () => auth().signOut(),
-        style: "default",
-      },
-      {
-        text: "닫기",
-        style: "default",
-      }],
-    );
-  }
-
-  const withdrawal = () => {
-    // firestore에서 삭제
-    const users = firestore().collection('Users').doc(email);
-    users.delete()
-      .then(() => {
-        console.log('Users 계정 삭제 완료')
-      })
-      .catch((err) => {
-        console.log('error :', err)
-      })
-
-    // authentification에서 삭제
-    var user = auth().currentUser;
-    user.delete()
-      .then(() => {
-        console.log('Auth 계정 삭제 완료')
-      })
-      .catch((error) => {
-        console.log('error : ', error)
-        if (error.code === 'auth/requires-recent-login') {
-          Alert.prompt(
-            "비밀번호 재인증",
-            "비밀번호 재인증이 필요합니다. 비밀번호를 입력해주세요.",
-            [
-              {
-                text: "취소",
-                onPress: () => console.log("Cancel Pressed"),
-                style: "cancel"
-              },
-              {
-                text: "확인",
-                onPress: password => {
-                  const credential = auth.EmailAuthProvider.credential(user.email, password);
-                  user
-                    .reauthenticateWithCredential(credential)
-                    .then(() => withdrawal())
-                    .catch(error => console.log(error));
-                },
-              }
-            ],
-            "secure-text"
-          );
-        }
-      })
-  }
-
-  // nickname 변수를 ReNameScreen에 전달해서 수정할 순 없을까? (그렇다면 refresh 없이도 자동 업데이트 가능)
-  // 사용 x
-  const updateNickname = () => {
-    setNickname(auth().currentUser.displayName)
-  }
-
-  const downloadImg = () => {
-    // firebase에서 이미지 다운로드
-    // useEffect(() => {
-    // useEffect로 묶지 않으면 storage()부분을 2번 실행 (리소스 낭비)
-    // useEffect()로 묶는 다면 한번만 실행되지만 에러 발생 (Invalid hook call)
-    storage()
-      .ref('Users/' + email) //name in storage in firebase console
-      .getDownloadURL()
-      .then((url) => {
-        console.log('이미지를 다운로드 하였습니다')
-        setUrl(url)
-      })
-      .catch((e) => console.log('Errors while downloading => ', e));
-    // })
-  }
 
   const importFromCamera = () => {
     launchCamera(options, (response) => { // Use launchImageLibrary to open image gallery
@@ -137,24 +110,16 @@ export default MypageAction = (props) => {
         const uploadUri = Platform.OS === 'ios' ? source.replace('file://', '') : source;
 
         const task = storage()
-          .ref('Users/' + auth().currentUser.email) // storage에 저장될 경로
+          .ref('Users/' + Firebase.currentUser.email) // storage에 저장될 경로
           .putFile(uploadUri); // 보낼 이미지의 경로
         // set progress state
         task.on('state_changed', taskSnapshot => {
-          console.log(taskSnapshot.state);
+          if (taskSnapshot.state === 'success') {
+            updateUserImage()
+          }
         });
-        task.then(() => {
-          console.log('이미지 업로드 완료');
-          // firebase에서 이미지 다운로드
-          downloadImg()
-        })
-          .catch((error) => {
-            console.error(error.message);
-          });
-
       }
     });
-
   }
 
   const importFromAlbum = () => {
@@ -165,35 +130,47 @@ export default MypageAction = (props) => {
         const uploadUri = Platform.OS === 'ios' ? source.replace('file://', '') : source;
 
         const task = storage()
-          .ref('Users/' + auth().currentUser.email) // storage에 저장될 경로
+          .ref('Users/' + Firebase.currentUser.email) // storage에 저장될 경로
           .putFile(uploadUri); // 보낼 이미지의 경로
         // set progress state
         task.on('state_changed', taskSnapshot => {
-          console.log(taskSnapshot.state);
+          if (taskSnapshot.state === 'success') {
+            updateUserImage()
+          }
         });
-        task.then(() => {
-          console.log('Task complete');
-          // firebase에서 이미지 다운로드
-          downloadImg()
-        })
-          .catch((error) => {
-            console.error(error.message);
-          });
       }
     })
   }
 
+  const signOut = () => {
+    Alert.alert(
+      "로그아웃",
+      "정말 로그아웃 하시겠습니까?",
+      [{
+        text: "로그아웃",
+        onPress: () => auth().signOut(),
+        style: "default",
+      },
+      {
+        text: "취소",
+        style: "default",
+      }],
+    );
+  }
+  
   return <MypageScreen
-    email={email}
+    email={Firebase.currentUser.email}
     nickname={nickname}
+    score={score}
+    scorePosition={scorePosition}
+    grade={grade}
+    nextGrade={nextGrade}
+    userImage={userImage}
+
     navi={props.navigation}
-    url={url}
     importFromAlbum={importFromAlbum}
     importFromCamera={importFromCamera}
-    updateNickname={updateNickname}
-    downloadImg={downloadImg}
-    withdrawal={withdrawal}
     signOut={signOut}
 
-  /> //{...contactData} {...props} 
+  />
 }

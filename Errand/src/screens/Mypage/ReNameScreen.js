@@ -1,67 +1,89 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import Icon from 'react-native-vector-icons/Fontisto';
-import AntDesignIcon from 'react-native-vector-icons/AntDesign';
+import Icon from 'react-native-vector-icons/EvilIcons';
 
+import Colors from '../../constants/Colors';
+import * as Firebase from '../../utils/Firebase';
 import Container from '../../components/Container';
+import SubmitButton from '../../components/SubmitButton';
 
 export default ReNameScreen = (props) => {
     const [nickname, setNickname] = useState('');
     const [nicknameFocus, setNicknameFocus] = useState(false);
+    const [err, setErr] = useState('');
+  
+    const changeName = (nickname) => {
+        const nameReg = /^[a-zA-Z0-9ㄱ-힣-_.]{2,10}$/
 
-    useEffect(() => {
-      if(nicknameFocus) {
-        props.validateName(nickname);
-      }
-    }, [nickname]);
+        if (!nickname) {
+            setErr('닉네임을 입력해주세요.');
+            return false;
+        } else if (!nameReg.test(nickname)) {
+            setErr('2~10자 한글, 영문, 숫자, 특수문자 -_.만 사용 가능');
+            return false;
+        } else {
+            setErr('');
+
+            Firebase.usersRef
+                .where('nickname', '==', nickname)
+                .get()
+                .then(async (querySnapshot) => {
+                    if (querySnapshot.size >= 1) { // 중복 검사
+                        setErr('이미 사용 중인 닉네임입니다.');
+                    } else {
+                        // firestore에 존재하는 nickname 변경
+                        await Firebase.usersRef
+                            .doc(Firebase.currentUser.email)
+                            .update({'nickname': nickname})
+                            .then(() => console.log('firestore 이름 변경 완료'))
+                            .catch(err => console.log(err));
+                        
+                        // auth에 존재하는 nickname 변경
+                        Firebase.currentUser
+                            .updateProfile({displayName: nickname})
+                            .then(() => {
+                                Alert.alert(
+                                    "닉네임 변경",
+                                    "닉네임 변경이 완료되었습니다.",
+                                    [{
+                                        text: "확인",
+                                        onPress: () => props.navigation.navigate('Mypage'),
+                                        style: "default",
+                                    }],
+                                );
+                            })
+                    }
+                })
+        }
+    }
 
     return (
         <Container>
             <View style={styles.titleWrapper}>
-                <Text style={styles.title}>Change{"\n"}Name?</Text>
-                <Text style={styles.textArea}>변경할 이름을 입력해주세요.{"\n"}</Text>
+                <Text style={styles.title}>닉네임 변경</Text>
+                <Text style={styles.textArea}>변경할 닉네임을 입력해주세요.</Text>
             </View>
             <View style={styles.inputWrapper}>
                 <TextInput 
                     style={styles.input}
-                    placeholder="Name"
+                    placeholder="Nickname"
                     value={nickname}
                     autoCapitalize='none'
                     autoCorrect={false}
-                    blurOnSubmit={false}
-                    onFocus={() => {setNicknameFocus(true);}}
-                    onBlur={() => {setNicknameFocus(false);}}
+                    onFocus={() => {setNicknameFocus(true)}}
+                    onBlur={() => {setNicknameFocus(false)}}
                     onChangeText={text => {setNickname(text)}}
-                    onSubmitEditing={() => {props.changeName(nickname)}}
-                    selectionColor="#292929"
+                    blurOnSubmit={false}
+                    onSubmitEditing={() => changeName(nickname)}
+                    selectionColor={Colors.darkGray2}
                     // react-native-paper
-                    activeUnderlineColor='#53B77C'
-                    left={<TextInput.Icon name={() => <Icon name="email" size={20} color="#53B77C" />} />}
-                    right={
-                        <TextInput.Icon name={() => 
-                          <AntDesignIcon 
-                            name={props.nameErr ? "warning":"checkcircleo"} 
-                            size={15} 
-                            color={props.nameErr ? "red":"green"} 
-                          />} 
-                        />
-                      }
+                    activeUnderlineColor={Colors.cyan}
                 />
-                <Text style={{fontSize: 14, marginBottom: props.nameErr ? 10 : -10, color: 'red'}}>{props.nameErr}</Text>
-
-                {/* <Text style={{
-                    fontSize: 14,
-                    // marginBottom: props.err ? 30 : 0, 
-                    // color: props.err.charAt(0) === "비" ? 'green' : 'red'
-                }}>
-                {props.err}
-                </Text> */}
+                <Text style={{fontSize: 14, color: Colors.red}}>{err}</Text>
             </View>
             <View style={styles.buttonWrapper}>
-                <TouchableOpacity style={styles.squareButton} onPress={() => {props.changeName(nickname)}}>
-                    <Text style={styles.squareButtonText}>{nickname && !props.err ? "전송" : "이름 변경하기"}</Text>
-                </TouchableOpacity>
+                <SubmitButton title="확인" onPress={() => changeName(nickname)} />
             </View>
         </Container>
     )
@@ -70,41 +92,32 @@ export default ReNameScreen = (props) => {
 const styles = StyleSheet.create({
     titleWrapper: {
         marginLeft: 30,
-        marginTop: Platform.OS === "ios" ? "15%" : "10%",
-        marginBottom: 40,
+        marginTop: "10%",
+        marginBottom: 28,
     },
     title: {
-        fontFamily: 'Roboto-Medium',
-        color: 'black',
-        fontSize: 32,
-        lineHeight: 45,        
+        includeFontPadding: false,
+        fontFamily: 'NotoSansKR-Medium',
+        color: Colors.black,
+        fontSize: 26,
+        marginBottom: 12,
     },
     textArea: {
         fontFamily: 'Roboto-Light',
-        color: 'black',
+        color: Colors.black,
         fontSize: 16,
-        marginTop: 25,
+        lineHeight: 24,
     },
     inputWrapper: {
         paddingHorizontal: 35,
-        marginBottom: 10,
+        marginBottom: 34,
     },
     input: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.white,
         marginBottom: 12,
     },
     buttonWrapper: {
         paddingHorizontal: 35,
-    },
-    squareButton: {
-        backgroundColor: '#53B77C',
-        paddingVertical: 13,
-        alignItems: 'center',
-        borderRadius: 5,
-    },
-    squareButtonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: '600',
+        marginBottom: 34,
     },
 })

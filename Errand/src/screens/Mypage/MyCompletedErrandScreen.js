@@ -1,127 +1,134 @@
 import 'moment/locale/ko';
-import { default as React, useEffect, useState } from 'react';
-import { FlatList, StyleSheet, useWindowDimensions, View,Text, Modal, RefreshControl, ActivityIndicator } from 'react-native';
-// import "react-native-gesture-handler";
-import { TabView } from "react-native-tab-view";
+import React, { useState, useEffect } from 'react';
+import { FlatList, StyleSheet, View, Text, RefreshControl, ActivityIndicator, Animated } from 'react-native';
+import { TabView, TabBar } from "react-native-tab-view";
+import LinearGradient from 'react-native-linear-gradient';
+
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
 import RenderItem from './RenderItem';
 
 export default MyCompletedErrandScreen = (props) => {
-  const {erranderPostsFunc, writerPostsFunc, writerPosts, erranderPosts, moreErranderPosts, moreWriterPosts} = props;
-  const {isListEndA, refreshingA, loadingA} = props;
-  const {isListEndB, refreshingB, loadingB} = props;
-  const [reportButtonVisible, setReportButtonVisible] = useState(true); // 신고버튼 활성화/비활성화
-  const layout = useWindowDimensions();
   const [index, setIndex] = useState(0);
   const [routes] = useState([
-      { key: "first", title: "내가 작성자" },
-      { key: "second", title: "내가 심부름꾼" },
+      { key: "first", title: "나의 심부름" },
+      { key: "second", title: "내가 했던 심부름" },
   ]);
 
+  // renderItem에 보낼 함수 구분을 위한 변수 (true: 나의 심부름 / false: 내가 한 심부름)
+  const [gettingPostsMethod, setGettingPostsMethod] = useState(true)
+  // tab 바꿀 때 해당 탭의 리스트만 다시 새로고침
   useEffect(() => {
-    // errandejrPostsFunc(); // 본인이 심부름꾼인...
-    // writerPostsFunc(); // 본인이 작성자인...
-  },[])
+    if (index == 0) {
+        props.writerPostsFunc()
+        setGettingPostsMethod(true)
+    } else {
+        props.erranderPostsFunc()
+        setGettingPostsMethod(false)
+    }
+  }, [index])
+
+
+  const renderItem = ({ item, index }) => {
+    // console.log(getPosts)
+    return <RenderItem item={item} index={index} getPosts={gettingPostsMethod ? props.writerPostsFunc : props.erranderPostsFunc} />
+  }
 
   const renderFooterA = () => {
-    if (loadingA) {
-        return <ActivityIndicator style={{ marginTop: 10 }} />
+    if (props.loadingA) {
+      return <ActivityIndicator style={{ marginTop: 10 }} />
     } else {
-        return null
+      return null
     }
   }
-
+  const FirstRoute = () => (
+    <View style={styles.boardView}>
+      <FlatList
+        keyExtractor={item => item.id}
+        data={props.writerPosts}
+        renderItem={renderItem}
+        refreshControl={<RefreshControl refreshing={props.refreshingB} onRefresh={props.writerPostsFunc} />}
+        ListFooterComponent={renderFooterB}
+        onEndReached={!props.isListEndB && props.moreWriterPosts}
+        />
+    </View>
+  );
+  
   const renderFooterB = () => {
-    if (loadingB) {
-        return <ActivityIndicator style={{ marginTop: 10 }} />
+    if (props.loadingB) {
+      return <ActivityIndicator style={{ marginTop: 10 }} />
     } else {
-        return null
+      return null
     }
   }
+  const SecondRoute = () => (
+    <View style={styles.boardView}>
+      <FlatList
+        keyExtractor={item => item.id}
+        data={props.erranderPosts}
+        renderItem={renderItem}
+        refreshControl={<RefreshControl refreshing={props.refreshingA} onRefresh={props.erranderPostsFunc} />}
+        ListFooterComponent={renderFooterA}
+        onEndReached={!props.isListEndA && props.moreErranderPosts}
+      />
+    </View>
+  );
 
-  const renderItem = ({ item }) => {
-      return <RenderItem 
-                item={item} 
-                reportButtonVisible={reportButtonVisible}
-              />
+
+  const renderIndicator = (props) => {
+      const { getTabWidth, layout, navigationState } = props;
+      const width = getTabWidth();
+      const translateX = Animated.multiply(navigationState.index, getTabWidth());
+
+      return (
+          <Animated.View style={{ width: width, height: 3, bottom: -layout.height+3, transform: [{ translateX: translateX }] }}>
+              <LinearGradient
+                  start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}}
+                  colors={[Colors.linearGradientLeft, Colors.linearGradientRight]}
+              >
+                  <Text></Text>
+              </LinearGradient>
+          </Animated.View>
+      )
   }
+  const renderTabBar = (props) => (
+      <TabBar
+          {...props}
+          labelStyle={{ color: Colors.black }}
+          renderIndicator={renderIndicator}
+          style={{ backgroundColor: Colors.white }}
+      />
+  );
 
   const renderScene = ({ route }) => {
-      switch (route.key) {
-          case "first":
-              return (
-                  <View style={styles.boardView}>
-                    <FlatList
-                      keyExtractor={item => item.id}
-                      data={writerPosts}
-                      renderItem={renderItem}
-                      refreshControl={<RefreshControl refreshing={refreshingB} onRefresh={writerPostsFunc} />}
-                      ListFooterComponent={renderFooterB}
-                      onEndReached={!isListEndB && moreWriterPosts}
-                    />
-                  </View>
-              )
-          case "second":
-              return (
-                <View style={styles.boardView}>
-                  <FlatList
-                    keyExtractor={item => item.id}
-                    data={erranderPosts}
-                    renderItem={renderItem}
-                    refreshControl={<RefreshControl refreshing={refreshingA} onRefresh={erranderPostsFunc} />}
-                    ListFooterComponent={renderFooterA}
-                    onEndReached={!isListEndA && moreErranderPosts}
-                  />
-                </View>
-              )
-          default:
-              return null;
-      }
+    switch (route.key) {
+      case "first":
+        return <FirstRoute />
+      case "second":
+        return <SecondRoute />
+      default:
+        return null;
+    }
   };
 
   return (
-  //   <View style={styles.boardView}>
-  //   <FlatList
-  //     keyExtractor={(item, index) => String(index)}
-  //     data={props.erranderPosts}
-  //     renderItem={renderItem}
-  //     refreshControl={<RefreshControl refreshing={props.refreshingA} onRefresh={props.erranderPostsFunc} />}
-  //     ListFooterComponent={renderFooter}
-  //     onEndReached={!props.isListEndA && props.moreErranderPosts}
-  //   />
-  // </View>
-
-      //   <View style={styles.boardView}>
-  //     <FlatList
-  //       keyExtractor={(item, index) => String(index)}
-  //       data={props.erranderPosts}
-  //       renderItem={renderItem}
-  //       refreshControl={<RefreshControl refreshing={props.refreshingA} onRefresh={props.erranderPostsFunc} />}
-  //       ListFooterComponent={renderFooter}
-  //       onEndReached={!props.isListEndA && props.moreErranderPosts}
-  //     />
-  //   </View>
-    // <>
-      <TabView
-          navigationState={{ index, routes }}
-          renderScene={renderScene}                    
-          onIndexChange={setIndex}
-          initialLayout={{ width: layout.width }}
-      /> 
-    // </>
+    <TabView
+      navigationState={{ index, routes }}
+      renderScene={renderScene}
+      renderTabBar={renderTabBar}
+      onIndexChange={setIndex}
+      initialLayout={{ width: Common.width, height: Common.height }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
     boardView: {
-        flex: Platform.OS === 'ios' ? 2.6 : 2,
-        backgroundColor: '#EDF1F5',
-        paddingHorizontal: 12,
-        paddingTop: 40,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-    },
-    container: {
-        flex: 1,
-        backgroundColor: '#53B77C',
+      flex: 1,
+      backgroundColor: Colors.backgroundGray,
+      paddingHorizontal: 12,
+      paddingTop: 20,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
     },
 })

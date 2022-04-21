@@ -5,17 +5,17 @@
     나의 리스트 및 수행리스트 화면
 */
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, FlatList, View, Text, useWindowDimensions, RefreshControl, Animated } from 'react-native';
+import { StyleSheet, SafeAreaView, FlatList, View, Text, RefreshControl, Animated } from 'react-native';
 import { Badge } from 'react-native-elements'
 import { TabView, TabBar } from "react-native-tab-view";
 import LinearGradient from 'react-native-linear-gradient';
 
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
 import RenderItemMyList from './RenderItemMyList';
 import RenderItemPerformList from './RenderItemPerformList';
 
 export default MyErrandScreen = (props) => {
-    const layout = useWindowDimensions();
-
     const { myErrandBadgeNum, myPerformErrandBadgeNum, getMyErrand, getMyPerformErrand } = props;
 
     const [index, setIndex] = useState(0);
@@ -44,7 +44,7 @@ export default MyErrandScreen = (props) => {
                 keyExtractor={item => item.id}
                 data={props.myErrand}
                 renderItem={renderItemMyList}
-                refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getMyErrand} />}
+                refreshControl={<RefreshControl refreshing={props.refreshingL} onRefresh={props.getMyErrand} />}
             />
         </View>
     );
@@ -60,7 +60,7 @@ export default MyErrandScreen = (props) => {
                 keyExtractor={item => item.id}
                 data={props.myPerformErrand}
                 renderItem={renderItemPerformList}
-                refreshControl={<RefreshControl refreshing={props.refreshing} onRefresh={props.getMyPerformErrand} />}
+                refreshControl={<RefreshControl refreshing={props.refreshingR} onRefresh={props.getMyPerformErrand} />}
             />
         </View>
     );
@@ -85,7 +85,7 @@ export default MyErrandScreen = (props) => {
             <Animated.View style={{ width: width, height: 3, bottom: -layout.height+3, transform: [{ translateX: translateX }] }}>
                 <LinearGradient
                     start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}}
-                    colors={['#5B86E5', '#36D1DC']}
+                    colors={[Colors.linearGradientLeft, Colors.linearGradientRight]}
                 >
                     <Text></Text>
                 </LinearGradient>
@@ -95,9 +95,9 @@ export default MyErrandScreen = (props) => {
     const renderTabBar = (props) => (
         <TabBar
             {...props}
-            labelStyle={{ color: 'black' }}
+            labelStyle={{ color: Colors.black }}
             renderIndicator={renderIndicator}
-            style={{ backgroundColor: '#fff' }}
+            style={{ backgroundColor: Colors.white }}
             renderBadge={renderBadge}
         />
     );
@@ -114,19 +114,38 @@ export default MyErrandScreen = (props) => {
     };
 
     return (
-        <TabView
-            navigationState={{ index, routes }}
-            renderScene={renderScene}
-            renderTabBar={renderTabBar}
-            onIndexChange={setIndex}
-            initialLayout={{ width: layout.width }}
-        />
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <Text style={styles.title}>심부름 관리</Text>
+            </View>
+            <TabView
+                navigationState={{ index, routes }}
+                renderScene={renderScene}
+                renderTabBar={renderTabBar}
+                onIndexChange={setIndex}
+                initialLayout={{ width: Common.width, height: Common.height }}
+            />
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: Colors.white,
+    },
+    header: {
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+    },
+    title: {
+        fontSize: 18,
+        color: Colors.black,
+        fontWeight: '700',
+    },
     boardView: {
-        backgroundColor: '#EDF1F5',
+        flex: 1,
+        backgroundColor: Colors.backgroundGray,
         paddingTop: 20,
     },
 })

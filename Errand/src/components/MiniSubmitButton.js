@@ -1,16 +1,16 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
 
-const width = Dimensions.get('window').width;
+import Colors from '../constants/Colors';
 
-export default PostSkipButton = (props) => {
-    const {backgroundColor, onPress} = props;
+export default MiniSubmitButton = (props) => {
+    const {title, backgroundColor, onPress} = props;
 
     return (
         <TouchableOpacity style={[styles.submitButton, {backgroundColor: backgroundColor}]} onPress={onPress}>
-            <Text style={styles.buttonText}>Skip</Text>
-            <Icon name='right' size={16} color='#fff' />
+            <Text style={styles.buttonText}>{title ? title : 'OK'}</Text>
+            <Icon name='right' size={16} color={Colors.white} />
         </TouchableOpacity>
     )
 }
@@ -19,14 +19,14 @@ const styles = StyleSheet.create({
     submitButton: {
         flex: 1,
         flexDirection: 'row',
-        marginHorizontal: width/4,
+        marginHorizontal: '30%',
         padding: 12,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 25,
     },
     buttonText: {
-        color: '#fff',
+        color: Colors.white,
         fontSize: 18,
         marginRight: 5,
     }

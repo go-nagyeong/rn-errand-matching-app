@@ -1,15 +1,12 @@
 import React, { Component, useState, useEffect, useCallback } from 'react'
 import { SafeAreaView, ScrollView, Switch, StyleSheet, Text, View, RefreshControl, TouchableOpacity } from 'react-native'
 
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
-
+import * as Firebase from '../utils/Firebase';
 import MyCompletedErrandScreen from '../screens/Mypage/MyCompletedErrandScreen'
 
-
 export default MyCompletedErrandAction = (props) => {
-    const myEmail = auth().currentUser.email
-    const query = firestore().collection('Posts').where('process.title', '==', 'finished'); //auth().currentUser.email
+    const myEmail = Firebase.currentUser.email
+    const query = Firebase.postsRef.where('process.title', '==', 'finished');
     
     const [writerPosts, setWriterPosts] = useState([]); // 본인이 작성자인 게시글
     const [erranderPosts, setErranderPosts] = useState([]); // 본인이 심부름꾼인 게시글
@@ -26,7 +23,6 @@ export default MyCompletedErrandAction = (props) => {
 
     const erranderData = query.where('erranderEmail', '==', myEmail).orderBy('id', 'desc')
     const writerData = query.where('writerEmail', '==', myEmail).orderBy('id', 'desc')
-
 
     useEffect(() => {
       const unsubscribe = props.navigation.addListener('focus', () => {
@@ -68,8 +64,8 @@ export default MyCompletedErrandAction = (props) => {
     // 본인이 작성자인 게시글
     const writerPostsFunc = () => {
         setRefreshingB(true);
-        let data = query.where('writerEmail', '==', myEmail).orderBy('id', 'desc')
-        data
+
+        writerData
         .limit(5)
         .get()
         .then(querySnapshot => {

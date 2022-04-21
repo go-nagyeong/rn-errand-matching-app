@@ -6,13 +6,15 @@ import MaskedView from '@react-native-community/masked-view'
 import Icon from 'react-native-vector-icons/Ionicons';
 import AIcon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/FontAwesome';
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
 import storage from '@react-native-firebase/storage';
 import { useNavigation } from '@react-navigation/native';
 
+import Colors from '../../constants/Colors';
+import * as Firebase from '../../utils/Firebase';
+
 export default ErranderRequest = (props) => {
-    const user = auth().currentUser;
+    const { item } = props;
+
     const navigation = useNavigation()
 
     const accept = () => {
@@ -22,8 +24,7 @@ export default ErranderRequest = (props) => {
         [{
           text: "확인",
           onPress: () => {
-            firestore()
-                .collection('Posts')
+            Firebase.postsRef
                 .doc(props.id + '%' + props.writerEmail)
                 .update({
                     process: {
@@ -52,8 +53,7 @@ export default ErranderRequest = (props) => {
         [{
           text: "확인",
           onPress: () => {
-            firestore()
-                .collection('Posts')
+            Firebase.postsRef
                 .doc(props.id + '%' + props.writerEmail)
                 .update({
                     process: {
@@ -68,21 +68,28 @@ export default ErranderRequest = (props) => {
                 .catch(err => console.log(err));
 
             // 채팅 삭제 (firestore에 있는 텍스트)
-            firestore()
-              .collection('Chats')
-              .where('post', '==', props.id)
-              .get()
-              .then(querySnapshot => { 
-                querySnapshot.forEach(doc => 
-                  doc.ref.delete()
-                  .then(() =>
-                    console.log('채팅 삭제 완료')
-                  ) 
-                )
-              });
+            Firebase.chatsRef
+                .where('post', '==', props.id + '%' + props.writerEmail)
+                .get()
+                .then(querySnapshot => { 
+                    querySnapshot.forEach(doc => doc.ref.delete())
+                })
+                .catch(err => console.log(err));
 
             // 채팅 삭제 (storage에 있는 이미지 & 폴더)
-            deleteFolder('Chats/' + props.id);
+            storage()
+                .ref('Chats/' + props.id + '%' + props.writerEmail)
+                .listAll()
+                .then(dir => {
+                    dir.items.forEach(fileRef => {
+                        storage()
+                            .ref(fileRef.path)
+                            .delete()
+                            .then(() => console.log('성공'))
+                        
+                    })
+                })
+                .catch(err => console.log(err));
           },
           style: "default",
         },
@@ -91,25 +98,6 @@ export default ErranderRequest = (props) => {
           style: "default",
         }],
       );
-    }
-
-    // 심부름 거부 시 채팅에 있는 Storage의 이미지 삭제 
-    const deleteFile = (pathToFile, fileName) => {
-      const ref = storage().ref(pathToFile);
-      const childRef = ref.child(fileName);
-      childRef.delete();
-      console.log('파일이 삭제되었습니다 (in "Storage")')
-    }
-
-    // 심부름 거부 시 채팅에 있는 Storage의 이미지 삭제 
-    const deleteFolder = (path) => {
-      const ref = storage().ref(path);
-      ref.listAll()
-        .then(dir => {
-          dir.items.forEach(fileRef => deleteFile(ref.fullPath, fileRef.name));
-          dir.prefixes.forEach(folderRef => deleteFolder(folderRef.fullPath));
-        })
-        .catch(error => console.log(error));
     }
 
     return (
@@ -124,8 +112,8 @@ export default ErranderRequest = (props) => {
                     <View style={styles.modalView}>
                         <View style={styles.modalDecoration}>
                             <MaskedView maskElement={<Icon name="ios-arrow-redo-sharp" size={40} />}>
-                                <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']}>
-                                    <Icon name="ios-arrow-redo-sharp" size={40} color="transparent" />
+                                <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]}>
+                                    <Icon name="ios-arrow-redo-sharp" size={40} color={Colors.transparent} />
                                 </LinearGradient> 
                             </MaskedView>
                         </View>
@@ -142,51 +130,57 @@ export default ErranderRequest = (props) => {
                                     rounded
                                     size={90}
                                     source={{ uri: props.erranderImage }}
-                                    overlayContainerStyle={{ backgroundColor: '#BDBDBD' }}
-                                    containerStyle={{ right: -20 }}
+                                    containerStyle={{ backgroundColor: Colors.lightGray2, right: -20 }}
                                 />
                                 <Avatar
                                     rounded
                                     size={60}
-                                    overlayContainerStyle={{ backgroundColor: '#64A8DC' }}
-                                    containerStyle={{ zIndex: -1 }}
+                                    containerStyle={{ backgroundColor: Colors.cyan, zIndex: -1 }}
                                 />
                                 <Avatar
                                     rounded
                                     size={90}
                                     icon={{ name: 'user', type: 'font-awesome' }}
-                                    containerStyle={{ backgroundColor: '#BDBDBD', left: -20 }}
+                                    containerStyle={{ backgroundColor: Colors.lightGray2, left: -20 }}
                                 />
                             </View>
 
                             <View style={{ alignItems: 'center', marginBottom: 40 }}>
-                                <Text style={{ includeFontPadding: false, fontSize: 18, fontFamily: 'NotoSansKR-Medium', color: '#090909', marginBottom: 8 }}>
-                                    {props.errander}, {props.erranderGrade}
+                                <Text style={{ includeFontPadding: false, fontSize: 18, fontFamily: 'NotoSansKR-Medium', color: Colors.black, marginBottom: 8 }}>
+                                    {props.erranderName}, {props.erranderGrade}
                                 </Text>
-                                <Text style={{ includeFontPadding: false, fontSize: 16, fontFamily: 'NotoSansKR-Regular', color: '#333333'}}>
+                                <Text style={{ includeFontPadding: false, fontSize: 16, fontFamily: 'NotoSansKR-Regular', color: Colors.darkGray}}>
                                     심부름을 하고 싶어합니다!
                                 </Text>
                             </View>
 
                             <View style={{ flexDirection: 'row', marginBottom: 40 }}>
-                                <TouchableOpacity style={{ alignItems: 'center', marginRight: 70 }} onPress={() => {props.onRequestClose(); navigation.navigate('Chat', {id: props.id}); console.log('채팅');}}>
-                                    <Icon name="chatbubbles-outline" size={40} color="#64A8DC" />
+                                <TouchableOpacity
+                                    style={{ alignItems: 'center', marginRight: 70 }}
+                                    onPress={() => {
+                                        props.onRequestClose();
+                                        navigation.navigate('Chat', {
+                                            id: props.id, writerEmail: props.writerEmail, erranderEmail: props.erranderEmail, errandInfo: item
+                                        })
+                                    }}
+                                >
+                                    <Icon name="chatbubbles-outline" size={40} color={Colors.cyan} />
                                     <Text style={styles.buttonText}>
                                         채팅
                                     </Text>
                                 </TouchableOpacity>
                                 {/* reject() */}
                                 <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => reject()}> 
-                                    <Icon name="ios-exit-outline" size={40} color="#777" />
+                                    <Icon name="ios-exit-outline" size={40} color={Colors.gray} />
                                     <Text style={styles.buttonText}>
                                         거부
                                     </Text>
                                 </TouchableOpacity>
                             </View>
 
-                            <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={['#5B86E5', '#36D1DC']} style={styles.roundButton}>
+                            <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.fullButton}>
                                 <TouchableOpacity onPress={() => accept()}>
-                                    <Text style={styles.roundButtonText}>
+                                    <Text style={styles.fullButtonText}>
                                         수락
                                     </Text>
                                 </TouchableOpacity>
@@ -202,18 +196,18 @@ export default ErranderRequest = (props) => {
 const styles = StyleSheet.create({
     modalBackground: {
         flex: 1,
-        backgroundColor: "rgba(0,0,0,0.3)",
+        backgroundColor: Colors.translucent,
         justifyContent: 'center',
     },
 
     modalView: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.white,
         marginHorizontal: '8%',
         borderRadius: 15,
     },
     modalDecoration: {
         position: 'absolute',
-        backgroundColor: '#fff',
+        backgroundColor: Colors.white,
         alignSelf: 'center',
         width: 80,
         height: 80,
@@ -246,22 +240,21 @@ const styles = StyleSheet.create({
     buttonText: {
         includeFontPadding: false,
         fontFamily: 'NotoSansKR-Regular',
-        color: "#090909",
+        color: Colors.black,
         fontSize: 14,
         marginTop: 5,
     },
-    roundButton: {
-        backgroundColor: '#64A8DC',
+    fullButton: {
         width: '100%',
         alignItems: 'center',
         padding: 14,
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15
     },
-    roundButtonText: {
+    fullButtonText: {
         includeFontPadding: false,
         fontFamily: 'NotoSansKR-Medium',
-        color: '#fff',
+        color: Colors.white,
         fontSize: 16,
     },
 })

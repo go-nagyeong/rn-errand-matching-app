@@ -3,13 +3,15 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-nativ
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import AntDesignIcon from 'react-native-vector-icons/AntDesign';
 
+import Colors from '../../constants/Colors';
 import Container from '../../components/Container';
 import SpeechBalloon from '../../components/SpeechBalloon';
-import PostSubmitButton from '../../components/PostSubmitButton';
+import MiniSubmitButton from '../../components/MiniSubmitButton';
 import PriceButton from '../../components/PriceButton';
 
 export default InputPrice = (props) => {
-  const [price, setPrice] = useState('');
+  const [price, setPrice] = useState(null);
+
   const [minusIsDisabled, setMinusIsDisabled] = useState(false)
 
   const [message, setMessage] = useState("")
@@ -18,7 +20,7 @@ export default InputPrice = (props) => {
 
   const inputPrice = () => {
     if (price) {
-      props.navigation.navigate('WriteTitle', { color: color, category: category, price: price, })
+      props.navigation.navigate('InputLocation', { color: color, category: category, price: price, })
     } else {
       setMessage('금액을 입력해주세요.')
     }
@@ -27,12 +29,11 @@ export default InputPrice = (props) => {
 
   // 최소/최대 금액을 제한하는 부분
   useEffect(() => {
-    let priceNum = Number(price.replace(',', ''))
     setMessage('')
-    if (priceNum <= 0) {
+    if (price <= 0) {
       setMinusIsDisabled(true)
-    } else if (priceNum >= 100000) {
-      onChangePrice('99,999')
+    } else if (price >= 100000) {
+      onChangePrice('99999')
     } else {
       setMinusIsDisabled(false)
     }
@@ -40,18 +41,15 @@ export default InputPrice = (props) => {
 
 
   const onChangePrice = (text) => {
-    let text1 = text.replace(/[^0-9]/g, '')  // 숫자 외 입력 제한
-    let text2 = text1.replace(/\B(?=(\d{3})+(?!\d))/g, ",")  // 금액 단위(,) 표시
-    setPrice(text2)
+    let text1 = Number(text.replace(/[^0-9]/g, ''))  // 숫자 외 입력 제한
+    setPrice(text1)
   }
 
   const upAndDownPrice = (upAndDown) => {
-    let priceNum = Number(price.replace(',', ''))
-
     if (upAndDown === 'minus') {
-      return (priceNum - 500).toString()
+      return (price - 500).toString()
     } else if (upAndDown === 'plus') {
-      return (priceNum + 500).toString()
+      return (price + 500).toString()
     }
   }
 
@@ -67,13 +65,13 @@ export default InputPrice = (props) => {
         </View>
 
         <View style={styles.inputWrapper}>
-          <FontAwesomeIcon name='won' size={20} color='black' />
+          <FontAwesomeIcon name='won' size={20} color={Colors.black} />
 
           <TextInput
             style={styles.input}
             keyboardType='numeric'
             placeholder="금액 입력"
-            value={price}
+            value={price ? price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : null}
             autoCapitalize='none'
             autoCorrect={false}
             blurOnSubmit={true}
@@ -85,7 +83,7 @@ export default InputPrice = (props) => {
 
 
           <TouchableOpacity disabled={minusIsDisabled} style={{ marginRight: 8 }} onPress={() => onChangePrice(upAndDownPrice('minus'))}>
-            <AntDesignIcon name='minuscircleo' size={24} color={minusIsDisabled ? 'gray' : color} />
+            <AntDesignIcon name='minuscircleo' size={24} color={minusIsDisabled ? Colors.midGray : color} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => onChangePrice(upAndDownPrice('plus'))}>
             <AntDesignIcon name='pluscircleo' size={24} color={color} />
@@ -101,7 +99,7 @@ export default InputPrice = (props) => {
           <PriceButton price='5000' borderColor={color} onPress={() => onChangePrice('5000')} />
         </View>
 
-        <PostSubmitButton backgroundColor={color} onPress={() => inputPrice()} />
+        <MiniSubmitButton backgroundColor={color} onPress={() => inputPrice()} />
       </View>
     </Container>
   );
@@ -124,13 +122,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'NotoSansKR-Medium',
-    color: 'black',
+    color: Colors.black,
     fontSize: 24,
     padding: 10,
   },
   inputWrapper: {
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'gray',
+    borderBottomColor: Colors.midGray,
     alignItems: 'center',
     justifyContent: 'space-between',
     flexDirection: 'row',
@@ -147,6 +145,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 10,
     marginBottom: 20,
-    color: 'red'
+    color: Colors.red,
   }
 });

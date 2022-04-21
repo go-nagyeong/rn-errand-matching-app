@@ -1,129 +1,172 @@
 import React, {useState, useEffect} from 'react';
-import {Platform, View, Text, TouchableOpacity, Modal} from 'react-native';
-import Icon from 'react-native-vector-icons/AntDesign';
-import FIcon from 'react-native-vector-icons/FontAwesome';
-import MIcon from 'react-native-vector-icons/MaterialCommunityIcons'
+import {StyleSheet, Platform, View, Text, TouchableOpacity, Image, Alert} from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import AIcon from 'react-native-vector-icons/AntDesign';
+import EIcon from 'react-native-vector-icons/EvilIcons';
 import Moment from 'moment';
+import 'moment/locale/ko';
 import { useNavigation } from '@react-navigation/native';
+import { RectButton } from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/Swipeable';
+
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
+import * as Firebase from '../../utils/Firebase';
 import ReportDetail from './ReportDetail'
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 
+let row = [];
+let prevOpenedRow = null;
 
-export default RenderItem = ({ item, reportButtonVisible }) => {
+export default RenderItem = ({ item, index, getPosts }) => {
     const navigation = useNavigation();
+
+    let opponentEmail =  Firebase.currentUser.email === item.writerEmail ?  item.erranderEmail : item.writerEmail; // 상대방 이메일
+    let opponentNickname = Firebase.currentUser.displayName === item.writer ? item.errander : item.writer; // 상대방 닉네임
+    
     const [reportDetailVisible, setReportDetailVisible] = useState(false); // 신고 작성 페이지
     
-    let opponentEmail =  auth().currentUser.email === item.writerEmail ?  item.erranderEmail : item.writerEmail; // 상대방 이메일
-    let opponentNickname = auth().currentUser.displayName === item.writer ? item.errander : item.writer; // 상대방 닉네임
-    
-    const [writerGrade, setWriterGrade] = useState(0)
-    firestore()
-        .collection('Users')
-        .doc(item.writerEmail)
-        .get()
-        .then(doc => {
-            if (doc.exists) {
-                setWriterGrade(doc.data()['grade'])
-            }
-        })
+    const [isReported, setReported] = useState(false)
 
-    let grade = '',
-        gradeColor = '';
+    const [writerGrade, setWriterGrade] = useState("")
+    const [writerImage, setWriterImage] = useState("")
+    useEffect(() => {
+        // 중복 신고 여부 검사
+        if (item.reported.includes(Firebase.currentUser.email)) {
+            setReported(true)
+        }
 
-    if (writerGrade >= 4.1) {
-        grade = 'A+';
-        gradeColor = '#4CA374';
-    } else if (writerGrade >= 3.6) {
-        grade = 'A0';
-        gradeColor = '#4CA374';
-    } else if (writerGrade >= 3.1) {
-        grade = 'B+';
-        gradeColor = '#4CA374';
-    } else if (writerGrade >= 2.6) {
-        grade = 'B0';
-        gradeColor = '#4CA374';
-    } else if (writerGrade >= 2.1) {
-        grade = 'C+';
-        gradeColor = '#4CA374';
-    } else if (writerGrade >= 1.6) {
-        grade = 'C0';
-        gradeColor = '#4CA374';
-    } else if (writerGrade >= 1.1) {
-        grade = 'D+';
-        gradeColor = '#EB4E3D';
-    } else if (writerGrade >= 0.6) {
-        grade = 'D0';
-        gradeColor = '#EB4E3D';
-    } else {
-        grade = 'F';
-        gradeColor = '#EB4E3D';
-    }
-
+        Firebase.usersRef
+            .doc(item.writerEmail)
+            .get()
+            .then(doc => {
+                if (doc.exists) {
+                    let gradeNum = doc.data()['grade']
+                    setWriterGrade(Common.calculateGrade(gradeNum))
+                    setWriterImage(doc.data()['image'])
+                }
+            })
+    }, [])
 
     categoryIconStyle = {
-        마트: ['green', 'shoppingcart'],
-        과제: ['lightgreen', 'book'],
-        탐색: ['brown', 'eyeo'],
-        서류: ['lightblue', 'filetext1'],
-        공구: ['gray', 'tool'],
-        짐: ['navy', 'car'],
-        생각: ['orange', 'bulb1'],
-        기타: ['lightgray', 'ellipsis1']
+        마트: ['lightsalmon', 'cart'],
+        과제: ['mediumaquamarine', 'pencil'],
+        탐색: ['mediumpurple', 'search'],
+        서류: ['lightskyblue', 'paperclip'],
+        공구: ['burlywood', 'gear'],
+        짐: ['steelblue', 'archive'],
+        생각: ['lightcoral', 'comment'],
+        기타: ['darkgray', 'question']
     }
 
+    const renderRightActions = () => {
+        return (
+            <RectButton
+                style={styles.rightReportButton}
+                onPress={() => {
+                    isReported 
+                        ? Alert.alert(
+                            "안내",
+                            "중복 신고는 불가능합니다.",
+                            [{
+                                text: "확인",
+                                onPress: () => prevOpenedRow.close(),
+                                style: "default",
+                            }],
+                        )
+                        : setReportDetailVisible(true)
+                }}
+            >
+                <Icon name='person-circle' size={26} color={Colors.white} />
+                <Text style={styles.rightReportButtonText}>신고하기</Text>
+            </RectButton>
+        );
+    };
+    // rightAction은 한 번에 한 게시물에 한해서만 작동되게
+    const closeRow = (index) => {
+        if (prevOpenedRow && prevOpenedRow != row[index]) {
+            prevOpenedRow.close();
+        }
+        prevOpenedRow = row[index];
+    }
     return (
-        // runErrandVisible : 심부름 수행하기 버튼 활성화/비활성화
-        <TouchableOpacity   title = { item.title  +  ' ' + item.content }   onPress={() => {navigation.navigate('CompletedDetailPost', {runErrandVisible: true, title: item.title, content: item.content, writerName : item.writer, writergrade : grade, price : item.price, email : item.writerEmail, id : item.id });} } >  
-            <View style={{flexDirection: 'row', backgroundColor: '#fff', height: 100, marginBottom: 15, padding: 15, borderRadius: 10}}>
-                {/* 카테고리 아이콘 */}
-                <View style={{backgroundColor: categoryIconStyle[item.category][0], borderRadius: 30, padding: 10, marginRight: 15, alignSelf: 'center'}}>
-                    <Icon name={categoryIconStyle[item.category][1]} size={30} color='white' />
-                </View>
+        <Swipeable
+            ref={ref => row[index] = ref}
+            containerStyle={[styles.itemBackground, isReported && {backgroundColor: Colors.lightGray2}]}
+            renderRightActions={renderRightActions}
+            onSwipeableWillOpen={() => closeRow(index)}
+        >
+            <View style={styles.itemView}>
+                <TouchableOpacity style={{padding: 10}} onPress={ () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views}) }>  
+                    {/* 작성일, 카테고리 아이콘 */}
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12}}>
+                        <Text style={{ fontSize: 13, color: Colors.midGray }}>
+                            {Moment(item.date.toDate()).diff(Moment(), 'days') >= -2
+                                ? Moment(item.date.toDate()).fromNow()
+                                : Moment(item.date.toDate()).format('YY/MM/DD')}
+                        </Text>
+                        <EIcon style={{right: -2}} name={categoryIconStyle[item.category][1]} size={22} color={categoryIconStyle[item.category][0]} />
+                    </View>
 
-                {/* 제목, 내용 */}
-                <View style={{flex: 3.8, flexDirection: 'column', marginRight: 15, alignSelf: 'center'}}>
-                    <Text style={{fontSize: 15, fontWeight: '600', color: '#090909', marginBottom: 7}} numberOfLines={1} ellipsizeMode="tail">
-                        {item.title}
-                    </Text>
-                    <Text style={{fontSize: 14, color: '#89888c', marginBottom: 12}} numberOfLines={1} ellipsizeMode="tail">
-                        {item.content}
-                    </Text>
-                    <View style={{flexDirection: 'row'}}>
-                        <Icon name='pay-circle-o1' size={13} color='#808080' />
-                        <Text style={{top: Platform.OS=='ios'?-1:-3, marginLeft: 6, fontSize: 14, fontFamily: 'Roboto-Medium', color: 'black'}}>
-                            {item.price}
+                    {/* 제목, 내용 */}
+                    <View style={{width: '90%', paddingHorizontal: 5, marginBottom: 20}}>
+                        <Text style={{fontSize: 15, fontWeight: '600', color: Colors.black, marginBottom: 8}} numberOfLines={1} ellipsizeMode="tail">
+                            {item.title}
+                        </Text>
+                        <Text style={{ fontSize: 14, color: Colors.gray }} numberOfLines={1} ellipsizeMode="tail">
+                            {item.content}
                         </Text>
                     </View>
-                </View>
 
-                {/* 작성자 등급, 작성일 */}
-                <View style={{flex: 1.1, flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between', paddingVertical: 5}}>
-                    {!reportButtonVisible &&
-                      <View style={{flexDirection: 'row'}}>
-                          <FIcon name='user-circle' size={16} color={gradeColor} />
-                          <Text style={{top: Platform.OS=='ios'?0:-2, marginLeft: 6, fontSize: 14, fontFamily: 'Roboto-Medium', color: 'black'}}>
-                              {grade}
-                          </Text>
-                      </View>
-                    }   
-                    {/* 신고버튼 */}
-                    {reportButtonVisible && // <MIcon>:alarm-light, <Icon>:notification
-                      <TouchableOpacity onPress={() => {setReportDetailVisible(true);}} style={{padding: 8, paddingBottom: 15}}>
-                        <View>
-                          <MIcon name='alarm-light' size={21} color={'red'}/> 
+                    {/* 금액, 심부름꾼, 신고 */}
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5}}>
+                        <View style={{flexDirection: 'row', alignItems: 'center', marginRight: 12}}>
+                            <AIcon name='pay-circle-o1' size={13} color={Colors.gray} />
+                            <Text style={{includeFontPadding: false, marginLeft: 5, fontSize: 13, fontFamily: 'Roboto-Regular', color: Colors.black}}>
+                                {item.price}
+                            </Text>
                         </View>
-                      </TouchableOpacity>
-                    }
-                    <Text style={{fontSize: 13, color: '#C2C2C2'}}>
-                        {Moment(item.date.toDate()).diff(Moment(), 'days') >= -2
-                            ? Moment(item.date.toDate()).fromNow()
-                            : Moment(item.date.toDate()).format('YY/MM/DD')}
-                    </Text>
-                    {/* 신고 내용 작성하는 Modal */}
-                    <ReportDetail reportDetailVisible={reportDetailVisible} setReportDetailVisible={setReportDetailVisible} opponentEmail={opponentEmail} opponentNickname={opponentNickname} postId={item.id}/>
-                </View>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                            <AIcon name='team' size={14} color={Colors.gray} />
+                            <Text style={{includeFontPadding: false, marginLeft: 4, fontSize: 13, fontFamily: 'Roboto-Regular', color: Colors.black}}>
+                                {opponentNickname}
+                            </Text>
+                        </View>
+                    </View>
+                </TouchableOpacity> 
             </View>
-        </TouchableOpacity   >  
+            {/* 신고 내용 작성하는 Modal */}
+            <ReportDetail 
+                visible={reportDetailVisible}
+                onRequestClose={() => setReportDetailVisible(false)}
+                opponentEmail={opponentEmail}
+                opponentNickname={opponentNickname}
+                postId={item.id}
+                writerEmail={item.writerEmail}
+                getPosts={getPosts}
+            />
+        </Swipeable>
     );
 }
+
+const styles = StyleSheet.create({
+    itemBackground: {
+        backgroundColor: Colors.red,
+        marginBottom: 15,
+        borderRadius: 15,
+    },
+    itemView: {
+        backgroundColor: Colors.white,
+    },
+    
+    rightReportButton: {
+        width: '26%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    rightReportButtonText: {
+        includeFontPadding: false,
+        fontSize: 15,
+        color: Colors.white,
+        fontFamily: 'NotoSansKR-Regular',
+    },
+})

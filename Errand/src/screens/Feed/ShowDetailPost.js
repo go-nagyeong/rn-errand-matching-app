@@ -2,50 +2,46 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import storage from '@react-native-firebase/storage';
 import { useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState, Fragment } from 'react';
-import { Alert, Image, KeyboardAvoidingView, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import React, { Fragment, useEffect, useState, useRef } from 'react';
+import { Animated, TouchableWithoutFeedback, Easing, Alert, Image, KeyboardAvoidingView, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { Avatar } from 'react-native-elements';
 import LinearGradient from 'react-native-linear-gradient';
+import LightBox from "react-native-lightbox-v2";
+import Icon from 'react-native-vector-icons/AntDesign';
+import ErrandStartButton from '../../components/ErrandStartButton';
 
 
 export default ShowDetailPost = (props) => {
   const navigation = useNavigation()
 
-  const { title, content, writerName, writerGrade, price, writerEmail, id } = props.route.params;
+  const { title, content, writerName, writerGrade, price, writerEmail, id, image, writerImage, views, arrive, destination } = props.route.params;
 
-  const [url, setUrl] = useState("")
-
-  const [profileUrl, setProfileUrl] = useState(null)
+  // const [url, setUrl] = useState("")
+  // const [profileUrl, setProfileUrl] = useState(null)
 
   // 해당 게시물에 다른 사람의 요청이 들어가있는지 체크
   const [processIsRequested, setProcessIsRequested] = useState(false)
   // 본인 게시물인지 체크
   const [confirmMyPost, setConfirmMyPost] = useState(false)
 
+  const [heartNumber, setHeartNumber] = useState(null);
+
   const isDarkMode = useColorScheme() === 'dark';
 
+  const [myHeartList, setMyHeartList] = useState([""]);
+
+  // let myHeartList = [];
+
+  const [isReported, setIsReported] = useState(false)
+
+  const heartsDocId = id + "%" + writerEmail + "%" + auth().currentUser.email
+
+  var lastTap = null;
+  const [heart, setHeart] = useState(false);
+  const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // 게시물 사진과 작성자 사진 로드
-    storage()
-      .ref('Posts/' + id + "%" + writerEmail)
-      .getDownloadURL()
-      .then((url) => {
-        console.log('게시물 이미지를 다운로드 하였습니다')
-        setUrl(url)
-      })
-      .catch((e) => console.log('게시물 사진 다운로드 실패 => ', e));
-
-    storage()
-      .ref('Users/' + writerEmail)
-      .getDownloadURL()
-      .then((url) => {
-        console.log('사용자 이미지를 다운로드 하였습니다')
-        setProfileUrl(url)
-      })
-      .catch((e) => console.log('사용자 사진 다운로드 실패 => ', e));
-
-    // 해당 심부름의 진행 상태와 작성자 확인
+    // 해당 심부름의 진행 상태와 작성자 확인, 조회수 확인
     firestore()
       .collection('Posts')
       .doc(id + "%" + writerEmail)
@@ -58,13 +54,57 @@ export default ShowDetailPost = (props) => {
           }
           if (doc.data()['writerEmail'] === auth().currentUser.email) {
             setConfirmMyPost(true)
-  
           } else {
             setConfirmMyPost(false)
           }
+          setHeartNumber(parseInt(doc.data().hearts))
         }
       })
+
+    // 조회수 자동 증가
+    firestore()
+      .collection('Posts')
+      .doc(id + "%" + writerEmail)
+      .update({ 'views': views + 1, })
+      .then(() => {
+        console.log('조회수 변경');
+      })
+      .catch(err => { console.log(err) })
+
+    // 좋아요 불러오기
+    firestore()
+      .collection('Hearts')
+      .where("who", "==", auth().currentUser.email)
+      .where("postid", "==", id + "%" + writerEmail)
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(function (doc) {
+          if (doc.data()["state"] === "1") {
+            setHeart(true);
+          }
+        })
+      })
+      .catch(err => { console.log('에러 발생', err) })
+
+    // 신고횟수 불러오기
+    firestore()
+      .collection('Users')
+      .doc(writerEmail)
+      .onSnapshot(doc => {
+        if (doc.exists) {
+          Object.entries(doc.data().data).map((entrie, idx) => {
+            if (entrie[1] >= 10) {
+              setIsReported(true)
+            } else {
+              setIsReported(false)
+            }
+          });
+        }
+      })
+
+
   }, [])
+
 
 
   const requestErrand = () => {
@@ -122,6 +162,88 @@ export default ShowDetailPost = (props) => {
     }
   }
 
+
+
+  const fillHeart = () => {
+    Animated.sequence([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.quad,
+        useNativeDriver: true,
+      }),
+      Animated.delay(600),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }
+
+
+  const toggleHeart = () => {
+
+    if (heart) {
+      // 하트 취소 ----------------------------------------------
+      setHeart(false)
+
+      firestore()
+        .collection('Posts')
+        .doc(id + "%" + writerEmail)
+        .update(
+          {
+            'hearts': heartNumber - 1,
+          })
+        .then(() => {
+          console.log('하트 취소');
+        })
+        .catch(err => { console.log(err) })
+
+      firestore()
+        .collection('Hearts')
+        .doc(heartsDocId)
+        .delete()
+
+
+
+      // ----------------------------------------------
+
+    } else {
+      // 하트 활성화 ----------------------------------------------
+      setHeart(true)
+
+
+      firestore()
+        .collection('Posts')
+        .doc(id + "%" + writerEmail)
+        .update({
+          'hearts': heartNumber + 1,
+        })
+        .then(() => {
+          console.log('하트 활성화');
+        })
+        .catch(err => { console.log(err) })
+
+      firestore()
+        .collection('Hearts')
+        .doc(heartsDocId)
+        .set(
+          {
+            'postid': id + "%" + writerEmail,
+            'state': "1",
+            'who': auth().currentUser.email,
+          })
+        .catch(err => { console.log(err) })
+      // ----------------------------------------------
+    }
+
+
+
+
+    fillHeart();
+  }
+
   return (
     <Fragment>
       <SafeAreaView style={styles.container}>
@@ -130,16 +252,28 @@ export default ShowDetailPost = (props) => {
             <ScrollView>
 
 
-              {url != "" && <>
-                <Image source={{ uri: url }} style={styles.image} />
-              </>}
-              {url == "" && <>
-                <Text style={{ color: 'gray', fontSize: 16, }} >
-                  게시물 이미지 없음
-                </Text>
-                <Image style={styles.image} />
+              {image != ""
+                ?
+                <LightBox>
+                  <Image source={{ uri: image }} style={styles.image} />
+                </LightBox>
+                :
+                <>
+                  <Text style={{ color: 'gray', fontSize: 16, }} >
+                    게시물 이미지 없음
+                  </Text>
+                  <Image style={styles.image} />
+                </>}
 
-              </>}
+
+              {isReported &&
+                <>
+                  <View style={styles.warning}>
+                    <Icon style={{ marginLeft: "3%" }} name='infocirlceo' size={15} color='#d11515' />
+                    <Text style={styles.warningText}>신고 이력이 많은 이용자 입니다.</Text>
+                  </View>
+                </>
+              }
 
 
               <View style={styles.userRow}>
@@ -147,7 +281,7 @@ export default ShowDetailPost = (props) => {
                   <Avatar
                     rounded
                     size="large"
-                    source={{ uri: profileUrl }}
+                    source={{ uri: writerImage }}
                   />
                 </View>
                 <View>
@@ -165,21 +299,51 @@ export default ShowDetailPost = (props) => {
                 <Text style={{ padding: 10, fontSize: 18 }}>{content}</Text>
               </View>
 
-              <View style={styles.inputWrapper}>
-                <View style={{ alignItems: "center", justifyContent: "center", }}>
+              {arrive !== "" &&
+                <>
+                  <View style={styles.location}>
+                    <Text style={styles.locationText}>목적지 : </Text>
+                    {/* <Icon style={{ marginLeft: "3%" }} name='rightcircleo' size={15} color='#cc0' /> */}
+                    <Text style={styles.locationText2}>{arrive}</Text>
+                  </View>
+                </>
+              }
 
-                </View>
-              </View>
+              {destination !== "" &&
+                <>
+                  <View style={styles.location}>
+                    <Text style={styles.locationText}>도착지 : </Text>
+                    {/* <Icon style={{ marginLeft: "3%" }} name='leftcircleo' size={15} color='#cc0' /> */}
+                    <Text style={styles.locationText2}>{destination}</Text>
+                  </View>
+                </>
+              }
 
             </ScrollView>
           </View>
         </KeyboardAvoidingView>
+
+
+
         <View style={styles.footer} >
           {/* 테스트를 위해 내 심부름도 일단 요청 가능하게 */}
           {/* <TouchableOpacity onPress={() => updatePostState()} disabled={confirmMyPost} > */}
-          <TouchableOpacity onPress={() => updatePostState()} >
-            <Text style={{ color: 'white', fontSize: 16 }}> 시작하기 </Text>
-          </TouchableOpacity>
+          <View style={styles.heart}>
+            <TouchableOpacity
+              onPress={toggleHeart}
+              style={{
+                width: 30,
+                height: 30,
+              }}
+            >
+              {/* heart값에 따른 아이콘 변경 */}
+              {heart ? <Icon name="heart" size={25} color={'#f00'}></Icon> : <Icon name="hearto" size={25} color={'#000'}></Icon>}
+            </TouchableOpacity>
+          </View>
+
+          <ErrandStartButton onPress={() => updatePostState()} />
+
+
         </View>
       </SafeAreaView>
     </Fragment>
@@ -273,11 +437,48 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#5B86E5',
+    backgroundColor: '#fff',
   },
   footer: {
-    height: "5%",
+    height: "10%",
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: 'row',
   },
+  heart: {
+    marginRight: "50%",
+    alignItems: "flex-start",
+  },
+  warning: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    margin: "10%",
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "#fffce6"
+  },
+  warningText: {
+    marginLeft: "3%",
+    color: "#5e5200"
+  },
+  location: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginLeft: "10%",
+    marginRight: "10%",
+    marginTop: "5%",
+    padding: 10,
+    borderRadius: 20,
+    backgroundColor: "#eee"
+  },
+  locationText: {
+    marginLeft: "3%",
+    color: "#000"
+  },
+  locationText2: {
+    marginLeft: "3%",
+    marginRight: "20%",
+    // width:"",
+    color: "#000"
+  }
 });

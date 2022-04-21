@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { TextInput } from 'react-native-paper';
-import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
-import AntDesignIcon from 'react-native-vector-icons/AntDesign';
+import { Platform, StyleSheet, Text, View, TouchableOpacity, Image, TextInput } from 'react-native';
+import FIcon from 'react-native-vector-icons/FontAwesome5';
 
+import Colors from '../../constants/Colors';
 import Container from '../../components/Container';
+import SubmitButton from '../../components/SubmitButton';
 
 export default LoginScreen = (props) => {
   const [emailFocus, setEmailFocus] = useState(false);
@@ -16,8 +16,10 @@ export default LoginScreen = (props) => {
   return (
     <Container>
       <View style={styles.titleWrapper}>
-        <FontAwesomeIcon name="user-circle-o" size={100} color="#F3F2F2" />
-        <Text style={styles.title}>Welcome Back</Text>
+        <FIcon name="map-marker-alt" size={58} color={Colors.cyan} style={{position: 'absolute', top: -12, zIndex: 1}} />
+        <FIcon name="map" size={90} color={Colors.lightGray} />
+        <Text style={styles.title}>AN-SIM</Text>
+        <Text style={styles.subTitle}>안 동 대 학 교   심 부 름</Text>
       </View>
 
       <View style={styles.inputWrapper}>
@@ -33,12 +35,7 @@ export default LoginScreen = (props) => {
           onChangeText={text => setEmail(text)}
           onSubmitEditing={() => { this.secondTextInput.focus(); }}
           returnKeyType="next"
-          selectionColor="#292929"
-          // react-native-paper
-          underlineColor='transparent'
-          activeUnderlineColor="transparent"
-          theme={{ roundness: 7, colors: {text: emailFocus ? "black" : "#999899", placeholder: emailFocus ? "transparent" : "#999899"} }}
-          left={<TextInput.Icon name={() => <AntDesignIcon name="user" size={20} color="#53B77C" />} />}
+          selectionColor={Colors.darkGray2}
         />
         <TextInput 
           style={pwFocus ? styles.focusedInput : styles.input}
@@ -51,41 +48,36 @@ export default LoginScreen = (props) => {
           onBlur={() => {setPwFocus(false)}}
           onChangeText={text => setPassword(text)}
           onSubmitEditing={() => { props.signIn(email, password) }}
-          selectionColor="#292929"
+          selectionColor={Colors.darkGray2}
           secureTextEntry={true}
           ref={(input) => { this.secondTextInput = input; }}
-          // react-native-paper
-          underlineColor='transparent'
-          activeUnderlineColor="transparent"
-          theme={{ roundness: 7, colors: {text: pwFocus ? "black" : "#999899", placeholder: pwFocus ? "transparent" : "#999899"} }}
-          left={<TextInput.Icon name={() => <AntDesignIcon name="lock" size={20} color="#53B77C" />} />}
         />
 
         <Text style={{
           fontSize: 14, 
           marginLeft: 10, 
-          marginBottom: props.err ? 30 : 0, 
-          color: 'red'
+          marginBottom: props.err ? 20 : 0, 
+          color: Colors.red,
         }}>
         {props.err}
         </Text>
       </View>
 
       <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={{alignSelf: 'flex-end', marginBottom: 30}} onPress={() => props.navi.navigate('FindPw')} >
-          <Text style={styles.textButtonText}>Forgot Password?</Text>
+        <TouchableOpacity style={{alignSelf: 'flex-end'}} onPress={() => props.navi.navigate('ResetPw', {withdrawal: false})} >
+          <Text style={styles.textButtonText}>비밀번호 찾기</Text>
         </TouchableOpacity>
+      </View>
 
-        <TouchableOpacity style={[styles.squareButton, {marginBottom: 35}]} onPress={() => {props.signIn(email, password)}}>
-          <Text style={styles.squareButtonText}>LOGIN</Text>
-        </TouchableOpacity>
+      <View style={styles.buttonWrapper}>
+        <SubmitButton title='LOGIN' onPress={() => props.signIn(email, password)} />
+      </View>
       
-        <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-          <Text style={{fontSize: 16}}>Don't have account? </Text>
-          <TouchableOpacity onPress={() => props.navi.navigate('Register')}>
-            <Text style={styles.textButtonText}>Create a new accont</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.footer}>
+        <Text style={{fontSize: 16, color: Colors.midGray}}>계정이 없으신가요? </Text>
+        <TouchableOpacity onPress={() => props.navi.navigate('Register')}>
+          <Text style={styles.textButtonText}>회원가입</Text>
+        </TouchableOpacity>
       </View>
     </Container>
   );
@@ -94,25 +86,37 @@ export default LoginScreen = (props) => {
 const styles = StyleSheet.create({
   titleWrapper: {
     alignItems: 'center',
-    marginTop: Platform.OS === "ios" ? "18%" : "8%",
+    marginTop: Platform.OS === "ios" ? "20%" : "16%",
     marginBottom: Platform.OS === "ios" ? "7%" : "5%",
   },
   title: {
+    marginTop: 8,
     fontFamily: 'Roboto-Bold',
-    color: 'black',
+    color: Colors.black,
     fontSize: 32,
-    padding: 10,
+    marginBottom: 2,
+  },
+  subtitle: {
+    fontFamily: 'NotoSansKR-Medium',
+    color: Colors.darkGray,
+    fontSize: 21,
   },
   inputWrapper: {
     paddingHorizontal: 35,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     marginBottom: 12,
+    padding: 20,
+    fontSize: 16,
+    color: Colors.gray,
   },
   focusedInput: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.white,
     marginBottom: 12,
+    padding: 20,
+    fontSize: 16,
+    color: Colors.black,
     fontWeight: "600",
     borderRadius: 7,
     ...Platform.select({
@@ -128,21 +132,17 @@ const styles = StyleSheet.create({
   },
   buttonWrapper: {
     paddingHorizontal: 35,
+    marginBottom: 34,
   },
-  squareButton: {
-    backgroundColor: '#53B77C',
-    paddingVertical: 13,
+  footer: {
+    paddingHorizontal: 35,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 5,
-  },
-  squareButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   textButtonText: {
-    color: "#53B77C",
+    color: Colors.darkGray,
     fontSize: 16,
-    fontWeight: "600",
+    textDecorationLine: 'underline',
   },
 });

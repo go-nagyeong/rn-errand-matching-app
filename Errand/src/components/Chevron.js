@@ -1,14 +1,41 @@
 import React from 'react'
 import { Icon } from 'react-native-elements'
-import { Colors } from '../constants'
 
-const Chevron = () => (
-  <Icon
-    name="chevron-right"
-    type="entypo"
-    color={Colors.lightGray2}
-    containerStyle={{ marginLeft: -15, width: 20 }}
-  />
-)
+import Colors from '../constants/Colors'
 
-export default Chevron
+export const Downward = (props) => {
+  const {style} = props;
+  return (
+    <Icon
+      name="chevron-down-outline"
+      type="ionicon"
+      color={Colors.lightGray2}
+      containerStyle={style}
+    />
+  )
+}
+
+export const Upward = (props) => {
+  const {style} = props;
+  return (
+    <Icon
+      name="chevron-up-outline"
+      type="ionicon"
+      color={Colors.lightGray2}
+      containerStyle={style}
+    />
+  )
+}
+
+export default Chevron = (props) => {
+  const {style} = props;
+
+  return (
+    <Icon
+      name="chevron-forward"
+      type="ionicon"
+      color={Colors.lightGray2}
+      containerStyle={style}
+    />
+  )
+}

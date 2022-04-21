@@ -1,15 +1,12 @@
 import React from 'react';
-import { Platform, StyleSheet, Text, View, TouchableOpacity, Dimensions } from 'react-native';
+import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/EvilIcons';
-import auth from '@react-native-firebase/auth';
 
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
 import Container from '../../components/Container';
 
-const width = Dimensions.get('window').width;
-
 export default SelectCategory = (props) => {
-    const user = auth().currentUser;
-
     const selectCategory = (color, category) => {
         props.navigation.navigate('InputPrice', {color: color, category: category, })
     }
@@ -29,11 +26,11 @@ export default SelectCategory = (props) => {
             <View>
                 <Text style={styles.boxTitle}>{category.title}</Text>
                 <Text style={styles.boxContent}>{category.content}</Text>
-                <Icon name={category.icon} size={100} color='black' style={styles.boxIcon} />
+                <Icon name={category.icon} size={90} color={Colors.black} style={styles.boxIcon} />
                 <View style={{
                     position: 'absolute',
-                    top: category.layout[0] === 'top' ? (width-65)/4-20 : (width-65)/4+10,
-                    left: category.layout[1] === 'left' ? (width-65)/6-20 : (width-65)/6+10,
+                    top: category.layout[0] === 'top' ? (Common.width-65)/4-20 : (Common.width-65)/4+10,
+                    left: category.layout[1] === 'left' ? (Common.width-65)/6-20 : (Common.width-65)/6+10,
                     width: 40,
                     height: 40, 
                     backgroundColor: category.color, 
@@ -65,7 +62,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'NotoSansKR-Regular',
-        color: 'black',
+        color: Colors.black,
         fontSize: Platform.OS === 'ios' ? 17:16,
     },
     categoryView: {
@@ -76,10 +73,10 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     boxWrapper: {
-        backgroundColor: '#fff',
+        backgroundColor: Colors.white,
         borderRadius: 20,
-        width: (width-60)/2,
-        height: (width-60)/2, 
+        width: (Common.width-60)/2,
+        height: (Common.width-60)/2, 
         marginBottom: 20,
         padding: 15,
         ...Platform.select({
@@ -95,15 +92,16 @@ const styles = StyleSheet.create({
     },
     boxTitle: {
         fontSize: 18,
-        color: 'black',
+        color: Colors.black,
     },
     boxContent: {
-        marginVertical: 7,
+        position: 'absolute',
+        marginTop: '20%',
         fontSize: 14,
-        color: 'black',
+        color: Colors.black,
     },
     boxIcon: {
         alignSelf: 'center',
-        marginTop: 7,
+        marginTop: '30%',
     },
   });
