@@ -11,7 +11,7 @@
 &nbsp;
 
 ## Environment
-Mac os Monterey 12.0.1  
+Mac OS  
 React 17.0.2  
 React Native 0.66.3  
 React Native CLI 2.0.1  
