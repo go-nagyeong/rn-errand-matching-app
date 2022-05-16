@@ -11,13 +11,11 @@
 &nbsp;
 
 ## Environment
-Mac OS  
-React 17.0.2  
-React Native 0.66.3  
-React Native CLI 2.0.1  
-Node.js 16.13.0  
-Visual Studio Code  
-Firebase (Authentication, Cloud Firestore)  
+node.js 16.13.0  
+react 17.0.2  
+react native 0.66.3  
+react native cli 2.0.1  
+firebase (authentication, cloud firestore)  
 &nbsp;
 
 ## Screenshot  
