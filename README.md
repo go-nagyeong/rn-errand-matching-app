@@ -21,8 +21,8 @@ Firebase (Authentication, Cloud Firestore)
 &nbsp;
 
 ## Screenshot  
-<div style="margin-bottom: 100px">
-  <img width="270" style="margin-right: 20px" src="https://user-images.githubusercontent.com/84227532/168519299-a69eb928-8d99-469e-ac4d-bd5e50de8652.png"/>
+<div>
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/168519299-a69eb928-8d99-469e-ac4d-bd5e50de8652.png"/>
   <img width="270" src="https://user-images.githubusercontent.com/84227532/168519419-87724e10-a6b3-4309-b920-78843dea57d6.png"/>
   <img width="270" src="https://user-images.githubusercontent.com/84227532/168519624-883c7382-700c-4085-a321-f960b8ca244c.png"/>
 </div>  
