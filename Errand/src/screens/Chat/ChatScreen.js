@@ -23,18 +23,19 @@ export default function ChatScreen(props) {
   const [bannerAlwaysVisible, setBannerAlwaysVisible] = useState(false)
 
   useEffect(() => {
-      const getBannerAlwaysOption = async () => {
-          try {
-              const value = await AsyncStorage.getItem(postId)
-              if (value !== null) {
-                  setBannerAlwaysVisible(JSON.parse(value))
-              }
-          } catch(e) {
-              console.log(e)
-          }
+    const getBannerAlwaysOption = async () => {
+      try {
+        const value = await AsyncStorage.getItem(postId)
+        if (value !== null) {
+          setBannerAlwaysVisible(JSON.parse(value))
+        }
+      } catch(e) {
+        console.log(e)
       }
-      getBannerAlwaysOption()
+    }
+    getBannerAlwaysOption()
   }, [])
+
   const setBannerAlwaysOption = async (bool) => {
       try {
         await AsyncStorage.setItem(postId, JSON.stringify(bool))
@@ -274,7 +275,7 @@ export default function ChatScreen(props) {
           onSend={handleSend}
           user={userInfo} 
           
-          alignTop={true}  // 채팅을 맨 위로 배치
+          listViewProps={{contentContainerStyle: {flexGrow: 1, justifyContent: 'flex-end'}}} // 채팅을 맨 위로 배치
           scrollToBottom={true}  // 채팅 맨 밑으로 바로 내려갈 수 있는 단축 버튼
           minComposerHeight={40}
           minInputToolbarHeight={52}

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import auth from '@react-native-firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import * as Firebase from '../utils/Firebase';
 import MessageScreen from '../screens/Message/MessageScreen';
 
 export default MessageAction = () => {
+    const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
+
     const [myChats, setMyChats] = useState([])
     const [myChatCount, setMyChatCount] = useState([])
 
@@ -34,14 +37,14 @@ export default MessageAction = () => {
                         var opponent = doc.data().opponent;
                         var unread = doc.data().unread;
 
-                        if (user._id == Firebase.currentUser.email) {
+                        if (user._id == currentUser.email) {
                             storeBannerOption(postId)
 
                             // 글을 보낸 사람이 나면
                             // 채팅 상대: 글을 받는 사람 => opponent
                             documentData[postId] = {...doc.data(), chatImage: opponent.avatar, chatTitle: opponent.name}
                             
-                        } else if (opponent._id == Firebase.currentUser.email) {
+                        } else if (opponent._id == currentUser.email) {
                             storeBannerOption(postId)
 
                             if (unread == 0) {

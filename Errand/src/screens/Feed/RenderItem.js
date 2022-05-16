@@ -39,10 +39,10 @@ export default RenderItem = ({ item }) => {
         기타: ['darkgray', 'question']
     }
     return (
-        <TouchableOpacity onPress={ () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination}) }>  
+        <TouchableOpacity onPress={ () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date}) }>  
             <View style={styles.itemView}>
                 {/* 작성일, 카테고리 아이콘 */}
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12}}>
                     <Text style={{ fontSize: 13, color: Colors.midGray }}>
                         {Moment(item.date.toDate()).diff(Moment(), 'days') >= -2
                             ? Moment(item.date.toDate()).fromNow()
@@ -52,7 +52,7 @@ export default RenderItem = ({ item }) => {
                 </View>
 
                 {/* 제목, 내용, 사진 */}
-                <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5, marginBottom: 12}}>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 4, marginBottom: item.image !== "" ? 12 : 22}}>
                     <View style={item.image !== "" && {width: '65%'}}>
                         <Text style={{fontSize: 15, fontWeight: '600', color: Colors.black, marginBottom: 8}} numberOfLines={1} ellipsizeMode="tail">
                             {item.title}
@@ -61,27 +61,26 @@ export default RenderItem = ({ item }) => {
                             {item.content}
                         </Text>
                     </View>
-                    {item.image ? <Image source={{ uri: item.image }} style={styles.postImage}/>
-                                : <Image source={{ uri: 'blank' }} style={styles.postImage}/>}
+                    {item.image ? <Image source={{ uri: item.image }} style={styles.postImage}/> : null}
                 </View>
 
                 {/* 조회수, 하트수, 금액 */}
-                <View style={{ flex: 1.1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingVertical: 5 }}>
-                    <View style={{ flexDirection: 'row' }}>
+                <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
                         <Icon name='eyeo' size={13} color={Colors.gray} />
-                        <Text style={{ top: Platform.OS == 'ios' ? -1 : -3, marginLeft: 6, marginRight: 22, fontSize: 12, fontFamily: 'Roboto-Medium', color: Colors.black }}>
+                        <Text style={{marginLeft: 4, marginRight: 18, fontSize: 12, color: Colors.darkGray2}}>
                             {item.views}
                         </Text>
 
                         <Icon name='heart' size={13} color={Colors.gray} />
-                        <Text style={{ top: Platform.OS == 'ios' ? -1 : -3, marginLeft: 6, fontSize: 12, fontFamily: 'Roboto-Medium', color: Colors.black }}>
+                        <Text style={{marginLeft: 4, fontSize: 12, color: Colors.darkGray2}}>
                             {item.hearts}
                         </Text>
                     </View>
 
-                    <View style={{ flexDirection: 'row' }}>
+                    <View style={{flexDirection: 'row', alignItems: 'center'}}>
                         <Icon name='pay-circle-o1' size={13} color={Colors.gray} />
-                        <Text style={{ top: Platform.OS == 'ios' ? -1 : -3, marginLeft: 6, fontSize: 14, fontFamily: 'Roboto-Medium', color: Colors.black }}>
+                        <Text style={{marginLeft: 6, fontSize: 14, color: Colors.black}}>
                             {item.price}
                         </Text>
                     </View>

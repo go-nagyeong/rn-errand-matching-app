@@ -96,13 +96,13 @@ const styles = StyleSheet.create({
     },
     title: {
         includeFontPadding: false,
-        fontFamily: 'NotoSansKR-Medium',
+        fontWeight: '600',
         color: Colors.black,
         fontSize: 22,
         marginBottom: 12,
     },
     textArea: {
-        fontFamily: 'Roboto-Light',
+        fontWeight: '300',
         color: Colors.black,
         fontSize: 16,
     },

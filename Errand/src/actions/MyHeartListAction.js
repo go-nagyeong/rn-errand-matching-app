@@ -32,14 +32,14 @@ export default MyHeartListAction = (props) => {
       .get()
       .then(async querySnapshot => {
         for await (const documentSnapshot of querySnapshot.docs) {
-          let docId = documentSnapshot.data().postid
+          let docId = documentSnapshot.data().postId
           
           await Firebase.postsRef
             .doc(docId)
             .get()
             .then(doc => {
               if (doc.exists) {
-                setDocData({...doc.data(), docId: doc.id})
+                setDocData({...doc.data()})
               }
             })
         }

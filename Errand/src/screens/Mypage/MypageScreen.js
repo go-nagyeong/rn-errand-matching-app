@@ -24,7 +24,7 @@ export default MypageScreen = (props) => {
 
     return (
       <TouchableOpacity style={styles.settingItem} onPress={onPress}>
-        <Text style={{includeFontPadding: false, fontFamily: 'NotoSansKR-Medium', fontSize: 16, color: Colors.black}}>
+        <Text style={{includeFontPadding: false, fontWeight: '500', fontSize: 16, color: Colors.black}}>
           {title}
         </Text>
         <Chevron />
@@ -38,20 +38,10 @@ export default MypageScreen = (props) => {
 
   const handleEmail = () => {
     Mailer.mail({
-      subject: '',
-      recipients: [''],
-      ccRecipients: [''],
-      bccRecipients: [''],
-      body: '<b></b>',
-      customChooserTitle: '', // Android only (defaults to "Send Mail")
+      subject: '', // 제목
+      recipients: ['support@errand.com'], // 받는 사람
+      body: '<b></b>', // 내용
       isHTML: true,
-      attachments: [{
-        path: '', // The absolute path of the file from which to read data.
-        uri: '', // The uri of the file from which to read the data.
-        type: '', // Mime Type: jpg, png, doc, ppt, html, pdf, csv
-        mimeType: '', // - use only if you want to use custom type
-        name: '', // Optional: Custom filename for attachment
-      }]
     }, (error, event) => {
       Alert.alert(
         error,
@@ -158,7 +148,7 @@ export default MypageScreen = (props) => {
 
         {/* 설정 */}
         <View style={styles.setting}>
-          <SettingMenu title="공지사항" onPress={() => console.log('공지사항 이런 것들')} />
+          {/* <SettingMenu title="공지사항" onPress={() => console.log('공지사항 이런 것들')} /> */}
           <SettingMenu title="1:1 문의하기" onPress={handleEmail} />
           <SettingMenu title="FAQ" onPress={() => props.navi.navigate('Faq')} />
           <SettingMenu title="앱 평가하기" onPress={() => console.log('번거로운 것 같으면 안해도 됨')} />

@@ -55,7 +55,7 @@ export default FaqScreen = () => {
       <View style={styles.setting}>
         {/* Q 아이콘 추가 */}
         <Question/>
-        <Text style={{includeFontPadding: false, paddingLeft: 10, fontFamily: 'NotoSansKR-Medium', fontSize: 15, color: Colors.black, textAlign: 'left', flex: 1}}>
+        <Text style={{includeFontPadding: false, paddingLeft: 10, fontWeight: '500', fontSize: 15, color: Colors.black, textAlign: 'left', flex: 1}}>
           {section.title}
         </Text>
         {section.id == state[0] ? <Upward/> : <Downward/>}

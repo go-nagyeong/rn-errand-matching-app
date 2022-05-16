@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   title: {
     includeFontPadding: false,
-    fontFamily: 'NotoSansKR-Medium',
+    fontWeight: '600',
     color: Colors.black,
     fontSize: 28,
   },

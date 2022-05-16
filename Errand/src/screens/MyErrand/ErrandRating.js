@@ -3,6 +3,7 @@ import { StyleSheet, Platform, Modal, View, Text, TouchableOpacity, TouchableWit
 import { Avatar } from 'react-native-elements';
 import LinearGradient from 'react-native-linear-gradient';
 import { AirbnbRating } from 'react-native-elements';
+import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AIcon from 'react-native-vector-icons/AntDesign';
 import firestore from '@react-native-firebase/firestore';
@@ -12,6 +13,8 @@ import * as Firebase from '../../utils/Firebase';
 import MiniSubmitButton from '../../components/MiniSubmitButton';
 
 export default ErrandRating = (props) => {
+    const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
+
     const errandDuration = props.errandDuration >= 60
         ? parseInt(props.errandDuration/60) + '시간 ' + props.errandDuration%60 + '분'
         : props.errandDuration + '분'
@@ -172,7 +175,10 @@ export default ErrandRating = (props) => {
                                     || props.errandArrive != "" &&
                                         <ReceiptItem title='Location' content={props.errandArrive} />
                                 )}
-                                <ReceiptItem title='Duration' content={errandDuration} />
+                                {/* Errander한테는 심부름 소요시간 안 뜨게 */}
+                                {props.writerEmail == currentUser.email &&
+                                    <ReceiptItem title='Duration' content={errandDuration} />
+                                }
 
                                 <Text style={styles.dottedLine} numberOfLines={1} ellipsizeMode="clip">
                                     ----------------------------------------------------
@@ -184,7 +190,7 @@ export default ErrandRating = (props) => {
                                     ----------------------------------------------------
                                 </Text>
 
-                                <Text style={[styles.receiptTitle, {fontSize: 15, fontFamily: 'NotoSansKR-Medium'}]}>
+                                <Text style={[styles.receiptTitle, {fontSize: 15, color: Colors.darkGray, fontWeight: '600'}]}>
                                     상대의 점수를 매겨주세요!
                                 </Text>
 
@@ -271,7 +277,6 @@ const styles = StyleSheet.create({
         marginVertical: 4,
     },
     receiptTitle: {
-        includeFontPadding: false,
         color: Colors.gray,
         fontSize: 14,
     },

@@ -1,16 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Clipboard } from 'react-native';
 import { Tooltip } from 'react-native-elements';
 import { Avatar, MessageText, MessageImage } from 'react-native-gifted-chat';
 import LinearGradient from 'react-native-linear-gradient';
 import Moment from 'moment';
 
+import * as Firebase from '../../utils/Firebase';
 import Colors from '../../constants/Colors';
 
 export default RenderMessage = (props) => {
     const { position, currentMessage, previousMessage, nextMessage } = props;
 
     const popoverButton = useRef(null);
+    const [isReaded, setReaded] = useState(true)
     
     const currentMessageUser = currentMessage.user._id
     const currentMessageDate = Moment(currentMessage.createdAt).format('YYYY년 M월 D일 dddd')
@@ -37,6 +39,20 @@ export default RenderMessage = (props) => {
     const isSameDate = currentMessageDate == previousMessageDate
     const isSameUser = (prevOrNext) => currentMessageUser == prevOrNext
     const isSameTime = (prevOrNext) => currentMessageTime == prevOrNext
+    useEffect(() => {
+        const unsubscribe = Firebase.chatsRef
+            .doc(props.currentMessage._id)
+            .onSnapshot(doc => {
+                if (doc.exists) {
+                    if (doc.data().unread == 1) {
+                        setReaded(true)
+                    } else {
+                        setReaded(false)
+                    }
+                }
+            })
+        return unsubscribe
+    }, [])
 
 
     const renderDay = () => (
@@ -103,10 +119,14 @@ export default RenderMessage = (props) => {
                 </Tooltip>
             </View>
 
-            {isSameUser(nextMessageUser) && isSameTime(nextMessageTime)
-                ? null
-                : <Text style={styles.time}>{currentMessageTime}</Text>
-            }
+            <View style={{justifyContent: 'flex-end'}}>
+                <Text style={styles.readState}>{!isReaded ? '안읽음' : null}</Text>
+                <Text style={styles.time}>
+                    {isSameUser(nextMessageUser) && isSameTime(nextMessageTime)
+                        ? null : currentMessageTime
+                    }
+                </Text>
+            </View>
         </View>
     )
 
@@ -167,6 +187,12 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: Colors.midGray,
         marginHorizontal: 4,
-        alignSelf: 'flex-end',
     },
+    readState: {
+        fontSize: 11,
+        color: Colors.darkGray2,
+        marginHorizontal: 4,
+        textAlign: 'right',
+        marginBottom: 4,
+    }
 })

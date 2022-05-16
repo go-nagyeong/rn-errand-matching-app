@@ -1,21 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import auth from '@react-native-firebase/auth';
 
 import * as Firebase from '../utils/Firebase';
 import MyErrandScreen from '../screens/MyErrand/MyErrandScreen';
 
 export default MyErrandAction = (props) => {
+    const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
+
     const [myErrandBadgeNum, setMyErrandBadgeNum] = useState(0);
     const [myPerformErrandBadgeNum, setMyPerformErrandBadgeNum] = useState(0);
   
     useEffect(() => {
         const unsubscribe1 = Firebase.postsRef
-            .where("writerEmail", "==", Firebase.currentUser.email)
+            .where("writerEmail", "==", currentUser.email)
             .where("process.title", "in", ["request", "finishRequest"])
             .onSnapshot((querySnapshot) => {
                 setMyErrandBadgeNum(querySnapshot.size);
             });
         const unsubscribe2 = Firebase.postsRef
-            .where("erranderEmail", "==", Firebase.currentUser.email)
+            .where("erranderEmail", "==", currentUser.email)
             .where("process.title", "==", "matching")
             .onSnapshot((querySnapshot) => {
                 setMyPerformErrandBadgeNum(querySnapshot.size);
@@ -45,7 +48,7 @@ export default MyErrandAction = (props) => {
         setRefreshingL(true)
         
         Firebase.postsRef
-            .where('writerEmail', '==', Firebase.currentUser.email)
+            .where('writerEmail', '==', currentUser.email)
             .where('process.myErrandOrder', '!=', 5)
             .orderBy('process.myErrandOrder', 'asc')
             .orderBy('id', 'desc')
@@ -67,7 +70,7 @@ export default MyErrandAction = (props) => {
         setRefreshingR(true)
 
         Firebase.postsRef
-            .where('erranderEmail', '==', Firebase.currentUser.email)
+            .where('erranderEmail', '==', currentUser.email)
             .where('process.myPerformErrandOrder', '<=', 3)
             .orderBy('process.myPerformErrandOrder', 'asc')
             .orderBy('id', 'desc')

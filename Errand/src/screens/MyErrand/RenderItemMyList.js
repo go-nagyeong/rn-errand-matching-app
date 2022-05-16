@@ -121,7 +121,7 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
             ? (item.process.title === 'matching'
                 ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.markerPoint} />
                 : <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint}>
-                        <FIcon name='bell' size={18} color={Colors.white} />
+                        <FIcon name='bell' size={16} color={Colors.white} />
                     </LinearGradient>)
             : (index < processIndex[item.process.title]
                 ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint} style={styles.trackLine} style={styles.markerPoint} />
@@ -169,7 +169,7 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
                     destructiveButtonIndex={1}
                     onPress={(index) => {
                         if (index == 0) {
-                            navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : writerGrade, price : item.price, email : item.writerEmail, id : item.id, image: item.image, writerImage: writerImage, views: item.views});
+                            navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date});
                         } else if (index == 1) {
                             deletePost();
                         }
@@ -181,7 +181,7 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
                     cancelButtonIndex={1}
                     onPress={(index) => {
                         if (index == 0) {
-                            navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName : item.writer, writergrade : writerGrade, price : item.price, email : item.writerEmail, id : item.id, image: item.image, writerImage: writerImage, views: item.views});
+                            navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date});
                         }
                     }}
                 />
@@ -307,16 +307,15 @@ const styles = StyleSheet.create({
         borderWidth: StyleSheet.hairlineWidth,
         borderColor: Colors.darkGray,
         borderRadius: 15,
-        paddingTop: 1,
-        paddingBottom: 2,
+        paddingVertical: Platform.OS === 'ios' ? 4 : 2,
         paddingHorizontal: 10,
         marginRight: 10,
     },
     chatButtonText: {
         includeFontPadding: false,
         fontSize: 12,
-        color: Colors.black,
-        fontFamily: 'NotoSansKR-Light',
+        color: Colors.darkGray,
+        fontWeight: '200',
     },
     
     titleView: {
@@ -358,8 +357,8 @@ const styles = StyleSheet.create({
         left: -7,
     },
     currentMarkerPoint: {
-        width: 36,
-        height: 36,
+        width: 32,
+        height: 32,
         borderRadius: 30, 
         left: -18,
         alignItems: 'center',
@@ -369,22 +368,24 @@ const styles = StyleSheet.create({
         includeFontPadding: false,
         width: (Common.width-94)/3,
         color: Colors.midGray,
-        fontFamily: 'NotoSansKR-Medium',
+        fontSize: 14,
+        fontWeight: '500',
         left: -14,
     },
     currentStepLabel: {
         includeFontPadding: false,
         width: (Common.width-94)/3,
         color: Colors.darkGray,
-        fontFamily: 'NotoSansKR-Bold',
+        fontSize: 14,
+        fontWeight: '600',
         left: -14,
     },
     stepGuide: {
         includeFontPadding: false,
         textAlign: 'center',
         fontSize: 14,
-        fontFamily: 'NotoSansKR-Medium',
         color: Colors.darkGray,
+        fontWeight: '500',
         marginTop: 10,
     },
 
@@ -409,6 +410,6 @@ const styles = StyleSheet.create({
     finishRequestButtonText: {
         includeFontPadding: false,
         color: Colors.darkGray2,
-        fontFamily: 'NotoSansKR-Regular'
+        fontSize: 14,
     },
 })

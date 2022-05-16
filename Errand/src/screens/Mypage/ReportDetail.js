@@ -107,8 +107,8 @@ export default ReportDetail = (props) => {
                 hideInputFilter={true}
                 containerStyle={{alignItems: 'center'}}
                 labelStyle={{fontSize: 13}}
-                optionsLabelStyle={{includeFontPadding: false, fontSize: 14, fontFamily: 'NotoSansKR-Regular'}}
-                selectedItemStyle={{includeFontPadding: false, fontSize: 15, fontFamily: 'NotoSansKR-Regular'}}
+                optionsLabelStyle={{includeFontPadding: false, fontSize: 14}}
+                selectedItemStyle={{includeFontPadding: false, fontSize: 15}}
               />
             </View>
 
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderWidth: 0.6,
     borderColor: Colors.red,
-    padding: 4,
+    paddingVertical: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
@@ -160,7 +160,6 @@ const styles = StyleSheet.create({
   buttonText: {
     includeFontPadding: false,
     color: Colors.red,
-    fontFamily: 'NotoSansKR-Regular',
     fontSize: 15,
   }
 })

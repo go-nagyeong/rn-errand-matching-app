@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     title: {
-        fontFamily: 'NotoSansKR-Medium',
+        fontWeight: '600',
         color: Colors.black,
         fontSize: 24,
         padding: 10,

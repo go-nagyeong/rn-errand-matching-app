@@ -61,7 +61,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     title: {
-        fontFamily: 'NotoSansKR-Regular',
         color: Colors.black,
         fontSize: Platform.OS === 'ios' ? 17:16,
     },

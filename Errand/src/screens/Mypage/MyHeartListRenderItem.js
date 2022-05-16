@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import AIcon from 'react-native-vector-icons/AntDesign';
 import EIcon from 'react-native-vector-icons/EvilIcons';
 import Moment from 'moment';
+import firestore from '@react-native-firebase/firestore';
 import 'moment/locale/ko';
 import { useNavigation } from '@react-navigation/native';
 import { RectButton } from 'react-native-gesture-handler';
@@ -18,7 +19,7 @@ let prevOpenedRow = null;
 
 export default MyHeartListRenderItem = ({ item, index }) => {
     const navigation = useNavigation();
-    
+
     const [writerGrade, setWriterGrade] = useState("")
     const [writerImage, setWriterImage] = useState("")
     useEffect(() => {
@@ -33,7 +34,7 @@ export default MyHeartListRenderItem = ({ item, index }) => {
                 }
             })
     }, [])
-    
+
     categoryIconStyle = {
         마트: ['lightsalmon', 'cart'],
         과제: ['mediumaquamarine', 'pencil'],
@@ -47,13 +48,26 @@ export default MyHeartListRenderItem = ({ item, index }) => {
 
     const cancelHeart = () => {
         Firebase.heartsRef
-        .where('postid', '==', item.docId)
-        .get()
-        .then(querySnapshot => {
-            querySnapshot.forEach(doc => doc.ref.delete())
-        })
-        .catch((err) => console.log(err));
+            .where('postId', '==', item.id + "%" + item.writerEmail)
+            .get()
+            .then(querySnapshot => {
+                querySnapshot.forEach(doc => doc.ref.delete())
+            })
+            .catch((err) => console.log(err));
+
+        Firebase.postsRef
+            .doc(item.id + "%" + item.writerEmail)
+            .update(
+                {
+                    'hearts': firestore.FieldValue.increment(-1)
+                })
+            .then(() => {
+                console.log('하트 취소');
+            })
+            .catch(err => { console.log(err) })
     }
+
+
     const renderRightActions = () => {
         return (
             <RectButton
@@ -83,7 +97,7 @@ export default MyHeartListRenderItem = ({ item, index }) => {
             onSwipeableWillOpen={() => closeRow(index)}
         >
             <View style={styles.itemView}>
-                <TouchableOpacity style={{padding: 10}} onPress={ () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination}) }>  
+                <TouchableOpacity style={{ padding: 10 }} onPress={() => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date}) }>  
                     {/* 작성일, 카테고리 아이콘 */}
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
                         <Text style={{ fontSize: 13, color: Colors.midGray }}>
@@ -91,7 +105,7 @@ export default MyHeartListRenderItem = ({ item, index }) => {
                                 ? Moment(item.date.toDate()).fromNow()
                                 : Moment(item.date.toDate()).format('YY/MM/DD')}
                         </Text>
-                        <EIcon style={{right: -2}} name={categoryIconStyle[item.category][1]} size={22} color={categoryIconStyle[item.category][0]} />
+                        <EIcon style={{ right: -2 }} name={categoryIconStyle[item.category][1]} size={22} color={categoryIconStyle[item.category][0]} />
                     </View>
 
                     {/* 제목, 내용, 사진 */}
@@ -104,27 +118,27 @@ export default MyHeartListRenderItem = ({ item, index }) => {
                                 {item.content}
                             </Text>
                         </View>
-                        {item.image ? <Image source={{ uri: item.image }} style={styles.postImage}/>
-                                    : <Image source={{ uri: 'blank' }} style={styles.postImage}/>}
+                        {item.image ? <Image source={{ uri: item.image }} style={styles.postImage} />
+                            : <Image source={{ uri: 'blank' }} style={styles.postImage} />}
                     </View>
 
                     {/* 조회수, 하트수, 금액 */}
-                    <View style={{ flex: 1.1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', paddingVertical: 5 }}>
-                        <View style={{ flexDirection: 'row' }}>
+                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <AIcon name='eyeo' size={13} color={Colors.gray} />
-                            <Text style={{ top: Platform.OS == 'ios' ? -1 : -3, marginLeft: 6, marginRight: 22, fontSize: 12, fontFamily: 'Roboto-Medium', color: Colors.black }}>
+                            <Text style={{marginLeft: 4, marginRight: 18, fontSize: 12, color: Colors.darkGray2}}>
                                 {item.views}
                             </Text>
 
                             <AIcon name='heart' size={13} color={Colors.gray} />
-                            <Text style={{ top: Platform.OS == 'ios' ? -1 : -3, marginLeft: 6, fontSize: 12, fontFamily: 'Roboto-Medium', color: Colors.black }}>
+                            <Text style={{marginLeft: 4, fontSize: 12, color: Colors.darkGray2}}>
                                 {item.hearts}
                             </Text>
                         </View>
 
-                        <View style={{ flexDirection: 'row' }}>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <AIcon name='pay-circle-o1' size={13} color={Colors.gray} />
-                            <Text style={{ top: Platform.OS == 'ios' ? -1 : -3, marginLeft: 6, fontSize: 14, fontFamily: 'Roboto-Medium', color: Colors.black }}>
+                            <Text style={{marginLeft: 6, fontSize: 14, color: Colors.black}}>
                                 {item.price}
                             </Text>
                         </View>
@@ -149,7 +163,7 @@ const styles = StyleSheet.create({
         width: '30%',
         height: 70,
     },
-    
+
     rightReportButton: {
         width: '26%',
         justifyContent: 'center',
@@ -159,6 +173,6 @@ const styles = StyleSheet.create({
         includeFontPadding: false,
         fontSize: 15,
         color: Colors.white,
-        fontFamily: 'NotoSansKR-Regular',
+        marginTop: 4,
     },
 })

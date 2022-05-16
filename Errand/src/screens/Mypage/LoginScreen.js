@@ -91,13 +91,12 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: 8,
-    fontFamily: 'Roboto-Bold',
+    fontWeight: '700',
     color: Colors.black,
     fontSize: 32,
     marginBottom: 2,
   },
   subtitle: {
-    fontFamily: 'NotoSansKR-Medium',
     color: Colors.darkGray,
     fontSize: 21,
   },

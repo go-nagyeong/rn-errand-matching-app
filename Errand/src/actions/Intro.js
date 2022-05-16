@@ -1,6 +1,12 @@
-import React, {useState} from 'react';
-import { StyleSheet, View, Text, Image, StatusBar, AsyncStorage, RefreshControl } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, Image, StatusBar } from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
+// Intro 이미지
+import id from '../assets/img/id-card.png';
+import medal from '../assets/img/medal.png';
+import test from '../assets/img/test.png';
+import whistle from '../assets/img/whistle.png';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 export default Intro = (props) => {
@@ -9,28 +15,28 @@ export default Intro = (props) => {
       key: '1',
       title: '학교 계정을 사용해 \n믿을 수 있는 심부름',
       text: '',
-      image: require('./3.png'),
+      image: id,
       backgroundColor: '#59b2ab',
     },
     {
       key: '2',
       title: '원하는 글에 \n심부름 요청',
       text: '',
-      image: require('./3.png'),
+      image: test,
       backgroundColor: '#febe29',
     },
     {
       key: '3',
       title: '더 안전한 심부름을 위한 \n평가 서비스',
       text: '',
-      image: require('./3.png'),
+      image: whistle,
       backgroundColor: '#59b2ab',
     },
     {
       key: '4',
       title: '심부름꾼으로 활동하며 \n투잡으로 수익창출',
       text: '',
-      image: require('./3.png'),
+      image: medal,
       backgroundColor: '#22bcb5',
     },
 
@@ -40,7 +46,7 @@ export default Intro = (props) => {
     return (
       <View style={[styles.slide, {backgroundColor: item.backgroundColor} ]}>
         <Text style={styles.title}>{item.title}</Text>
-        <Image source={item.image} />
+        <Image source={item.image} style={{width: 200, height: 200}} />
         <Text style={styles.text}>{item.text}</Text>
       </View>
     );
@@ -86,8 +92,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   title: {
-    fontSize: 22,
-    color: 'white',
     textAlign: 'center',
-  },
+    fontSize: 30,
+    color: '#fff',
+    fontWeight: 'bold',
+  }
 })

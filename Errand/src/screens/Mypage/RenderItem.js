@@ -96,7 +96,7 @@ export default RenderItem = ({ item, index, getPosts }) => {
             onSwipeableWillOpen={() => closeRow(index)}
         >
             <View style={styles.itemView}>
-                <TouchableOpacity style={{padding: 10}} onPress={ () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views}) }>  
+                <TouchableOpacity style={{padding: 10}} onPress={ () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date}) }>  
                     {/* 작성일, 카테고리 아이콘 */}
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12}}>
                         <Text style={{ fontSize: 13, color: Colors.midGray }}>
@@ -121,13 +121,13 @@ export default RenderItem = ({ item, index, getPosts }) => {
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5}}>
                         <View style={{flexDirection: 'row', alignItems: 'center', marginRight: 12}}>
                             <AIcon name='pay-circle-o1' size={13} color={Colors.gray} />
-                            <Text style={{includeFontPadding: false, marginLeft: 5, fontSize: 13, fontFamily: 'Roboto-Regular', color: Colors.black}}>
+                            <Text style={{includeFontPadding: false, marginLeft: 5, fontSize: 13, color: Colors.black}}>
                                 {item.price}
                             </Text>
                         </View>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <AIcon name='team' size={14} color={Colors.gray} />
-                            <Text style={{includeFontPadding: false, marginLeft: 4, fontSize: 13, fontFamily: 'Roboto-Regular', color: Colors.black}}>
+                            <Text style={{includeFontPadding: false, marginLeft: 4, fontSize: 13, color: Colors.black}}>
                                 {opponentNickname}
                             </Text>
                         </View>
@@ -167,6 +167,6 @@ const styles = StyleSheet.create({
         includeFontPadding: false,
         fontSize: 15,
         color: Colors.white,
-        fontFamily: 'NotoSansKR-Regular',
+        marginTop: 4,
     },
 })

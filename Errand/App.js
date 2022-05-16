@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect } from "react";
-import { LogBox, StyleSheet, View, TouchableOpacity, AsyncStorage } from "react-native";
+import { LogBox, StyleSheet, View, TouchableOpacity } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from "@react-native-firebase/firestore";
 import auth from "@react-native-firebase/auth";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -43,8 +44,6 @@ import InputLocation from "./src/screens/WritePost/InputLocation";
 import WriteTitle from "./src/screens/WritePost/WriteTitle";
 // 인트로
 import Intro from './src/actions/Intro'
-
-import { cos } from "react-native-reanimated";
 
 // import WriteContent from "./src/screens/WritePost/TEMP_WriteContent";
 // import SelectStartDate from "./src/screens/WritePost/TEMP_SelectStartDate";
@@ -141,12 +140,34 @@ export default App = () => {
   const [state, setState] = useState(null);
   const [user, setUser] = useState(null);
 
-  const checkState = async () => {
-    setState(await AsyncStorage.getItem('intro'))
-  }
+  // 1이면 로그인 실행, 0이면 Intro 화면 실행
+  useEffect(() => {
+    const getDb = async () => {
+      try {
+        const value = await AsyncStorage.getItem('intro')
+        if(value !== null) {
+          setState(value)
+        }
+        else {
+          console.log('존재하지 않습니다 생성합니다')
+          await AsyncStorage.setItem('intro', '0')
+        }
+      } catch(e) {
+        console.log(e)
+      }
+    }
+    getDb();
+  }, [])
 
-  useEffect( () => {checkState()}, [state])
-  
+  const insertDb = async (value) => {
+    try {
+      await AsyncStorage.setItem('intro', value)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+  // insertDb('0')
+
   useEffect(() => {
     auth().onAuthStateChanged((user) => {
       if (user) {
@@ -188,7 +209,7 @@ export default App = () => {
           </>
         ) : (
           // 처음 실행 조건 트리거 + 다시 한번 메뉴얼을 볼 수 있는 메뉴
-          state ? 
+          parseInt(state) ? 
           <>
             <Stack.Screen name="Login" component={LoginAction} />
             <Stack.Screen name="Register" component={RegisterAction} />

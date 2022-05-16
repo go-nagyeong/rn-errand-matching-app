@@ -146,10 +146,10 @@ export default ErranderRequest = (props) => {
                             </View>
 
                             <View style={{ alignItems: 'center', marginBottom: 40 }}>
-                                <Text style={{ includeFontPadding: false, fontSize: 18, fontFamily: 'NotoSansKR-Medium', color: Colors.black, marginBottom: 8 }}>
+                                <Text style={{ includeFontPadding: false, fontSize: 18, fontWeight: '500', color: Colors.black, marginBottom: 8 }}>
                                     {props.erranderName}, {props.erranderGrade}
                                 </Text>
-                                <Text style={{ includeFontPadding: false, fontSize: 16, fontFamily: 'NotoSansKR-Regular', color: Colors.darkGray}}>
+                                <Text style={{ includeFontPadding: false, fontSize: 16, color: Colors.darkGray}}>
                                     심부름을 하고 싶어합니다!
                                 </Text>
                             </View>
@@ -239,7 +239,6 @@ const styles = StyleSheet.create({
 
     buttonText: {
         includeFontPadding: false,
-        fontFamily: 'NotoSansKR-Regular',
         color: Colors.black,
         fontSize: 14,
         marginTop: 5,
@@ -253,7 +252,7 @@ const styles = StyleSheet.create({
     },
     fullButtonText: {
         includeFontPadding: false,
-        fontFamily: 'NotoSansKR-Medium',
+        fontWeight: '700',
         color: Colors.white,
         fontSize: 16,
     },

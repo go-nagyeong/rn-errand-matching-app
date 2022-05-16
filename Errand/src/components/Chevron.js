@@ -27,6 +27,19 @@ export const Upward = (props) => {
   )
 }
 
+// FeedScreen.js에서 사용하는 화살표 아이콘 (말풍선)
+export const DownSharp = (props) => {
+  const {style} = props;
+  return (
+    <Icon
+      name= {Platform.OS === 'ios' ? "ios-caret-down-sharp" : "caret-down-sharp"}
+      type="ionicon"
+      color={style[0]["color"]}
+      containerStyle={style}
+    />
+  )
+}
+
 export default Chevron = (props) => {
   const {style} = props;
 

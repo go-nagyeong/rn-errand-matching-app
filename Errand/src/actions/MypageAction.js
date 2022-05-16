@@ -8,7 +8,7 @@ import * as Firebase from '../utils/Firebase';
 import MypageScreen from '../screens/Mypage/MypageScreen'
 
 export default MypageAction = (props) => {
-  // const [email, setEmail] = useState(auth().currentUser.email)
+  const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
   const [nickname, setNickname] = useState(null)
 
   const [score, setScore] = useState(null)
@@ -55,7 +55,7 @@ export default MypageAction = (props) => {
 
   const updateUserInfo = () => {
     Firebase.usersRef
-    .doc(Firebase.currentUser.email)
+    .doc(currentUser.email)
     .get()
     .then(doc => {
       if (doc.exists) {
@@ -71,10 +71,10 @@ export default MypageAction = (props) => {
   }
   const updateUserImage = () => {
     storage()
-      .ref('Users/' + Firebase.currentUser.email) //name in storage in firebase console
+      .ref('Users/' + currentUser.email) //name in storage in firebase console
       .getDownloadURL()
       .then((url) => {
-        Firebase.usersRef.doc(Firebase.currentUser.email).update({ image: url });
+        Firebase.usersRef.doc(currentUser.email).update({ image: url });
         setUserImage(url)
       })
       .catch((e) => console.log('Errors while downloading => ', e));
@@ -110,7 +110,7 @@ export default MypageAction = (props) => {
         const uploadUri = Platform.OS === 'ios' ? source.replace('file://', '') : source;
 
         const task = storage()
-          .ref('Users/' + Firebase.currentUser.email) // storage에 저장될 경로
+          .ref('Users/' + currentUser.email) // storage에 저장될 경로
           .putFile(uploadUri); // 보낼 이미지의 경로
         // set progress state
         task.on('state_changed', taskSnapshot => {
@@ -130,7 +130,7 @@ export default MypageAction = (props) => {
         const uploadUri = Platform.OS === 'ios' ? source.replace('file://', '') : source;
 
         const task = storage()
-          .ref('Users/' + Firebase.currentUser.email) // storage에 저장될 경로
+          .ref('Users/' + currentUser.email) // storage에 저장될 경로
           .putFile(uploadUri); // 보낼 이미지의 경로
         // set progress state
         task.on('state_changed', taskSnapshot => {
@@ -159,7 +159,7 @@ export default MypageAction = (props) => {
   }
   
   return <MypageScreen
-    email={Firebase.currentUser.email}
+    email={currentUser.email}
     nickname={nickname}
     score={score}
     scorePosition={scorePosition}

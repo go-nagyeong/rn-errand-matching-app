@@ -40,12 +40,12 @@ export default InfoBanner = (props) => {
                 {(errandInfo.destination || errandInfo.arrive) &&
                     <View style={styles.locationWrap}>
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <FIcon name='map-pin' size={20} />
+                            <FIcon name='map-pin' size={18} />
                             <Text style={styles.location}>{errandInfo.destination}</Text>
                         </View>
-                        <FIcon name='more-vertical' size={20} />
+                        <FIcon name='more-vertical' size={18} />
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <FIcon name='flag' size={20} />
+                            <FIcon name='flag' size={18} />
                             <Text style={styles.location}>{errandInfo.arrive}</Text>
                         </View>
                     </View>
@@ -69,24 +69,22 @@ const styles = StyleSheet.create({
       alignContent: 'center'
     },
     process: {
-        fontSize: 16,
-        fontFamily: 'NotoSansKR-Regular',
-        includeFontPadding: false,
+        fontSize: 15,
         color: Colors.gray,
+        marginBottom: 4,
     },
     title: {
-        fontSize: 18,
-        fontFamily: 'NotoSansKR-Medium',
-        includeFontPadding: false,
+        fontSize: 17,
+        fontWeight: '600',
         marginBottom: 10,
+        color: Colors.black,
     },
     locationWrap: {
         width: 220,
     },
     location: {
         fontSize: 15,
-        fontFamily: 'NotoSansKR-Regular',
-        includeFontPadding: false,
         marginLeft: 4,
+        color: Colors.black,
     }
 })
