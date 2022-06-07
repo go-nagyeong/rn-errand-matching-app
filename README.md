@@ -1,5 +1,7 @@
 # 🚀 Errand Matching App 🚀  
 ### 본교 대학생 대상 심부름 매칭 어플  
+✏️ https://ngkim.notion.site/React-Native-54ea76c8c0e744c18127461244fd0020  
+
 🚧 *프로젝트 진행중* 🚧  
 &nbsp;
 
