@@ -16,6 +16,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 // 피드(홈)
 import FeedAction from "./src/actions/FeedAction";
 import ShowDetailPost from "./src/screens/Feed/ShowDetailPost";
+import ShowEditPost from "./src/screens/Feed/ShowEditPost";
 
 // 나의심부름
 import MyErrandAction from "./src/actions/MyErrandAction";
@@ -65,25 +66,35 @@ const TabNavigator = () => {
   const chats = firestore().collection("Chats");
   
   useEffect(() => {
-    posts
+    const unsubscribe = posts
       .where("writerEmail", "==", user.email)
       .where("process.title", "in", ["request", "finishRequest"])
       .onSnapshot((querySnapshot) => {
         setMyErrandBadgeNum(querySnapshot.size);
       });
-    posts
+    
+    return unsubscribe
+  }, [])
+  useEffect(() => {
+    const unsubscribe = posts
       .where("erranderEmail", "==", user.email)
       .where("process.title", "==", "matching")
       .onSnapshot((querySnapshot) => {
         setMyPerformErrandBadgeNum(querySnapshot.size);
       });
-
-    chats
+    
+    return unsubscribe
+  }, [])
+  useEffect(() => {
+    const unsubscribe = chats
       .where('opponent._id', '==', user.email)
-      .where('unread', '==', 0)
+      .where('isRead', '==', 0)
+      .where('isFinished', '==', 0)
       .onSnapshot((querySnapshot) => {
         setUnreadChatNum(querySnapshot.size)
       })
+      
+    return unsubscribe
   }, [])
 
 
@@ -144,13 +155,13 @@ export default App = () => {
   useEffect(() => {
     const getDb = async () => {
       try {
-        const value = await AsyncStorage.getItem('intro')
+        const value = await AsyncStorage.getItem('firstInstalledIntro')
         if(value !== null) {
           setState(value)
         }
         else {
           console.log('존재하지 않습니다 생성합니다')
-          await AsyncStorage.setItem('intro', '0')
+          await AsyncStorage.setItem('firstInstalledIntro', '0')
         }
       } catch(e) {
         console.log(e)
@@ -178,34 +189,38 @@ export default App = () => {
     });
   });
 
+  const styles = {
+    headerTitle: {
+      fontSize: 18,
+      color: Colors.black,
+      fontWeight: '700',
+    }
+  }
+
   return (
     <NavigationContainer> 
-      <Stack.Navigator screenOptions={{ headerBackTitle: null }}>
+      <Stack.Navigator screenOptions={{
+        title: '',
+        headerLeftLabelVisible: false,
+        headerLeftContainerStyle: { paddingLeft: 8 },
+        headerTintColor: 'black',
+      }}>
         {user ? (
           <>
-            {/* privacy-tip  help    emoji-objects campaign     */}
-            {/* <Stack.Screen name="MyErrand" component={MyErrandAction} /> */}
-            {/* <Stack.Screen name="Mypage" component={MypageAction} /> */}
             <Stack.Screen name="Tab" component={TabNavigator} options={{ headerShown: false}} />
-            <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }}  />
-            <Stack.Screen name="MyCompletedErrand" component={MyCompletedErrand} options={{title: "심부름 내역" }} />
-            <Stack.Screen name="Faq" component={Faq} options={{title: 'FAQ'}} />
-            {/* <Stack.Screen name="CompletedDetailPost" component={CompletedDetailPost} /> */}
+            <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
+            <Stack.Screen name="MyCompletedErrand" component={MyCompletedErrand} options={{ title: '심부름 내역', headerTitleStyle: styles.headerTitle }} />
+            <Stack.Screen name="Faq" component={Faq} options={{ title: '자주 묻는 질문', headerTitleStyle: styles.headerTitle }} />
             <Stack.Screen name="ShowDetailPost" component={ShowDetailPost} />
-            {/* <Stack.Screen name="ShowDetailMyList" component={ShowDetailMyList} /> */}
-            {/* <Stack.Screen name="ShowDetailPerformList" component={ShowDetailPerformList} /> */}
-            {/* <Stack.Screen name="SelectLocation" component={SelectLocation} /> */}
+            <Stack.Screen name="ShowEditPost" component={ShowEditPost} options={{ title: '글 수정' }} />
             <Stack.Screen name="ResetPw" component={ResetPwScreen} />
             <Stack.Screen name="ReName" component={ReNameScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileAction} />
-            <Stack.Screen name="Heart" component={MyHeartList} />
-
+            <Stack.Screen name="Heart" component={MyHeartList} options={{ title: '찜 리스트' }} />
             <Stack.Screen name="SelectCategory" component={SelectCategory} />
             <Stack.Screen name="InputPrice" component={InputPrice} />
             <Stack.Screen name="InputLocation" component={InputLocation} />
             <Stack.Screen name="WriteTitle" component={WriteTitle} />
-            {/* <Stack.Screen name="WriteContent" component={WriteContent} /> */}
-            {/* <Stack.Screen name="SelectStartDate" component={SelectStartDate} /> */}
           </>
         ) : (
           // 처음 실행 조건 트리거 + 다시 한번 메뉴얼을 볼 수 있는 메뉴
@@ -214,7 +229,6 @@ export default App = () => {
             <Stack.Screen name="Login" component={LoginAction} />
             <Stack.Screen name="Register" component={RegisterAction} />
             <Stack.Screen name="ResetPw" component={ResetPwScreen} />
-            <Stack.Screen name="Tab" component={TabNavigator} options={{ headerShown: false}} />
           </>
           : 
           <>
@@ -222,7 +236,6 @@ export default App = () => {
             <Stack.Screen name="Login" component={LoginAction} />
             <Stack.Screen name="Register" component={RegisterAction} />
             <Stack.Screen name="ResetPw" component={ResetPwScreen} />
-            <Stack.Screen name="Tab" component={TabNavigator} options={{ headerShown: false}} />
           </>
         )
         }

@@ -2,16 +2,18 @@ import React from 'react';
 import { Banner } from 'react-native-paper';
 import { StyleSheet, View, Text } from 'react-native';
 import FIcon from 'react-native-vector-icons/Feather';
+import Moment from 'moment';
 
 import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
 
 export default InfoBanner = (props) => {
-    const { postId, errandInfo, bannerVisible, bannerVisibleIsFalse, bannerAlwaysVisible, setBannerAlwaysOption } = props;
+    const { errandInfo, bannerVisible, bannerVisibleIsFalse, bannerAlwaysVisible, setBannerAlwaysOption } = props;
 
     return (
         <Banner
             visible={bannerAlwaysVisible && bannerVisible}
-            style={styles.banner}
+            contentStyle={styles.banner}
             actions={[
                 {
                     label: '끄기',
@@ -26,7 +28,7 @@ export default InfoBanner = (props) => {
                 },
             ]}
         >   
-            <View>
+            <View style={styles.bannerView}>
                 <Text style={styles.process}>
                     심부름 상태: {errandInfo.process.title === 'request' && '요청'
                     || errandInfo.process.title === 'matching' && '매칭'
@@ -35,56 +37,82 @@ export default InfoBanner = (props) => {
                     }
                 </Text>
 
-                <Text style={styles.title}>{errandInfo.title}</Text>
+                <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+                    <View style={styles.leftWrap}>
+                        <Text style={styles.title} numberOfLines={2}>{errandInfo.title}</Text>
 
-                {(errandInfo.destination || errandInfo.arrive) &&
-                    <View style={styles.locationWrap}>
-                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <FIcon name='map-pin' size={18} />
-                            <Text style={styles.location}>{errandInfo.destination}</Text>
-                        </View>
-                        <FIcon name='more-vertical' size={18} />
-                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                            <FIcon name='flag' size={18} />
-                            <Text style={styles.location}>{errandInfo.arrive}</Text>
-                        </View>
+                        {errandInfo.matchingTime && 
+                            <View style={{flexDirection: 'row'}}>
+                                <Text style={styles.duration}>심부름 </Text>
+                                <Text style={[styles.duration, {color: Colors.red, fontWeight: '500'}]}>{Moment(errandInfo.matchingTime.toDate()).fromNow().replace(' 전','')}</Text>
+                                <Text style={styles.duration}> 경과</Text>
+                            </View>
+                        }
                     </View>
-                || null
-                }
+
+                    {(errandInfo.destination || errandInfo.arrive) &&
+                        <View style={styles.rightWrap}>
+                            <View style={{alignItems: 'center', marginRight: 5}}>
+                                <FIcon name='map-pin' size={18} color={Colors.black} style={styles.locationIcon} />
+                                <FIcon name='minus' size={16} color={Colors.black} style={[styles.locationIcon, {transform: [{rotate: '90deg'}]}]} />
+                                <FIcon name='flag' size={18} color={Colors.black} style={styles.locationIcon} />
+                            </View>
+                            <View style={{width: '82%'}}>
+                                <Text style={styles.locationText} numberOfLines={1}>{errandInfo.destination}</Text>
+                                <Text style={styles.locationText}> </Text>
+                                <Text style={styles.locationText} numberOfLines={1}>{errandInfo.arrive}</Text>
+                            </View>
+                        </View>
+                    || null
+                    }
+                </View>
             </View>
         </Banner>
     )
 }
 
 const styles = StyleSheet.create({
-    bannerShowButton: {
-        position: 'absolute',
-        zIndex: 1,
-        top: '10%',
-        right: 10
-    },
     banner: {
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: Colors.midGray,
-      alignContent: 'center'
+    },
+    bannerView: {
+        width: Common.width-32,
     },
     process: {
-        fontSize: 15,
+        fontSize: 16,
         color: Colors.gray,
-        marginBottom: 4,
+        marginBottom: 6,
+    },
+    leftWrap: {
+        width: (Common.width-32)*0.56,
+        marginRight: (Common.width-32)*0.04,
     },
     title: {
         fontSize: 17,
         fontWeight: '600',
-        marginBottom: 10,
+        marginBottom: 12,
         color: Colors.black,
     },
-    locationWrap: {
-        width: 220,
-    },
-    location: {
+    duration: {
         fontSize: 15,
-        marginLeft: 4,
+        color: Colors.darkGray,
+    },
+
+    rightWrap: {
+        flexDirection: 'row',
+        borderWidth: 0.8,
+        borderColor: Colors.gray,
+        padding: 12,
+        borderRadius: 10,
+        width: (Common.width-32)*0.4,
+    },
+    locationIcon: {
+        lineHeight: 18,
+    },
+    locationText: {
+        fontSize: 15,
+        lineHeight: 18,
         color: Colors.black,
     }
 })

@@ -5,6 +5,7 @@ import FIcon from 'react-native-vector-icons/FontAwesome5';
 import Colors from '../../constants/Colors';
 import Container from '../../components/Container';
 import SubmitButton from '../../components/SubmitButton';
+import Loader from '../../components/Loader';
 
 export default LoginScreen = (props) => {
   const [emailFocus, setEmailFocus] = useState(false);
@@ -14,72 +15,76 @@ export default LoginScreen = (props) => {
   const [password, setPassword] = useState('');
 
   return (
-    <Container>
-      <View style={styles.titleWrapper}>
-        <FIcon name="map-marker-alt" size={58} color={Colors.cyan} style={{position: 'absolute', top: -12, zIndex: 1}} />
-        <FIcon name="map" size={90} color={Colors.lightGray} />
-        <Text style={styles.title}>AN-SIM</Text>
-        <Text style={styles.subTitle}>안 동 대 학 교   심 부 름</Text>
-      </View>
+    <>
+      <Container>
+        <View style={styles.titleWrapper}>
+          <FIcon name="map-marker-alt" size={58} color={Colors.cyan} style={{position: 'absolute', top: -12, zIndex: 1}} />
+          <FIcon name="map" size={90} color={Colors.lightGray} />
+          <Text style={styles.title}>AN-SIM</Text>
+          <Text style={styles.subTitle}>안 동 대 학 교   심 부 름</Text>
+        </View>
 
-      <View style={styles.inputWrapper}>
-        <TextInput
-          style={emailFocus ? styles.focusedInput : styles.input}
-          placeholder="ID or Email"
-          value={email}
-          autoCapitalize='none'
-          autoCorrect={false}
-          blurOnSubmit={false}
-          onFocus={() => {setEmailFocus(true)}}
-          onBlur={() => {setEmailFocus(false)}}
-          onChangeText={text => setEmail(text)}
-          onSubmitEditing={() => { this.secondTextInput.focus(); }}
-          returnKeyType="next"
-          selectionColor={Colors.darkGray2}
-        />
-        <TextInput 
-          style={pwFocus ? styles.focusedInput : styles.input}
-          placeholder="Password"
-          value={password}
-          autoCapitalize='none'
-          autoCorrect={false}
-          blurOnSubmit={false}
-          onFocus={() => {setPwFocus(true)}}
-          onBlur={() => {setPwFocus(false)}}
-          onChangeText={text => setPassword(text)}
-          onSubmitEditing={() => { props.signIn(email, password) }}
-          selectionColor={Colors.darkGray2}
-          secureTextEntry={true}
-          ref={(input) => { this.secondTextInput = input; }}
-        />
+        <View style={styles.inputWrapper}>
+          <TextInput
+            style={emailFocus ? styles.focusedInput : styles.input}
+            placeholder="ID or Email"
+            value={email}
+            autoCapitalize='none'
+            autoCorrect={false}
+            blurOnSubmit={false}
+            onFocus={() => {setEmailFocus(true)}}
+            onBlur={() => {setEmailFocus(false)}}
+            onChangeText={text => setEmail(text)}
+            onSubmitEditing={() => { this.secondTextInput.focus(); }}
+            returnKeyType="next"
+            selectionColor={Colors.darkGray2}
+          />
+          <TextInput 
+            style={pwFocus ? styles.focusedInput : styles.input}
+            placeholder="Password"
+            value={password}
+            autoCapitalize='none'
+            autoCorrect={false}
+            blurOnSubmit={false}
+            onFocus={() => {setPwFocus(true)}}
+            onBlur={() => {setPwFocus(false)}}
+            onChangeText={text => setPassword(text)}
+            onSubmitEditing={() => { props.signIn(email, password) }}
+            selectionColor={Colors.darkGray2}
+            secureTextEntry={true}
+            ref={(input) => { this.secondTextInput = input; }}
+          />
 
-        <Text style={{
-          fontSize: 14, 
-          marginLeft: 10, 
-          marginBottom: props.err ? 20 : 0, 
-          color: Colors.red,
-        }}>
-        {props.err}
-        </Text>
-      </View>
+          <Text style={{
+            fontSize: 14, 
+            marginLeft: 10, 
+            marginBottom: props.err ? 20 : 0, 
+            color: Colors.red,
+          }}>
+          {props.err}
+          </Text>
+        </View>
 
-      <View style={styles.buttonWrapper}>
-        <TouchableOpacity style={{alignSelf: 'flex-end'}} onPress={() => props.navi.navigate('ResetPw', {withdrawal: false})} >
-          <Text style={styles.textButtonText}>비밀번호 찾기</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.buttonWrapper}>
+          <TouchableOpacity style={{alignSelf: 'flex-end'}} onPress={() => props.navi.navigate('ResetPw', {withdrawal: false})} >
+            <Text style={styles.textButtonText}>비밀번호 찾기</Text>
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.buttonWrapper}>
-        <SubmitButton title='LOGIN' onPress={() => props.signIn(email, password)} />
-      </View>
-      
-      <View style={styles.footer}>
-        <Text style={{fontSize: 16, color: Colors.midGray}}>계정이 없으신가요? </Text>
-        <TouchableOpacity onPress={() => props.navi.navigate('Register')}>
-          <Text style={styles.textButtonText}>회원가입</Text>
-        </TouchableOpacity>
-      </View>
-    </Container>
+        <View style={styles.buttonWrapper}>
+          <SubmitButton title='LOGIN' onPress={() => props.signIn(email, password)} />
+        </View>
+        
+        <View style={styles.footer}>
+          <Text style={{fontSize: 16, color: Colors.midGray}}>계정이 없으신가요? </Text>
+          <TouchableOpacity onPress={() => props.navi.navigate('Register')}>
+            <Text style={styles.textButtonText}>회원가입</Text>
+          </TouchableOpacity>
+        </View>
+      </Container>
+
+      <Loader isLoading={props.isLoading} />
+    </>
   );
 };
 

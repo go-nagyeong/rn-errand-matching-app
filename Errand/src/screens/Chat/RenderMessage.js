@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Clipboard } from 'react-native';
 import { Tooltip } from 'react-native-elements';
-import { Avatar, MessageText, MessageImage } from 'react-native-gifted-chat';
+import { Avatar } from 'react-native-elements';
+import { MessageText, MessageImage } from 'react-native-gifted-chat';
 import LinearGradient from 'react-native-linear-gradient';
 import Moment from 'moment';
 
@@ -9,7 +10,7 @@ import * as Firebase from '../../utils/Firebase';
 import Colors from '../../constants/Colors';
 
 export default RenderMessage = (props) => {
-    const { position, currentMessage, previousMessage, nextMessage } = props;
+    const { position, currentMessage, previousMessage, nextMessage, opponentImage } = props;
 
     const popoverButton = useRef(null);
     const [isReaded, setReaded] = useState(true)
@@ -41,10 +42,10 @@ export default RenderMessage = (props) => {
     const isSameTime = (prevOrNext) => currentMessageTime == prevOrNext
     useEffect(() => {
         const unsubscribe = Firebase.chatsRef
-            .doc(props.currentMessage._id)
+            .doc(currentMessage._id)
             .onSnapshot(doc => {
                 if (doc.exists) {
-                    if (doc.data().unread == 1) {
+                    if (doc.data().isRead == 1) {
                         setReaded(true)
                     } else {
                         setReaded(false)
@@ -65,14 +66,11 @@ export default RenderMessage = (props) => {
     )
     
     const renderAvatar = () => {
-        const height = isSameUser(previousMessageUser) && isSameTime(previousMessageTime) ? 0 : 38
         return (
             !isMyMessage &&
                 <Avatar
-                    {...props}
-                    showAvatarForEveryMessage={true}
-                    imageStyle={{ left: [styles.messageAvatar, {height}] }}
-                    // onPressAvatar
+                    source={!isSameUser(previousMessageUser) || !isSameTime(previousMessageTime) ? { uri: opponentImage } : null}
+                    containerStyle={[styles.messageAvatar]}
                 />
         )
     }
@@ -130,7 +128,7 @@ export default RenderMessage = (props) => {
         </View>
     )
 
-    const marginBottom = isSameUser(nextMessageUser) ? 6 : 18
+    const marginBottom = isSameUser(nextMessageUser) ? (isSameTime(nextMessageTime) ? 2 : 8) : 18
 
     return (
         <View style={styles.container}>
@@ -170,9 +168,11 @@ const styles = StyleSheet.create({
     },
 
     messageAvatar: {
+        overflow: 'hidden',
         height: 38,
         width: 38,
         borderRadius: 14,
+        marginRight: 8,
     },
 
     messageBubble: {

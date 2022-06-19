@@ -8,8 +8,12 @@ import Container from '../../components/Container';
 import SpeechBalloon from '../../components/SpeechBalloon';
 import MiniSubmitButton from '../../components/MiniSubmitButton';
 import PriceButton from '../../components/PriceButton';
+import { useNavigation } from '@react-navigation/native';
+import { Appbar } from 'react-native-paper';
 
 export default InputPrice = (props) => {
+  const navigation = useNavigation()
+
   const [price, setPrice] = useState(null);
 
   const [minusIsDisabled, setMinusIsDisabled] = useState(false)
@@ -92,7 +96,7 @@ export default InputPrice = (props) => {
 
         {message !== "" && <Text style={styles.message} >{message}</Text>}
 
-        <View style={{flexDirection: 'row', marginBottom: 70}}>
+        <View style={{ flexDirection: 'row', marginBottom: 70 }}>
           <PriceButton price='1000' borderColor={color} onPress={() => onChangePrice('1000')} />
           <PriceButton price='2000' borderColor={color} onPress={() => onChangePrice('2000')} />
           <PriceButton price='3000' borderColor={color} onPress={() => onChangePrice('3000')} />

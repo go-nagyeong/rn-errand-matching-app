@@ -20,31 +20,17 @@ let prevOpenedRow = null;
 export default RenderItem = ({ item, index, getPosts }) => {
     const navigation = useNavigation();
 
-    let opponentEmail =  Firebase.currentUser.email === item.writerEmail ?  item.erranderEmail : item.writerEmail; // 상대방 이메일
-    let opponentNickname = Firebase.currentUser.displayName === item.writer ? item.errander : item.writer; // 상대방 닉네임
-    
+    const opponentEmail = Firebase.currentUser.email == item.writerEmail ? item.erranderEmail : item.writerEmail; // 상대방 이메일
+    const opponentName = Firebase.currentUser.email == item.writerEmail ? item.errander : item.writer; // 상대방 닉네임
+
     const [reportDetailVisible, setReportDetailVisible] = useState(false); // 신고 작성 페이지
     
     const [isReported, setReported] = useState(false)
-
-    const [writerGrade, setWriterGrade] = useState("")
-    const [writerImage, setWriterImage] = useState("")
     useEffect(() => {
         // 중복 신고 여부 검사
         if (item.reported.includes(Firebase.currentUser.email)) {
             setReported(true)
         }
-
-        Firebase.usersRef
-            .doc(item.writerEmail)
-            .get()
-            .then(doc => {
-                if (doc.exists) {
-                    let gradeNum = doc.data()['grade']
-                    setWriterGrade(Common.calculateGrade(gradeNum))
-                    setWriterImage(doc.data()['image'])
-                }
-            })
     }, [])
 
     categoryIconStyle = {
@@ -65,12 +51,12 @@ export default RenderItem = ({ item, index, getPosts }) => {
                 onPress={() => {
                     isReported 
                         ? Alert.alert(
-                            "안내",
                             "중복 신고는 불가능합니다.",
+                            "",
                             [{
                                 text: "확인",
                                 onPress: () => prevOpenedRow.close(),
-                                style: "default",
+                                style: "cancel",
                             }],
                         )
                         : setReportDetailVisible(true)
@@ -91,12 +77,12 @@ export default RenderItem = ({ item, index, getPosts }) => {
     return (
         <Swipeable
             ref={ref => row[index] = ref}
-            containerStyle={[styles.itemBackground, isReported && {backgroundColor: Colors.lightGray2}]}
+            containerStyle={[styles.swipeableBackground, isReported && {backgroundColor: Colors.lightGray2}]}
             renderRightActions={renderRightActions}
             onSwipeableWillOpen={() => closeRow(index)}
         >
-            <View style={styles.itemView}>
-                <TouchableOpacity style={{padding: 10}} onPress={ () => navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date}) }>  
+            <View style={styles.itemBackground}>
+                <TouchableOpacity style={styles.itemView} onPress={ () => navigation.navigate("ShowDetailPost", {...item}) }>  
                     {/* 작성일, 카테고리 아이콘 */}
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12}}>
                         <Text style={{ fontSize: 13, color: Colors.midGray }}>
@@ -107,41 +93,48 @@ export default RenderItem = ({ item, index, getPosts }) => {
                         <EIcon style={{right: -2}} name={categoryIconStyle[item.category][1]} size={22} color={categoryIconStyle[item.category][0]} />
                     </View>
 
-                    {/* 제목, 내용 */}
-                    <View style={{width: '90%', paddingHorizontal: 5, marginBottom: 20}}>
-                        <Text style={{fontSize: 15, fontWeight: '600', color: Colors.black, marginBottom: 8}} numberOfLines={1} ellipsizeMode="tail">
-                            {item.title}
-                        </Text>
-                        <Text style={{ fontSize: 14, color: Colors.gray }} numberOfLines={1} ellipsizeMode="tail">
-                            {item.content}
-                        </Text>
+                    {/* 제목, 내용, 사진 */}
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 4, marginBottom: item.image !== "" ? 12 : 22}}>
+                        <View style={item.image !== "" && {width: '65%'}}>
+                            <Text style={{fontSize: 15, fontWeight: '600', color: Colors.black, marginBottom: 8}} numberOfLines={1} ellipsizeMode="tail">
+                                {item.title}
+                            </Text>
+                            <Text style={{ fontSize: 14, color: Colors.gray }} numberOfLines={1} ellipsizeMode="tail">
+                                {item.content}
+                            </Text>
+                        </View>
+                        {item.image[0] ? <Image source={{ uri: item.image[0] }} style={styles.postImage}/> : null}
                     </View>
 
-                    {/* 금액, 심부름꾼, 신고 */}
-                    <View style={{flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 5}}>
-                        <View style={{flexDirection: 'row', alignItems: 'center', marginRight: 12}}>
+                    {/* 조회수, 하트수, 금액 */}
+                    <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <AIcon name='pay-circle-o1' size={13} color={Colors.gray} />
-                            <Text style={{includeFontPadding: false, marginLeft: 5, fontSize: 13, color: Colors.black}}>
+                            <Text style={{marginLeft: 6, fontSize: 14, color: Colors.black}}>
                                 {item.price}
                             </Text>
                         </View>
+                        
                         <View style={{flexDirection: 'row', alignItems: 'center'}}>
                             <AIcon name='team' size={14} color={Colors.gray} />
-                            <Text style={{includeFontPadding: false, marginLeft: 4, fontSize: 13, color: Colors.black}}>
-                                {opponentNickname}
+                            <Text style={{includeFontPadding: false, marginLeft: 4, marginRight: 16, fontSize: 13, color: Colors.black}}>
+                                {opponentName}
+                            </Text>
+
+                            <AIcon name='clockcircleo' size={13} color={Colors.gray} />
+                            <Text style={{marginLeft: 5, fontSize: 13, color: Colors.black}}>
+                                {item.errandDuration}
                             </Text>
                         </View>
                     </View>
-                </TouchableOpacity> 
+                </TouchableOpacity>
             </View>
             {/* 신고 내용 작성하는 Modal */}
             <ReportDetail 
                 visible={reportDetailVisible}
                 onRequestClose={() => setReportDetailVisible(false)}
+                postId={item.id + '%' + item.writerEmail}
                 opponentEmail={opponentEmail}
-                opponentNickname={opponentNickname}
-                postId={item.id}
-                writerEmail={item.writerEmail}
                 getPosts={getPosts}
             />
         </Swipeable>
@@ -149,13 +142,22 @@ export default RenderItem = ({ item, index, getPosts }) => {
 }
 
 const styles = StyleSheet.create({
-    itemBackground: {
+    swipeableBackground: {
         backgroundColor: Colors.red,
         marginBottom: 15,
-        borderRadius: 15,
+        borderRadius: 10,
+        overflow: 'hidden'
+    },
+    itemBackground: {
+        backgroundColor: Colors.white,
     },
     itemView: {
-        backgroundColor: Colors.white,
+        padding: 10,
+    },
+    postImage: {
+        borderRadius: 12,
+        width: '30%',
+        height: 70,
     },
     
     rightReportButton: {

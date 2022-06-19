@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Fontisto';
+import auth from '@react-native-firebase/auth';
 
 import Colors from '../../constants/Colors';
 import * as Firebase from '../../utils/Firebase';
@@ -9,6 +10,8 @@ import Container from '../../components/Container';
 import SubmitButton from '../../components/SubmitButton';
 
 export default EditProfileScreen = (props) => {
+    const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
+
     const { err, reauthenticate } = props;
 
     const [password, setPassword] = useState('');
@@ -23,7 +26,7 @@ export default EditProfileScreen = (props) => {
                 <TextInput 
                     style={styles.input}
                     label='Email'
-                    value={Firebase.currentUser.email}
+                    value={currentUser.email}
                     editable={false}
                 />
                 <TextInput 

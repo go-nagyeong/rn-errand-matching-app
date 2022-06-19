@@ -56,9 +56,6 @@ const styles = StyleSheet.create({
     filterContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 2,
-        marginHorizontal: 10,
-        marginBottom: 8,
     },
     filterOffButton: {
         flexDirection: 'row',
@@ -67,7 +64,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: Platform.OS == 'ios' ? 10:8,
         borderRadius: 30,
-        marginHorizontal: 4,
+        marginHorizontal: 2,
         
         paddingHorizontal: 18,
         borderWidth: 1,
@@ -80,7 +77,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingVertical: Platform.OS == 'ios' ? 10:8,
         borderRadius: 30,
-        marginHorizontal: 6,
+        marginHorizontal: 4,
         
         paddingHorizontal: 14,
         backgroundColor: Colors.white,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useLayoutEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Platform, Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, Alert } from 'react-native';
 import { Avatar } from 'react-native-elements';
 import LinearGradient from 'react-native-linear-gradient';
@@ -7,24 +7,45 @@ import auth from '@react-native-firebase/auth';
 import Icon from 'react-native-vector-icons/Ionicons';
 import AIcon from 'react-native-vector-icons/AntDesign';
 import firestore from '@react-native-firebase/firestore';
+import Moment from 'moment';
 
 import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
 import * as Firebase from '../../utils/Firebase';
 import MiniSubmitButton from '../../components/MiniSubmitButton';
 
 export default ErrandRating = (props) => {
     const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
 
-    const errandDuration = props.errandDuration >= 60
-        ? parseInt(props.errandDuration/60) + '시간 ' + props.errandDuration%60 + '분'
-        : props.errandDuration + '분'
+    const { visible, onRequestClose, postId, price, category, process, destination, arrive, opponentEmail, getErrand, matchingTime, finishTime } = props;
+    const [opponentGrade, setOpponentGrade] = useState('');
+    const [opponentName, setOpponentName] = useState('');
+    // 상대방 닉네임과 등급 불러오기
+    useEffect(() => {
+        Firebase.usersRef
+            .doc(opponentEmail)
+            .get()
+            .then(doc => {
+                if (doc.exists) {
+                    let gradeNum = doc.data().grade
+                    setOpponentGrade(Common.calculateGrade(gradeNum))
+                    setOpponentName(doc.data().nickname)
+                }
+            })
+    }, [])
+
+    // 심부름 소요 시간 계산
+    const start = matchingTime && Moment(matchingTime.toDate())
+    const end = finishTime && Moment(finishTime.toDate())
+    const duration = end && end.diff(start, 'minutes')
+    const errandDuration = duration && duration >= 60 ? parseInt(duration/60) + '시간 ' + duration%60 + '분' : duration + '분'
+
 
     const [rating, setRating] = useState(4.5)
-
     // 상대방 평점 작성
     const addScore = () => {
         Firebase.usersRef
-            .doc(props.opponentEmail)
+            .doc(opponentEmail)
             .get()
             .then(documentSnapshot => {
                 if(documentSnapshot.exists) {
@@ -42,34 +63,17 @@ export default ErrandRating = (props) => {
         const grade_n_increment = firestore.FieldValue.increment(1);
 
         Firebase.usersRef
-            .doc(props.opponentEmail)
+            .doc(opponentEmail)
             .update({
                 grade_t: grade_t_increment,
                 grade_n: grade_n_increment,
                 grade: newGrade,
             })
             .then(() => {
-                if (props.errandProcess === 'matching') {
-                    Alert.alert(
-                        "심부름 완료 요청",
-                        "요청이 전송되었습니다.",
-                        [{
-                            text: "확인",
-                            onPress: () => finishRequestErrand(),
-                            style: "cancel",
-                        }],
-                    );
-                    
+                if (process === 'matching') {
+                    finishRequestErrand()
                 } else {
-                    Alert.alert(
-                        "심부름 완료",
-                        "심부름이 완료 되었습니다.",
-                        [{
-                            text: "확인",
-                            onPress: () => finishErrand(),
-                            style: "cancel",
-                        }],
-                    );
+                    finishErrand()
                 }
             })
             .catch(err => console.log(err))
@@ -78,7 +82,7 @@ export default ErrandRating = (props) => {
     // 심부름 프로세스 변경
     const finishRequestErrand = () => {
         Firebase.postsRef
-            .doc(props.id + '%' + props.writerEmail)
+            .doc(postId)
             .update({
                 process: {
                     title: 'finishRequest',     // regist > request > matching > finishRequest > finished
@@ -86,13 +90,14 @@ export default ErrandRating = (props) => {
                     myPerformErrandOrder: 3,    // 4(X) > 2 > 1 > 3 > 5(X) (내가 하고 있는 심부름 정렬 기준)
                 },
                 finishTime: new Date(),
+                errander: currentUser.displayName  // 완료된 게시물에서는 최신 닉네임 반영 안되게 닉네임 필드 삽입
             })
-            .then(() => props.getMyPerformErrand())
+            .then(() => getErrand())
             .catch(err => console.log(err))
     }
     const finishErrand = () => {
         Firebase.postsRef
-            .doc(props.id + '%' + props.writerEmail)
+            .doc(postId)
             .update({
                 process: {
                     title: 'finished',          // regist > request > matching > finishRequest > finished
@@ -100,8 +105,20 @@ export default ErrandRating = (props) => {
                     myPerformErrandOrder: 5,    // 4(X) > 2 > 1 > 3 > 5(X) (내가 하고 있는 심부름 정렬 기준)
                 },
                 errandDuration: errandDuration,
+                writer: currentUser.displayName  // 완료된 게시물에서는 최신 닉네임 반영 안되게 닉네임 필드 삽입
             })
-            .then(() => props.getMyErrand())
+            .then(() => {
+                getErrand()
+
+                Firebase.chatsRef
+                    .where('post', '==', postId)
+                    .get()
+                    .then(querySnapshot => {
+                        querySnapshot.forEach(doc => {
+                            doc.ref.update({isFinished: 1})
+                        })
+                    })
+            })
             .catch(err => console.log(err))
     }
 
@@ -128,12 +145,12 @@ export default ErrandRating = (props) => {
     }
     return (
         <Modal
-            visible={props.visible}
-            onRequestClose={props.onRequestClose}
+            visible={visible}
+            onRequestClose={onRequestClose}
             animationType="fade"
             transparent={true}
         >
-            <TouchableOpacity style={styles.modalBackground} onPress={props.onRequestClose}>
+            <TouchableOpacity style={styles.modalBackground} onPress={onRequestClose}>
                 <TouchableWithoutFeedback>
                     <View style={styles.modalView}>
                         <View style={[styles.modalDecoration, {bottom: -1}]}>
@@ -143,7 +160,7 @@ export default ErrandRating = (props) => {
                         </View>
 
                         <View style={styles.modalContents}>
-                            <TouchableOpacity style={styles.closeButton} onPress={props.onRequestClose}>
+                            <TouchableOpacity style={styles.closeButton} onPress={onRequestClose}>
                                 <Icon name='close' size={26} />
                             </TouchableOpacity>
 
@@ -151,8 +168,8 @@ export default ErrandRating = (props) => {
                                 <Avatar
                                     rounded
                                     size={82}
-                                    icon={{ name: categoryIconStyle[props.errandCategory][1], type: 'evilicon', size: 44 }}
-                                    containerStyle={{ backgroundColor: categoryIconStyle[props.errandCategory][0], marginBottom: 4 }}
+                                    icon={{ name: categoryIconStyle[category][1], type: 'evilicon', size: 44 }}
+                                    containerStyle={{ backgroundColor: categoryIconStyle[category][0], marginBottom: 4 }}
                                 />
                             </View>
 
@@ -161,36 +178,36 @@ export default ErrandRating = (props) => {
                                     ----------------------------------------------------
                                 </Text>
 
-                                <ReceiptItem title='Errander Name' content={props.opponentName} />
-                                <ReceiptItem title='Errander Grade' content={props.opponentGrade} />
+                                <ReceiptItem title='매칭 상대 이름' content={opponentName} />
+                                <ReceiptItem title='매칭 상대 등급' content={opponentGrade} />
                                 {/* 수행지, 도착지 하나라도 있으면 일단 장소 정보 띄우기 */}
-                                {(props.errandDestination != "" || props.errandArrive != "") && (
+                                {(destination != "" || arrive != "") && (
                                     // 둘 다 있을 경우
-                                    props.errandDestination != "" && props.errandArrive != "" &&
-                                        <ReceiptItem title='Location' content={props.errandDestination + '\n' + props.errandArrive} />
+                                    destination != "" && arrive != "" &&
+                                        <ReceiptItem title='심부름 장소' content={destination + '\n' + arrive} />
                                     // 수행지만 있을 경우
-                                    || props.errandDestination != "" &&
-                                        <ReceiptItem title='Location' content={props.errandDestination} />
+                                    || destination != "" &&
+                                        <ReceiptItem title='심부름 장소' content={destination} />
                                     // 도착지만 있을 경우
-                                    || props.errandArrive != "" &&
-                                        <ReceiptItem title='Location' content={props.errandArrive} />
+                                    || arrive != "" &&
+                                        <ReceiptItem title='심부름 장소' content={arrive} />
                                 )}
                                 {/* Errander한테는 심부름 소요시간 안 뜨게 */}
-                                {props.writerEmail == currentUser.email &&
-                                    <ReceiptItem title='Duration' content={errandDuration} />
+                                {process == 'finishRequest' &&
+                                    <ReceiptItem title='심부름 소요시간' content={errandDuration} />
                                 }
 
                                 <Text style={styles.dottedLine} numberOfLines={1} ellipsizeMode="clip">
                                     ----------------------------------------------------
                                 </Text>
 
-                                <ReceiptItem title='Price' content={props.errandPrice} style={{fontWeight: '700'}} />
+                                <ReceiptItem title='심부름 금액' content={price} style={{fontWeight: '700'}} />
 
                                 <Text style={styles.dottedLine} numberOfLines={1} ellipsizeMode="clip">
                                     ----------------------------------------------------
                                 </Text>
 
-                                <Text style={[styles.receiptTitle, {fontSize: 15, color: Colors.darkGray, fontWeight: '600'}]}>
+                                <Text style={[styles.receiptTitle, {fontSize: 15, fontWeight: '600'}]}>
                                     상대의 점수를 매겨주세요!
                                 </Text>
 
@@ -204,7 +221,7 @@ export default ErrandRating = (props) => {
                                     />
                                 </View>
 
-                                <TouchableOpacity style={[styles.roundButton, {borderColor: categoryIconStyle[props.errandCategory][0]}]} onPress={() => addScore()}>
+                                <TouchableOpacity style={[styles.roundButton, {borderColor: categoryIconStyle[category][0]}]} onPress={() => addScore()}>
                                     <Text style={styles.roundButtonText}>완료</Text>
                                 </TouchableOpacity>
                             </View>
@@ -277,6 +294,7 @@ const styles = StyleSheet.create({
         marginVertical: 4,
     },
     receiptTitle: {
+        includeFontPadding: false,
         color: Colors.gray,
         fontSize: 14,
     },

@@ -4,7 +4,7 @@
     2번 째 탭
     나의 리스트 및 수행리스트 화면
 */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, SafeAreaView, FlatList, View, Text, RefreshControl, Animated } from 'react-native';
 import { Badge } from 'react-native-elements'
 import { TabView, TabBar } from "react-native-tab-view";
@@ -14,10 +14,10 @@ import Colors from '../../constants/Colors';
 import * as Common from '../../utils/Common';
 import RenderItemMyList from './RenderItemMyList';
 import RenderItemPerformList from './RenderItemPerformList';
+import Header from '../../components/Header';
 
 export default MyErrandScreen = (props) => {
     const { myErrandBadgeNum, myPerformErrandBadgeNum, getMyErrand, getMyPerformErrand } = props;
-
     const [index, setIndex] = useState(0);
     const [routes] = useState([
         { key: "first", title: "나의 심부름" },
@@ -32,7 +32,6 @@ export default MyErrandScreen = (props) => {
             props.getMyPerformErrand()
         }
     }, [index])
-
 
     // First Screen
     const renderItemMyList = ({ item }) => {
@@ -115,9 +114,7 @@ export default MyErrandScreen = (props) => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>심부름 관리</Text>
-            </View>
+            <Header title='심부름 관리' titleColor={Colors.black} />
             <TabView
                 navigationState={{ index, routes }}
                 renderScene={renderScene}
@@ -133,15 +130,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.white,
-    },
-    header: {
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-    },
-    title: {
-        fontSize: 18,
-        color: Colors.black,
-        fontWeight: '700',
     },
     boardView: {
         flex: 1,

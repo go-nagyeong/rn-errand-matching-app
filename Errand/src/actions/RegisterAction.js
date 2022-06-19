@@ -108,9 +108,9 @@ export default RegisterAction = (props) => {
             auth()
             // auth로 이메일, 비밀번호 회원가입
             .createUserWithEmailAndPassword(email, password)
-            .then(async (userCredential) => {
+            .then((userCredential) => {
                 // firestore에 이메일, 닉네임, 등급 저장
-                await Firebase.usersRef
+                Firebase.usersRef
                     .doc(email)
                     .set({
                         email: email,
@@ -127,25 +127,25 @@ export default RegisterAction = (props) => {
                     })
                     .then(() => console.log('User added!'))
                     .catch(error => console.error(error));
-                
-                // auth에도 아이디, 비번 뿐 아니라 닉네임도 저장
-                Firebase.currentUser
-                    .updateProfile({
-                        displayName: nickname
-                    });
+
+                // auth에 아이디, 비번 뿐 아니라 닉네임도 저장
+                userCredential.user.updateProfile({displayName: nickname});
 
                 // 인증 메일 전송
-                userCredential.user?.sendEmailVerification();
-                auth().signOut();
-                Alert.alert(
-                    "이메일 인증",
-                    "인증 메일을 전송하였습니다.\n전송된 이메일의 링크를 클릭하면 회원가입이 완료됩니다.",
-                    [{
-                        text: "확인",
-                        onPress: () => props.navigation.navigate('Login'),
-                        style: "cancel",
-                    }],
-                );
+                userCredential.user
+                    .sendEmailVerification()
+                    .then(() => {
+                        auth().signOut()
+
+                        Alert.alert(
+                            "이메일 인증",
+                            "인증 메일을 전송하였습니다.\n이메일 인증을 완료해야 서비스 이용이 가능합니다.",
+                            [{
+                                text: "확인",
+                                style: "cancel",
+                            }],
+                        );
+                    })
             })
             .catch(error => {
                 if (error.code === 'auth/email-already-in-use') {

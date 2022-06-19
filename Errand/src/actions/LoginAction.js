@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
+import { Alert } from 'react-native';
 import auth from '@react-native-firebase/auth';
+
 import LoginScreen from '../screens/Mypage/LoginScreen';
 
 export default LoginAction = (props) => {
+    const [isLoading, setLoading] = useState(false);
+
     const [err, setErr] = useState('');
 
     const signIn = (email, password) => {
@@ -15,26 +19,38 @@ export default LoginAction = (props) => {
             setErr('비밀번호를 입력해주세요.');
             return false;
         } else {
+            setLoading(true)
+
             let id = email;
             if(!emailReg.test(email)) {
                 id = email + "@student.anu.ac.kr";
             }
-            
             auth()
             .signInWithEmailAndPassword(id, password)
             .then(() => {
+                setLoading(false)
+
                 var user = auth().currentUser;
                 if (user) {
                     if(user.emailVerified) {
                         setErr('');
-                        props.navigation.navigate('Tab');
                     } else {
-                        auth().signOut();
-                        setErr('이메일 인증을 진행해주세요.');
+                        auth().signOut()
+
+                        Alert.alert(
+                            "로그인 불가능",
+                            "이메일 인증을 완료해야 서비스 이용이 가능합니다.",
+                            [{
+                                text: "확인",
+                                style: "cancel",
+                            }],
+                        );
                     }
                 }
             })
             .catch(error => {
+                setLoading(false)
+                
                 if (error.code === 'auth/user-not-found') {
                     setErr('존재하지 않는 계정입니다.');
                 }
@@ -45,5 +61,10 @@ export default LoginAction = (props) => {
         }
     }
     
-    return <LoginScreen err={err} signIn={signIn} navi={props.navigation} />
+    return <LoginScreen 
+                err={err}
+                signIn={signIn} 
+                navi={props.navigation} 
+                isLoading={isLoading}
+            />
 }

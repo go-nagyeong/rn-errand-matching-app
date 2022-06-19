@@ -18,11 +18,12 @@ export default MypageAction = (props) => {
 
   const [userImage, setUserImage] = useState(null)
 
+  const [isLoading, setLoading] = useState(false)
+
   // 해당 화면에 focus가 있을 때 수행하는 작업
   useEffect(() => {
     const unsubscribe = props.navigation.addListener('focus', () => {
       updateUserInfo();
-      updateUserImage();
     });
 
     return unsubscribe;
@@ -59,9 +60,9 @@ export default MypageAction = (props) => {
     .get()
     .then(doc => {
       if (doc.exists) {
-        let nickname = doc.data().nickname;
+        setNickname(doc.data().nickname)
+        setUserImage(doc.data().image)
         let gradeNum = doc.data().grade;
-        setNickname(nickname)
         setScore(gradeNum)
         setScorePosition(calculateGrade(gradeNum)[0])
         setGrade(calculateGrade(gradeNum)[1])
@@ -69,17 +70,21 @@ export default MypageAction = (props) => {
       }
     })
   }
+
   const updateUserImage = () => {
     storage()
       .ref('Users/' + currentUser.email) //name in storage in firebase console
       .getDownloadURL()
       .then((url) => {
         Firebase.usersRef.doc(currentUser.email).update({ image: url });
-        setUserImage(url)
+        setLoading(false)
+        updateUserInfo()
       })
-      .catch((e) => console.log('Errors while downloading => ', e));
+      .catch((e) => {
+        setLoading(false)
+        console.log('Errors while downloading => ', e)
+      });
   }
-
 
   const options = {
     mediaType: "photo",
@@ -93,6 +98,8 @@ export default MypageAction = (props) => {
 
   const importFromCamera = () => {
     launchCamera(options, (response) => { // Use launchImageLibrary to open image gallery
+      setLoading(true)
+
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
@@ -112,18 +119,20 @@ export default MypageAction = (props) => {
         const task = storage()
           .ref('Users/' + currentUser.email) // storage에 저장될 경로
           .putFile(uploadUri); // 보낼 이미지의 경로
-        // set progress state
-        task.on('state_changed', taskSnapshot => {
-          if (taskSnapshot.state === 'success') {
-            updateUserImage()
-          }
-        });
+        task
+          .then(() => updateUserImage())
+          .catch(err => {
+            setLoading(false)
+            console.log(err)
+          })
       }
     });
   }
 
   const importFromAlbum = () => {
     launchImageLibrary(options, (response) => {
+      setLoading(true)
+
       if (response["didCancel"] !== true) { // 뒤로가기 시 에러 처리
         const source = response['assets'][0]['uri'];
         const filename = source.substring(source.lastIndexOf('/') + 1);
@@ -132,12 +141,12 @@ export default MypageAction = (props) => {
         const task = storage()
           .ref('Users/' + currentUser.email) // storage에 저장될 경로
           .putFile(uploadUri); // 보낼 이미지의 경로
-        // set progress state
-        task.on('state_changed', taskSnapshot => {
-          if (taskSnapshot.state === 'success') {
-            updateUserImage()
-          }
-        });
+        task
+          .then(() => updateUserImage())
+          .catch(err => {
+            setLoading(false)
+            console.log(err)
+          })
       }
     })
   }
@@ -149,11 +158,11 @@ export default MypageAction = (props) => {
       [{
         text: "로그아웃",
         onPress: () => auth().signOut(),
-        style: "default",
+        style: "destructive",
       },
       {
         text: "취소",
-        style: "default",
+        style: "cancel",
       }],
     );
   }
@@ -166,11 +175,11 @@ export default MypageAction = (props) => {
     grade={grade}
     nextGrade={nextGrade}
     userImage={userImage}
+    isLoading={isLoading}
 
     navi={props.navigation}
     importFromAlbum={importFromAlbum}
     importFromCamera={importFromCamera}
     signOut={signOut}
-
   />
 }

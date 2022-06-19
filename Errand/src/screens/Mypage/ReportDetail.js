@@ -33,13 +33,15 @@ const K_OPTIONS = [
 export default ReportDetail = (props) => {
   const navigation = useNavigation();
 
+  const { visible, onRequestClose, postId, opponentEmail, getPosts } = props;
+  
   // 모달 바텀시트로 만들기
   const [modalYAnim, setmodalYAnim] = useState(new Animated.Value(modalHeight));
   useEffect(() => {
-    if (props.visible) {
+    if (visible) {
       showModal()
     }
-  }, [props.visible])
+  }, [visible])
   const showModal = () => {
     Animated.timing(modalYAnim, {
       toValue: 0,
@@ -52,11 +54,10 @@ export default ReportDetail = (props) => {
       toValue: modalHeight,
       duration: 200,
       useNativeDriver: true
-    }).start(() => props.onRequestClose());
+    }).start(() => onRequestClose());
   };
   
 
-  const docId = props.postId + '%' + props.writerEmail;
   const [selectedItem, setSelectedItem] = useState({});
   
   const updateReportCount = () => {
@@ -65,28 +66,48 @@ export default ReportDetail = (props) => {
       updateDate[`data.${selectedItem.id}`] = firestore.FieldValue.increment(1);
 
       Firebase.usersRef
-        .doc(props.opponentEmail)
+        .doc(opponentEmail)
         .update(updateDate)
         .then(() => {
-          props.getPosts()
+          getPosts()
 
           // 신고 중복 여부 검사를 위한 필드 업데이트
           Firebase.postsRef
-            .doc(docId)
+            .doc(postId)
             .update({
               reported: firestore.FieldValue.arrayUnion(Firebase.currentUser.email), // 신고한 유저 리스트에 자신의 이메일 추가
             })
             .then(() => console.log('이제 다시 신고할 수 없습니다'))
         })
-        .catch(err => console.log(err))
+        .catch(err => {
+          console.log(err)
+          if (err.code === 'firestore/not-found') {
+            Alert.alert(
+              "신고 불가",
+              "탈퇴한 사용자입니다.",
+              [{
+                  text: "확인",
+                  onPress: () => getPosts(),
+                  style: "cancel",
+              }],
+            )
+          } 
+        })
     } else {
-      alert('신고 사유를 선택해주세요.')
+      Alert.alert(
+        "신고 사유를 선택해주세요.",
+        "",
+        [{
+            text: "확인",
+            style: "cancel",
+        }],
+      )
     }
   }
 
   return (
     <Modal
-      visible={props.visible}
+      visible={visible}
       onRequestClose={() => hideModal()}
       animationType='fade'
       transparent={true}
@@ -163,39 +184,3 @@ const styles = StyleSheet.create({
     fontSize: 15,
   }
 })
-
-// 다중 선택 Select Box
-
-// const onMultiChange = () => {
-//   return (item) => {setSelectedTeams(xorBy(selectedTeams, [item], 'id')); console.log("item : ", item, "selectedTeams : ", selectedTeams)}
-// }
-// const [selectedTeams, setSelectedTeams] = useState([])
-
-{/* <SelectBox
-  label="선택하세요"
-  options={K_OPTIONS}
-  selectedValues={selectedTeams}
-  onMultiSelect={onMultiChange()}
-  onTapClose={onMultiChange()}
-  isMulti
-/> */}
-
-
-
-{/* 단일 선택 select Box */}
-
-// function onChange() {
-  //   return (val) => setSelectedTeam(val)
-// }
-{/* <View style={{ width: '100%', alignItems: 'center' }}>
-  <Text style={{ fontSize: 30, paddingBottom: 20 }}>Demos</Text>
-</View>
-<Text style={{ fontSize: 20, paddingBottom: 10 }}>Select Demo</Text>
-<SelectBox
-  label="Select single"
-  options={K_OPTIONS}
-  value={selectedTeam}
-  onChange={onChange()}
-  hideInputFilter={false}
-/>
-<View style={{ height: 40 }} /> */}

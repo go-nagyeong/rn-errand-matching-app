@@ -25,7 +25,6 @@ export default MyHeartListAction = (props) => {
 
   const getHeartList = () => {
     setRefreshing(true)
-    documentData = []
 
     Firebase.heartsRef
       .where('who', '==', Firebase.currentUser.email)

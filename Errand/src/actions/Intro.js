@@ -54,7 +54,7 @@ export default Intro = (props) => {
 
   _onDone = async () => {
     try {
-      await AsyncStorage.setItem('intro', '1').then(() => console.log('AsyncStorage Saved'))
+      await AsyncStorage.setItem('firstInstalledIntro', '1').then(() => console.log('AsyncStorage Saved'))
       props.navigation.navigate('Login')
     } catch (e) {
       console.log('At Intro.js', e)

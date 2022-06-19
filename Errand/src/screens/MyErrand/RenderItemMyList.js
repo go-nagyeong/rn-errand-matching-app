@@ -7,6 +7,7 @@ import 'moment/locale/ko';
 import ActionSheet from 'react-native-actionsheet';
 import FIcon from 'react-native-vector-icons/FontAwesome5';
 import IOIcon from 'react-native-vector-icons/Ionicons';
+import storage from '@react-native-firebase/storage';
 
 import Colors from '../../constants/Colors';
 import * as Common from '../../utils/Common';
@@ -23,55 +24,6 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
     const [isVisibleRatingModal, setIsVisibleRatingModal] = useState(false);
     const [isVisibleRequestModal, setIsVisibleRequestModal] = useState(false);
 
-    const [writerGrade, setWriterGrade] = useState("")
-    const [writerImage, setWriterImage] = useState("")
-    const [erranderGrade, setErranderGrade] = useState("");
-    const [erranderImage, setErranderImage] = useState("");
-
-    const [errandDuration, setErrandDuration] = useState("")
-
-    useEffect(() => {
-        // 게시물 보기 페이지의 Writer 정보
-        Firebase.usersRef
-            .doc(item.writerEmail)
-            .get()
-            .then(doc => {
-                if (doc.exists) {
-                    let gradeNum = doc.data()['grade'];
-                    setWriterGrade(Common.calculateGrade(gradeNum))
-                    setWriterImage(doc.data()['image'])
-                }
-            })
-        // 심부름 요청과 심부름 완료 페이지의 Errander 정보
-        if (item.process.title === 'request' || item.process.title === 'finishRequest') {
-            const unsubscribe = Firebase.usersRef
-                .doc(item.erranderEmail)
-                .onSnapshot(doc => {
-                    if (doc.exists) {
-                        let gradeNum = doc.data()['grade'];
-                        setErranderGrade(Common.calculateGrade(gradeNum))
-                        setErranderImage(doc.data()['image'])
-                    }
-                })
-            unsubscribe;
-        }
-        // 심부름 완료 페이지의 심부름 소요 시간 계산
-        if (item.process.title === 'finishRequest') {
-            Firebase.postsRef
-                .doc(item.id + '%' + item.writerEmail)
-                .get()
-                .then(documentSnapshot => {
-                    if (documentSnapshot.exists) {
-                        let matchingTime = Moment(documentSnapshot.data()['matchingTime'].toDate())
-                        let finishTime = Moment(documentSnapshot.data()['finishTime'].toDate())
-                        let errandDuration = finishTime.diff(matchingTime, 'minutes')
-                        setErrandDuration(errandDuration)
-                    }
-                })
-        }
-    }, [])
-
-
     const deletePost = () => {
         Alert.alert(
             "심부름 삭제",
@@ -79,20 +31,37 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
             [{
                 text: "확인",
                 onPress: () => {
+                    Firebase.heartsRef
+                        .where('postId', '==', item.id + '%' + item.writerEmail)
+                        .get()
+                        .then(querySnapshot => {
+                            querySnapshot.forEach(doc => {
+                                doc.ref.delete()
+                            })
+                        })
+                        .catch(err => console.log(err));
+                    
+                    storage()
+                        .ref('Posts/' + item.id + '%' + item.writerEmail)
+                        .listAll()
+                        .then(dir => {
+                            dir.items.forEach(fileRef => {
+                                fileRef.delete()
+                            })
+                        })
+                        .catch(err => console.log(err));
+
                     Firebase.postsRef
                         .doc(item.id + '%' + item.writerEmail)
                         .delete()
-                        .then(() => {
-                            getMyErrand()
-                        })
-
-                        //TODO: HEARTS도 같이 지워줘야함
+                        .then(() => getMyErrand())
+                        .catch(err => console.log(err));
                 },
                 style: "default",
             },
             {
                 text: "취소",
-                style: "default",
+                style: "cancel",
             }],
         );
     }
@@ -104,14 +73,14 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
         finishRequest: 2,
     }
     const steps = [
-        {title: 'request', koTitle: '요청'}, 
-        {title: 'matching', koTitle: '매칭'}, 
-        {title: 'finishRequest', koTitle: '완료 요청'}, 
+        { title: 'request', koTitle: '요청' },
+        { title: 'matching', koTitle: '매칭' },
+        { title: 'finishRequest', koTitle: '완료 요청' },
     ]
     const customTrack = steps.map((step, index) =>
         <View key={index}>
             {index < processIndex[item.process.title]
-            ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint} style={styles.trackLine} />
+            ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.trackLine} />
             : <View style={styles.trackLine} />}
         </View>
     )
@@ -121,10 +90,10 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
             ? (item.process.title === 'matching'
                 ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.markerPoint} />
                 : <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint}>
-                        <FIcon name='bell' size={16} color={Colors.white} />
-                    </LinearGradient>)
+                    <FIcon name='bell' size={16} color={Colors.white} />
+                </LinearGradient>)
             : (index < processIndex[item.process.title]
-                ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.currentMarkerPoint} style={styles.trackLine} style={styles.markerPoint} />
+                ? <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.markerPoint} />
                 : <View style={styles.markerPoint} />)
             }
         </View>
@@ -132,7 +101,7 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
     const customLabel = steps.map((step, index) =>
         <Text key={index} style={[
             item.process.title === step.title ? styles.currentStepLabel : styles.stepLabel,
-            step.title === 'finishRequest' && {left: -27}
+            step.title === 'finishRequest' && { left: -27 }
         ]}>
             {step.koTitle}
         </Text>
@@ -141,18 +110,16 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
     return (
         <View style={styles.itemView}>
             <View style={styles.infoView}>
-                <Text style={{fontSize: 13, color: Colors.midGray}}>
+                <Text style={{ fontSize: 13, color: Colors.midGray }}>
                     {Moment(item.date.toDate()).diff(Moment(), 'days') >= -2
                         ? Moment(item.date.toDate()).fromNow()
                         : Moment(item.date.toDate()).format('YY/MM/DD')}
                 </Text>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     {item.process.title !== 'regist' &&
                         <TouchableOpacity
                             style={styles.chatButton}
-                            onPress={() => navigation.navigate("Chat", {
-                                id: item.id, writerEmail: item.writerEmail, erranderEmail: item.erranderEmail, errandInfo: item
-                            })}
+                            onPress={() => navigation.navigate("Chat", {item: item})}
                         >
                             <Text style={styles.chatButtonText}>채팅</Text>
                         </TouchableOpacity>
@@ -161,7 +128,7 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
                         <IOIcon name='ellipsis-horizontal' size={20} color={Colors.gray} />
                     </TouchableOpacity>
                 </View>
-                
+
                 <ActionSheet
                     ref={threeOptionSheet}
                     options={['게시물 상세보기', '삭제', '취소']}
@@ -169,7 +136,7 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
                     destructiveButtonIndex={1}
                     onPress={(index) => {
                         if (index == 0) {
-                            navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date});
+                            navigation.navigate("ShowDetailPost", {...item});
                         } else if (index == 1) {
                             deletePost();
                         }
@@ -181,7 +148,7 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
                     cancelButtonIndex={1}
                     onPress={(index) => {
                         if (index == 0) {
-                            navigation.navigate("ShowDetailPost", {title: item.title, content: item.content, writerName: item.writer, writerGrade: writerGrade, price: item.price, writerEmail: item.writerEmail, id: item.id, image: item.image, writerImage: writerImage, views: item.views, arrive: item.arrive, destination: item.destination, date: item.date});
+                            navigation.navigate("ShowDetailPost", {...item});
                         }
                     }}
                 />
@@ -197,55 +164,49 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
             </View>
 
             <View style={styles.progressView}>
-                <View style={{flexDirection: 'row'}}>
+                <View style={{ flexDirection: 'row' }}>
                     {customTrack}
                 </View>
-                <View style={{flexDirection: 'row', top: -18}}>
+                <View style={{ flexDirection: 'row', top: -18 }}>
                     {customMarker}
                     <View style={styles.marker}>
                         <View style={styles.markerPoint} />
                     </View>
                 </View>
-                <View style={{flexDirection: 'row', top: -14}}>
+                <View style={{ flexDirection: 'row', top: -14 }}>
                     {customLabel}
                     <Text style={styles.stepLabel}>완료</Text>
                 </View>
                 <Text style={styles.stepGuide}>
                     {item.process.title === 'regist' && 'Errander를 기다리는 중 입니다.'
-                    || item.process.title === 'request' && 'Errander의 심부름 요청을 받아주세요.'
-                    || item.process.title === 'matching' && 'Errander와 연결이 되었습니다.\n심부름이 완료될 때까지 기다려주세요.'
-                    || item.process.title === 'finishRequest' && 'Errander가 완료 요청을 보냈습니다.\n심부름이 정말 끝났다면 완료를 해주세요.'
+                        || item.process.title === 'request' && 'Errander의 심부름 요청을 받아주세요.'
+                        || item.process.title === 'matching' && 'Errander와 연결이 되었습니다.\n심부름이 완료될 때까지 기다려주세요.'
+                        || item.process.title === 'finishRequest' && 'Errander가 완료 요청을 보냈습니다.\n심부름이 정말 끝났다면 완료를 해주세요.'
                     }
                 </Text>
             </View>
 
             {item.process.title === 'request' &&
                 <View style={styles.responseView}>
-                    <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.finishRequestButtonBorder}>
-                        <View style={{backgroundColor: Colors.white, borderRadius: 30}}>
+                    <LinearGradient start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.finishRequestButtonBorder}>
+                        <View style={{ backgroundColor: Colors.white, borderRadius: 30 }}>
                             <TouchableOpacity style={styles.finishRequestButton} onPress={() => setIsVisibleRequestModal(true)}>
                                 <Text style={styles.finishRequestButtonText}>요청 확인</Text>
                             </TouchableOpacity>
                         </View>
                     </LinearGradient>
 
-                    <ErranderRequest 
+                    <ErranderRequest
                         visible={isVisibleRequestModal}
                         onRequestClose={() => setIsVisibleRequestModal(false)}
-                        id={item.id}
-                        writerEmail={item.writerEmail}
-                        erranderName={item.errander}
-                        erranderEmail={item.erranderEmail}
-                        erranderGrade={erranderGrade}
-                        erranderImage={erranderImage}
-                        getMyErrand={getMyErrand}
                         item={item}
+                        getMyErrand={getMyErrand}
                     />
                 </View>
-            || item.process.title === 'finishRequest' &&
+                || item.process.title === 'finishRequest' &&
                 <View style={styles.responseView}>
-                    <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.finishRequestButtonBorder}>
-                        <View style={{backgroundColor: Colors.white, borderRadius: 30}}>
+                    <LinearGradient start={{ x: 0, y: 0.5 }} end={{ x: 1, y: 0.5 }} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.finishRequestButtonBorder}>
+                        <View style={{ backgroundColor: Colors.white, borderRadius: 30 }}>
                             <TouchableOpacity style={styles.finishRequestButton} onPress={() => setIsVisibleRatingModal(true)}>
                                 <Text style={styles.finishRequestButtonText}>평점 작성</Text>
                             </TouchableOpacity>
@@ -255,19 +216,17 @@ export default RenderItemMyList = ({ item, getMyErrand }) => {
                     <ErrandRating
                         visible={isVisibleRatingModal}
                         onRequestClose={() => setIsVisibleRatingModal(false)}
-                        id={item.id}
-                        writerEmail={item.writerEmail}
-                        errandPrice={item.price}
-                        opponentName={item.errander}
+                        postId={item.id + '%' + item.writerEmail}
+                        price={item.price}
+                        category={item.category}
+                        process={item.process.title}
+                        destination={item.destination}
+                        arrive={item.arrive}
                         opponentEmail={item.erranderEmail}
-                        opponentGrade={erranderGrade}
-                        opponentImage={erranderImage}
-                        errandProcess={item.process.title}
-                        errandDuration={errandDuration}
-                        errandDestination={item.destination}
-                        errandArrive={item.arrive}
-                        errandCategory={item.category}
-                        getMyErrand={getMyErrand}
+                        getErrand={getMyErrand}
+                        
+                        matchingTime={item.matchingTime}
+                        finishTime={item.finishTime}
                     />
                 </View>
             }
@@ -284,12 +243,12 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         ...Platform.select({
             ios: {
-              shadowOpacity: 0.1,
-              shadowRadius: 4,
-              shadowOffset: {width: 2, height: 4},
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                shadowOffset: { width: 2, height: 4 },
             },
             android: {
-              elevation: 6,
+                elevation: 6,
             },
         }),
     },
@@ -317,7 +276,7 @@ const styles = StyleSheet.create({
         color: Colors.darkGray,
         fontWeight: '200',
     },
-    
+
     titleView: {
         flex: 1,
         marginHorizontal: 15,
@@ -341,11 +300,11 @@ const styles = StyleSheet.create({
     },
     trackLine: {
         backgroundColor: Colors.lightGray,
-        width: (Common.width-94)/3,
+        width: (Common.width - 94) / 3,
         height: 2,
     },
     marker: {
-        width: (Common.width-94)/3,
+        width: (Common.width - 94) / 3,
         height: 36,
         justifyContent: 'center',
     },
@@ -366,7 +325,7 @@ const styles = StyleSheet.create({
     },
     stepLabel: {
         includeFontPadding: false,
-        width: (Common.width-94)/3,
+        width: (Common.width - 94) / 3,
         color: Colors.midGray,
         fontSize: 14,
         fontWeight: '500',
@@ -374,7 +333,7 @@ const styles = StyleSheet.create({
     },
     currentStepLabel: {
         includeFontPadding: false,
-        width: (Common.width-94)/3,
+        width: (Common.width - 94) / 3,
         color: Colors.darkGray,
         fontSize: 14,
         fontWeight: '600',
@@ -396,7 +355,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 18,
     },
     finishRequestButtonBorder: {
-        width: (Common.width-60)/3,
+        width: (Common.width - 60) / 3,
         padding: 1,
         borderRadius: 30,
         alignSelf: 'center',

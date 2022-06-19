@@ -8,13 +8,15 @@ import { useNavigation } from '@react-navigation/native';
 import Colors from '../../constants/Colors';
 import * as Firebase from '../../utils/Firebase';
 
-export default RenderItem = ({ item, notification }) => {
+export default RenderItem = ({item, notification}) => {
     const navigation = useNavigation()
 
-    const id = item.post.split('%')[0];
-    const writerEmail = item.post.split('%')[1];
-    const erranderEmail = writerEmail === item.user._id ? item.opponent._id : item.user._id;
+    // Chat 전달 파라미터
     const [errandInfo, setErrandInfo] = useState(null)
+    
+    // 채팅 타이틀, 사진
+    const [chatImage, setChatImage] = useState('')
+    const [chatTitle, setChatTitle] = useState('')
 
     useEffect(() => {
         Firebase.postsRef
@@ -25,24 +27,45 @@ export default RenderItem = ({ item, notification }) => {
                     setErrandInfo(doc.data())
                 }
             })
-    }, [])    
+
+        // 실시간 반영 안됨
+        Firebase.usersRef
+            .doc(item.opponentEmail)
+            .get()
+            .then(doc => {
+              if (doc.exists) {
+                setChatImage(doc.data().image)
+                setChatTitle(doc.data().nickname)
+              }
+            })
+    }, [])
 
     return (
-        <TouchableOpacity onPress={() => navigation.navigate("Chat", {id: id, writerEmail: writerEmail, erranderEmail: erranderEmail, errandInfo: errandInfo})}>  
+        <TouchableOpacity onPress={() => navigation.navigate("Chat", {item: errandInfo})}>  
             <View style={styles.itemView}>
-                <View style={{flexDirection: 'row', width: '65%'}}>
-                    <Avatar
-                        size={50}
-                        rounded
-                        source={{ uri: item.chatImage }}
-                        containerStyle={{ marginRight: 10 }}
-                    />
+                <View style={{flexDirection: 'row', width: '64%'}}>
+                    {chatImage
+                        ?
+                        <Avatar
+                            size={52}
+                            rounded
+                            source={{ uri: chatImage }}
+                            containerStyle={{ marginRight: 12 }}
+                        />
+                        :
+                        <Avatar
+                            size={52}
+                            rounded
+                            icon={{ name: 'user-alt', type: 'font-awesome-5', size: 26 }}
+                            containerStyle={{ marginRight: 12, backgroundColor: Colors.lightGray2 }}
+                        />
+                    }
 
-                    <View style={{flexDirection: 'column'}}>
-                        <Text style={{includeFontPadding: false, fontSize: 15, fontWeight: '600', color: Colors.black, marginBottom: 7}} numberOfLines={1} ellipsizeMode="tail">
-                            {item.chatTitle}
+                    <View style={{flexDirection: 'column', marginTop: 2}}>
+                        <Text style={{fontSize: 16, fontWeight: '600', color: Colors.black, marginBottom: 8}} numberOfLines={1} ellipsizeMode="tail">
+                            {chatTitle}
                         </Text>
-                        <Text style={{includeFontPadding: false, fontSize: 14, color: Colors.gray}} numberOfLines={2} ellipsizeMode="tail">
+                        <Text style={{fontSize: 15, lineHeight: 19, color: Colors.gray}} numberOfLines={2} ellipsizeMode="tail">
                             {item.text !== "" ? item.text : '(사진)'}
                         </Text>
                     </View>
@@ -55,7 +78,6 @@ export default RenderItem = ({ item, notification }) => {
                         </View>
                     }
                     <Text style={{fontSize: 13, color: Colors.midGray}}>
-                        {/* {Moment(item.createdAt)} */}
                         {Moment(item.createdAt.toDate()).diff(Moment(), 'days') >= -2
                             ? Moment(item.createdAt.toDate()).fromNow()
                             : Moment(item.createdAt.toDate()).format('YY/MM/DD')}

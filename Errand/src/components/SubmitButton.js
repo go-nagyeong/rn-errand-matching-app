@@ -8,8 +8,8 @@ export default SubmitButton = (props) => {
     const {title, onPress} = props;
 
     return (
-        <LinearGradient style={styles.roundButton} start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]}>
-          <TouchableOpacity onPress={onPress}>
+        <LinearGradient style={styles.roundButtonBackground} start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]}>
+          <TouchableOpacity style={styles.roundButton} onPress={onPress}>
             <Text style={styles.roundButtonText}>{title}</Text>
           </TouchableOpacity>
         </LinearGradient>
@@ -17,6 +17,9 @@ export default SubmitButton = (props) => {
 }
 
 const styles = StyleSheet.create({
+    roundButtonBackground: {
+        borderRadius: 25,
+    },
     roundButton: {
         paddingVertical: 14,
         alignItems: 'center',

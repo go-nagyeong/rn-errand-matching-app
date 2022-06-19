@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Platform, Modal, View, Text, TouchableOpacity, TouchableWithoutFeedback, Animated, Alert } from 'react-native';
 import { Avatar } from 'react-native-elements';
 import LinearGradient from 'react-native-linear-gradient';
@@ -10,22 +10,41 @@ import storage from '@react-native-firebase/storage';
 import { useNavigation } from '@react-navigation/native';
 
 import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
 import * as Firebase from '../../utils/Firebase';
 
 export default ErranderRequest = (props) => {
-    const { item } = props;
-
     const navigation = useNavigation()
+
+    const { visible, onRequestClose, item, getMyErrand } = props;
+    const postId = item.id + '%' + item.writerEmail;
+
+    const [erranderName, setErranderName] = useState('');
+    const [erranderGrade, setErranderGrade] = useState('');
+    const [erranderImage, setErranderImage] = useState('');
+    useEffect(() => {
+        Firebase.usersRef
+            .doc(item.erranderEmail)
+            .get()
+            .then(doc => {
+                if (doc.exists) {
+                    let gradeNum = doc.data().grade;
+                    setErranderGrade(Common.calculateGrade(gradeNum))
+                    setErranderImage(doc.data().image)
+                    setErranderName(doc.data().nickname)
+                }
+            })
+    }, [])
 
     const accept = () => {
       Alert.alert(
         "심부름 수락",
-        "심부름 요청을 수락하셨습니다.\n정말로 진행하시겠습니까?",
+        "심부름 수행 요청을 수락하시겠습니까?",
         [{
           text: "확인",
           onPress: () => {
             Firebase.postsRef
-                .doc(props.id + '%' + props.writerEmail)
+                .doc(postId)
                 .update({
                     process: {
                         title: 'matching',          // regist > request > matching > finishRequest > finished
@@ -34,80 +53,75 @@ export default ErranderRequest = (props) => {
                     },
                     matchingTime: new Date(),
                 })
-                .then(() => props.getMyErrand())
+                .then(() => getMyErrand())
                 .catch(err => console.log(err))
           },
           style: "default",
         },
         {
           text: "취소",
-          style: "default",
+          style: "cancel",
         }],
       )
     }
   
     const reject = () => {
-      Alert.alert(
-        "심부름 거부",
-        "심부름 요청을 거부하셨습니다.\n다른 Errander를 기다리시겠습니까?",
-        [{
-          text: "확인",
-          onPress: () => {
-            Firebase.postsRef
-                .doc(props.id + '%' + props.writerEmail)
-                .update({
-                    process: {
-                        title: 'regist',          // regist > request > matching > finishRequest > finished
-                        myErrandOrder: 4,         // 4    > 1 > 3 > 2 > 5(X) (나의 심부름 정렬 기준)
-                        myPerformErrandOrder: 4,  // 4(X) > 2 > 1 > 3 > 5(X) (내가 하고 있는 심부름 정렬 기준)
-                    },
-                    errander: "",
-                    erranderEmail: "",
-                })
-                .then(() => props.getMyErrand())
-                .catch(err => console.log(err));
+        Alert.alert(
+            "심부름 거부",
+            "심부름 수행 요청을 거부하시겠습니까?",
+            [{
+                text: "확인",
+                onPress: () => {
+                    // 채팅 삭제 (firestore에 있는 텍스트)
+                    Firebase.chatsRef
+                        .where('post', '==', postId)
+                        .get()
+                        .then(querySnapshot => { 
+                            querySnapshot.forEach(doc => doc.ref.delete())
+                        })
+                        .catch(err => console.log(err));
 
-            // 채팅 삭제 (firestore에 있는 텍스트)
-            Firebase.chatsRef
-                .where('post', '==', props.id + '%' + props.writerEmail)
-                .get()
-                .then(querySnapshot => { 
-                    querySnapshot.forEach(doc => doc.ref.delete())
-                })
-                .catch(err => console.log(err));
-
-            // 채팅 삭제 (storage에 있는 이미지 & 폴더)
-            storage()
-                .ref('Chats/' + props.id + '%' + props.writerEmail)
-                .listAll()
-                .then(dir => {
-                    dir.items.forEach(fileRef => {
-                        storage()
-                            .ref(fileRef.path)
-                            .delete()
-                            .then(() => console.log('성공'))
+                    // 채팅 삭제 (storage에 있는 이미지 & 폴더)
+                    storage()
+                        .ref('Chats/' + postId)
+                        .listAll()
+                        .then(dir => {
+                            dir.items.forEach(fileRef => {
+                                fileRef.delete()
+                            })
+                        })
+                        .catch(err => console.log(err));
                         
-                    })
-                })
-                .catch(err => console.log(err));
-          },
-          style: "default",
-        },
-        {
-          text: "취소",
-          style: "default",
-        }],
-      );
+                    Firebase.postsRef
+                        .doc(postId)
+                        .update({
+                            process: {
+                                title: 'regist',          // regist > request > matching > finishRequest > finished
+                                myErrandOrder: 4,         // 4    > 1 > 3 > 2 > 5(X) (나의 심부름 정렬 기준)
+                                myPerformErrandOrder: 4,  // 4(X) > 2 > 1 > 3 > 5(X) (내가 하고 있는 심부름 정렬 기준)
+                            },
+                            erranderEmail: "",
+                        })
+                        .then(() => getMyErrand())
+                        .catch(err => console.log(err));
+                },
+                style: "default",
+            },
+            {
+                text: "취소",
+                style: "cancel",
+            }],
+        );
     }
 
     return (
         <Modal
-            visible={props.visible}
-            onRequestClose={props.onRequestClose}
+            visible={visible}
+            onRequestClose={onRequestClose}
             animationType="fade"
             transparent={true}
         >
-            <TouchableOpacity style={styles.modalBackground} onPress={props.onRequestClose}>
+            <TouchableOpacity style={styles.modalBackground} onPress={onRequestClose}>
                 <TouchableWithoutFeedback>
                     <View style={styles.modalView}>
                         <View style={styles.modalDecoration}>
@@ -119,7 +133,7 @@ export default ErranderRequest = (props) => {
                         </View>
 
                         <View style={styles.modalHeader}>
-                            <TouchableOpacity onPress={props.onRequestClose}>
+                            <TouchableOpacity onPress={onRequestClose}>
                                 <AIcon name='close' size={26} />
                             </TouchableOpacity>
                         </View>
@@ -129,7 +143,7 @@ export default ErranderRequest = (props) => {
                                 <Avatar
                                     rounded
                                     size={90}
-                                    source={{ uri: props.erranderImage }}
+                                    source={{ uri: erranderImage }}
                                     containerStyle={{ backgroundColor: Colors.lightGray2, right: -20 }}
                                 />
                                 <Avatar
@@ -147,7 +161,7 @@ export default ErranderRequest = (props) => {
 
                             <View style={{ alignItems: 'center', marginBottom: 40 }}>
                                 <Text style={{ includeFontPadding: false, fontSize: 18, fontWeight: '500', color: Colors.black, marginBottom: 8 }}>
-                                    {props.erranderName}, {props.erranderGrade}
+                                    {erranderName}, {erranderGrade}
                                 </Text>
                                 <Text style={{ includeFontPadding: false, fontSize: 16, color: Colors.darkGray}}>
                                     심부름을 하고 싶어합니다!
@@ -158,11 +172,9 @@ export default ErranderRequest = (props) => {
                                 <TouchableOpacity
                                     style={{ alignItems: 'center', marginRight: 70 }}
                                     onPress={() => {
-                                        props.onRequestClose();
-                                        navigation.navigate('Chat', {
-                                            id: props.id, writerEmail: props.writerEmail, erranderEmail: props.erranderEmail, errandInfo: item
-                                        })
-                                    }}
+                                        onRequestClose()
+                                        navigation.navigate('Chat', {item: item})}
+                                    }
                                 >
                                     <Icon name="chatbubbles-outline" size={40} color={Colors.cyan} />
                                     <Text style={styles.buttonText}>
@@ -178,8 +190,8 @@ export default ErranderRequest = (props) => {
                                 </TouchableOpacity>
                             </View>
 
-                            <LinearGradient start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]} style={styles.fullButton}>
-                                <TouchableOpacity onPress={() => accept()}>
+                            <LinearGradient style={styles.fullButtonBackground} start={{x: 0, y: 0.5}} end={{x: 1, y: 0.5}} colors={[Colors.linearGradientLeft, Colors.linearGradientRight]}>
+                                <TouchableOpacity style={styles.fullButton} onPress={() => accept()}>
                                     <Text style={styles.fullButtonText}>
                                         수락
                                     </Text>
@@ -243,12 +255,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
         marginTop: 5,
     },
-    fullButton: {
+    fullButtonBackground: {
         width: '100%',
-        alignItems: 'center',
-        padding: 14,
         borderBottomLeftRadius: 15,
         borderBottomRightRadius: 15
+    },
+    fullButton: {
+        alignItems: 'center',
+        padding: 14,
     },
     fullButtonText: {
         includeFontPadding: false,

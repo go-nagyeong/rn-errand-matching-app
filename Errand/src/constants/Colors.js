@@ -20,7 +20,8 @@ const Colors = {
   darkGray2: '#3A3A3C',
   black: '#000000',
   transparent: 'rgba(0,0,0,0)',
-  translucent: 'rgba(0,0,0,0.3)',
+  translucent: 'rgba(0,0,0,0.2)',
+  translucent2: 'rgba(0,0,0,0.3)',
 
   linearGradientLeft: '#5B86E5',
   linearGradientRight: '#36D1DC',

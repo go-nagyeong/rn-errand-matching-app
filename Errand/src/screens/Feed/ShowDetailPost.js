@@ -1,22 +1,55 @@
-import React, { Fragment, useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Easing, Image, KeyboardAvoidingView, Modal, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { Avatar } from 'react-native-elements';
 import firestore from '@react-native-firebase/firestore';
-import { useNavigation } from '@react-navigation/native';
 import Moment from 'moment';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Animated, Easing, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Avatar } from 'react-native-elements';
 import ImageViewer from 'react-native-image-zoom-viewer';
+// 헤더 바
 import Icon from 'react-native-vector-icons/AntDesign';
 import FIcon from 'react-native-vector-icons/Feather';
+import auth from '@react-native-firebase/auth';
 
-import Colors from '../../constants/Colors';
-import * as Firebase from '../../utils/Firebase';
 import Container from '../../components/Container';
 import ErrandStartButton from '../../components/ErrandStartButton';
+import Colors from '../../constants/Colors';
+import * as Common from '../../utils/Common';
+import * as Firebase from '../../utils/Firebase';
+
+
 
 export default ShowDetailPost = (props) => {
-  const navigation = useNavigation()
+  const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
+  
+  const { title, content, price, writerEmail, id, image, views, arrive, destination, date } = props.route.params;
 
-  const { title, content, writerName, writerGrade, price, writerEmail, id, image, writerImage, views, arrive, destination, date } = props.route.params;
+  const [writerName, setWriterName] = useState('')
+  const [writerGrade, setWriterGrade] = useState('')
+  const [writerImage, setWriterImage] = useState(' ')
+  // 이미지 원본보기 할 때 필요
+  const [imageViewer, setImageViewer] = useState([]);
+  // 이미지 원본보기 활성화 여부
+  const [visible, setVisible] = useState(false);
+
+  // 가져온 이미지 imageViewer에 추가
+  useEffect(() => {
+    for (let i = 0; i < image.length; i++) {
+      setImageViewer(imageViewer => [...imageViewer, { url: image[i] }])
+    }
+  }, [])
+
+  useEffect(() => {
+    Firebase.usersRef
+      .doc(writerEmail)
+      .get()
+      .then(doc => {
+        if (doc.exists) {
+          let gradeNum = doc.data().grade
+          setWriterGrade(Common.calculateGrade(gradeNum))
+          setWriterImage(doc.data().image)
+          setWriterName(doc.data().nickname)
+        }
+      })
+  }, [])
 
   const negativeGrades = new Array('F', 'D+', 'D0')
   const gradeStyle = writerGrade in negativeGrades ? ['frown', Colors.red] : ['smile', Colors.green]
@@ -27,6 +60,8 @@ export default ShowDetailPost = (props) => {
   const [confirmMyPost, setConfirmMyPost] = useState(false)
   // 신고 횟수가 많은 작성자인지 체크
   const [isReported, setIsReported] = useState(false)
+  // 현재 프로세스
+  const [postProcess, setPostProcess] = useState("")
 
   // 좋아요(버튼) 상태 변수
   const [heart, setHeart] = useState(false);
@@ -45,16 +80,18 @@ export default ShowDetailPost = (props) => {
             setProcessIsRequested(false)
           }
           // 본인 게시물인지 체크
-          if (doc.data()['writerEmail'] === Firebase.currentUser.email) {
+          if (doc.data()['writerEmail'] === currentUser.email) {
             setConfirmMyPost(true)
           } else {
             setConfirmMyPost(false)
           }
 
-          setHeartNumber(parseInt(doc.data().hearts))
+          setPostProcess(doc.data().process.title) // 게시글 프로세스 세팅
+
+          setHeartNumber(parseInt(doc.data().hearts)) // 하트 갯수 가져오기
         }
       })
-    
+
     // 신고 횟수가 많은 작성자인지 체크
     Firebase.usersRef
       .doc(writerEmail)
@@ -64,7 +101,7 @@ export default ShowDetailPost = (props) => {
           Object.entries(doc.data().data).map((entrie, idx) => {
             if (entrie[1] >= 10) {
               setIsReported(true)
-            } 
+            }
           });
         }
       })
@@ -82,7 +119,7 @@ export default ShowDetailPost = (props) => {
 
     // 내가 좋아요한 게시물인지 체크
     Firebase.heartsRef
-      .where("who", "==", Firebase.currentUser.email)
+      .where("who", "==", currentUser.email)
       .where("postId", "==", id + "%" + writerEmail)
       .get()
       .then(querySnapshot => {
@@ -96,7 +133,7 @@ export default ShowDetailPost = (props) => {
   }, [])
 
 
-  const heartsDocId = id + "%" + writerEmail + "%" + Firebase.currentUser.email
+  const heartsDocId = id + "%" + writerEmail + "%" + currentUser.email
 
   const opacity = useRef(new Animated.Value(0)).current;
 
@@ -133,9 +170,9 @@ export default ShowDetailPost = (props) => {
         })
         .catch(err => { console.log(err) })
 
-        Firebase.heartsRef
-          .doc(heartsDocId)
-          .delete()
+      Firebase.heartsRef
+        .doc(heartsDocId)
+        .delete()
 
     } else {
       // 하트 활성화 ----------------------------------------------
@@ -155,7 +192,7 @@ export default ShowDetailPost = (props) => {
         .set({
           'postId': id + "%" + writerEmail,
           // 'state': "1",  // (V1과 다를 점) 그래서 말인데 state 필드가 필요한가?
-          'who': Firebase.currentUser.email,
+          'who': currentUser.email,
         })
         .catch(err => { console.log(err) })
     }
@@ -174,13 +211,12 @@ export default ShowDetailPost = (props) => {
           myErrandOrder: 1,         // 4    > 1 > 3 > 2 > 5(X) (나의 심부름 정렬 기준)
           myPerformErrandOrder: 2,  // 4(X) > 2 > 1 > 3 > 5(X) (내가 하고 있는 심부름 정렬 기준)
         },
-        erranderEmail: Firebase.currentUser.email,
-        errander: Firebase.currentUser.displayName,
+        erranderEmail: currentUser.email,
       })
       .then(() => {
         Alert.alert(
           "심부름 수행 요청 완료",
-          "요청이 전송되었습니다.\n심부름을 진행해 주세요!",
+          "요청이 수락되면 심부름을 진행해주세요.",
           [{
             text: "확인",
             onPress: () => props.navigation.navigate('Home'),
@@ -191,19 +227,19 @@ export default ShowDetailPost = (props) => {
       .catch(err => { console.log(err) })
   }
 
-  // 게시물 상태 업데이트
+  // 게시물 상태 업데이트 (심부름 요청 버튼 클릭 프로세스)
   const updatePostState = () => {
     if (!processIsRequested) {
       Alert.alert(
         "심부름 수행 요청",
-        "심부름 요청을 수행하셨습니다.\n정말로 진행하시겠습니까?",
+        "심부름 수행 요청을 보내시겠습니까?",
         [{
           text: "확인",
           onPress: () => requestErrand(),
           style: "default",
         }, {
           text: "취소",
-          style: "default",
+          style: "cancel",
         }],
       );
 
@@ -220,152 +256,22 @@ export default ShowDetailPost = (props) => {
     }
   }
 
-
-  // edit mode -----------------------------------------------------------------------
-  const [isEditMode, setEditMode] = useState(false)
-  const toggleEdit = () => {
-    if (isEditMode) {
-      setEditMode(updateTitle() || updateContent() || updatePrice())
+  // 심부름 게시물 수정
+  const edit_post = () => {
+    if (postProcess == "regist") {
+      props.navigation.navigate("ShowEditPost", { ...props.route.params })
     } else {
-      setEditMode(true)
-    }
-  }
-
-  const [editedTitle, setEditedTitle] = useState(title);
-  const [editedContent, setEditedContent] = useState(content);
-  const [editedPrice, setEditedPrice] = useState(price);
-
-  const updateTitle = () => {
-    if (editedTitle.length < 2) {
       Alert.alert(
-        "오류",
-        "제목은 최소 2글자 이상 입니다.",
+        "수정 불가능",
+        "심부름이 요청 또는 진행 상태일 경우, 게시물 수정이 불가능합니다.",
         [{
-          text: "확인",
-          style: "cancel",
+            text: "확인",
+            style: "cancel",
         }],
       );
-
-      return true
-
-    } else {
-      Firebase.postsRef
-        .doc(id + "%" + writerEmail)
-        .update({
-          title: editedTitle
-        })
-        .catch(err => { console.log(err) })
-
-      return false
     }
   }
-  const updateContent = () => {
-    if (editedContent.length < 2) {
-      Alert.alert(
-        "오류",
-        "내용은 최소 2글자 이상 입니다.",
-        [{
-          text: "확인",
-          style: "cancel",
-        }],
-      );
-
-      return true
-
-    } else {
-      Firebase.postsRef
-        .doc(id + "%" + writerEmail)
-        .update({
-          content: editedContent
-        })
-        .catch(err => { console.log(err) })
-
-      return false
-    }
-  }
-  const updatePrice = () => {
-    if (editedPrice >= 100000) {
-      Alert.alert(
-        "오류",
-        "10만원 이상의 거래를 불가능합니다.",
-        [{
-          text: "확인",
-          style: "cancel",
-        }],
-      );
-
-      return true
-
-    } else {
-      Firebase.postsRef
-        .doc(id + "%" + writerEmail)
-        .update({
-          price: editedPrice
-        })
-        .catch(err => { console.log(err) })
-
-      return false
-    }
-  }
-  // ----------------------------------------------------------------------------
-
-
-  // 게시물 삭제
-  const deletePost = () => {
-    Alert.alert(
-      "심부름 삭제",
-      "정말로 삭제하시겠습니까?",
-      [{
-        text: "확인",
-        onPress: async () => {
-          await Firebase.heartsRef
-            .where('postId', '==', id + '%' + writerEmail)
-            .get()
-            .then(querySnapshot => {
-              querySnapshot.forEach(doc => {
-                doc.ref.delete()
-              })
-            })
-            .catch(err => console.log(err));
-
-          Firebase.postsRef
-            .doc(id + '%' + writerEmail)
-            .delete()
-            .then(() => props.navigation.navigate('Home'))
-            .catch(err => console.log(err));
-        },
-        style: "default",
-      },
-      {
-        text: "취소",
-        style: "default",
-      }],
-    );
-  }
-
-  // 이미지 원본보기 활성화 여부
-  const [visible, setVisible] = useState(false);
-
-  // 이미지 원본보기 할 때 필요
-  const images = [{
-    // Simplest usage.
-    url: image,
-
-    // width: number
-    // height: number
-    // Optional, if you know the image size, you can set the optimization performance
-
-    // You can pass props to <Image />.
-    props: {
-      // headers: ...
-    }
-  }, {
-    url: '',
-    props: {
-      // Or you can set source directory.
-      // source: require('../background.png')
-    }
-  }]
+ 
 
   const toggleVisible = () => {
     if (visible) {
@@ -375,25 +281,26 @@ export default ShowDetailPost = (props) => {
     }
   }
 
-  // (V1과 다른 점 => 전체적인 UI)
+  const _goBack = () => props.navigation.goBack();
+  
   return (
     <>
       <Container>
-        <Modal visible={visible} transparent={true}>
-          <ImageViewer imageUrls={images} enableSwipeDown={true} onSwipeDown={toggleVisible} />
+        <Modal visible={visible} transparent={true} onRequestClose={toggleVisible}>
+          <ImageViewer imageUrls={imageViewer} enableSwipeDown={true} onSwipeDown={toggleVisible} backgroundColor={'rgba(0, 0, 0, 0.9)'} />
         </Modal>
 
         {/* 게시물 이미지 여부 확인 */}
-        {image != ""
-          ?
+        <View style={styles.imageWrap}>
+          {image != ""
+            ?
             <TouchableOpacity onPress={toggleVisible}>
-              <Image source={{ uri: image }} style={styles.image} resizeMode="cover" />
+              <Image source={{ uri: image[0] }} style={styles.image} resizeMode="cover" />
             </TouchableOpacity>
-          :
-            <View style={styles.nonImage}>
-              <Text style={{color: Colors.white, fontSize: 20}}>No Image</Text>
-            </View>
-        }
+            :
+            <Text style={{ color: Colors.white, fontSize: 20, textAlign: 'center' }}>No Image</Text>
+          }
+        </View>
 
         <View style={styles.contents}>
           {/* 신고 횟수가 많은 작성자 경고문 */}
@@ -406,8 +313,8 @@ export default ShowDetailPost = (props) => {
 
           {/* 게시물 수정 버튼 */}
           {confirmMyPost &&
-            <TouchableOpacity style={styles.editButton} onPress={() => toggleEdit()}>
-              <Text style={styles.editButtonText}>{isEditMode ? '완료' : '수정'}</Text>
+            <TouchableOpacity style={styles.editButton} onPress={() => edit_post()}>
+              <Text style={styles.editButtonText}>수정</Text>
             </TouchableOpacity>
           }
 
@@ -423,28 +330,15 @@ export default ShowDetailPost = (props) => {
 
             <View>
               <Text style={{ color: Colors.black, fontSize: 15, fontWeight: '600', marginBottom: 8 }}>{writerName}</Text>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <FIcon name={gradeStyle[0]} size={16} color={gradeStyle[1]} style={{ marginRight: 4 }} />
-                <Text style={{fontSize: 14, color: Colors.darkGray}}>{writerGrade}</Text>
+                <Text style={{ fontSize: 14, color: Colors.darkGray }}>{writerGrade}</Text>
               </View>
             </View>
           </View>
 
           {/* 타이틀 텍스트 */}
-          {!isEditMode
-            ?
-              <Text style={styles.title}>{editedTitle}</Text>
-            :
-              <TextInput
-                style={[styles.input, styles.title]}
-                value={editedTitle}
-                autoCapitalize='none'
-                autoCorrect={false}
-                blurOnSubmit={true}
-                onChangeText={(text) => setEditedTitle(text)}
-                maxLength={30}
-              />
-          }
+          <Text style={styles.title}>{title}</Text>
 
           {/* 날짜, 가격, 조회수, 하트 */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -456,31 +350,17 @@ export default ShowDetailPost = (props) => {
               </Text>
 
               <Icon name='eyeo' size={14} color={Colors.gray} />
-              <Text style={{marginLeft: 4, marginRight: 18, fontSize: 13, color: Colors.darkGray2}}>{views}</Text>
+              <Text style={{ marginLeft: 4, marginRight: 18, fontSize: 13, color: Colors.darkGray2 }}>{views}</Text>
 
               <Icon name='heart' size={13} color={Colors.gray} />
-              <Text style={{marginLeft: 4, fontSize: 13, color: Colors.darkGray2}}>{heartNumber}</Text>
+              <Text style={{ marginLeft: 4, fontSize: 13, color: Colors.darkGray2 }}>{heartNumber}</Text>
             </View>
 
-            <Text style={{fontSize: 17, color: Colors.black}}>{price}원</Text>
+            <Text style={styles.price}>{price}원</Text>
           </View>
 
           {/* 내용 텍스트*/}
-          {!isEditMode
-            ? 
-              <Text style={styles.content}>{editedContent}</Text>
-            :
-              <TextInput
-                style={[styles.input, styles.content]}
-                value={editedContent}
-                autoCapitalize='none'
-                autoCorrect={false}
-                blurOnSubmit={true}
-                onChangeText={(text) => setEditedContent(text)}
-                maxLength={1000}
-                multiline={true}
-              />
-          }
+          <Text style={styles.content}>{content}</Text>
 
           {/* 목적지, 도착지 */}
           {arrive !== "" &&
@@ -492,13 +372,6 @@ export default ShowDetailPost = (props) => {
             <View style={styles.location}>
               <Text style={styles.locationText}>도착지 : {destination}</Text>
             </View>
-          }
-
-          {/* 게시물 삭제 버튼 */}
-          {confirmMyPost &&
-            <TouchableOpacity style={[styles.deleteButton, {backgroundColor: Colors.red}]} onPress={() => deletePost()}>
-              <Text style={[styles.deleteButtonText, {color: Colors.white}]}>삭제</Text>
-            </TouchableOpacity>
           }
         </View>
       </Container>
@@ -519,32 +392,28 @@ export default ShowDetailPost = (props) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
   contents: {
     paddingHorizontal: 16,
     paddingBottom: 16,
+  },
+  imageWrap: {
+    width: '100%',
+    height: 300,
+    backgroundColor: Colors.lightGray,
+    justifyContent: 'center',
+    marginBottom: 14,
   },
   image: {
     width: '100%',
     height: 300,
   },
-  nonImage: {
-    width: '100%',
-    height: 300,
-    backgroundColor: Colors.lightGray,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   warning: {
     flexDirection: 'row',
     marginHorizontal: "10%",
-    marginVertical: 10,
     padding: 10,
     borderRadius: 20,
-    backgroundColor: "#fffce6"
+    backgroundColor: "#fffce6",
+    marginBottom: 10,
   },
   warningText: {
     marginLeft: "3%",
@@ -552,8 +421,7 @@ const styles = StyleSheet.create({
   },
   editButton: {
     alignSelf: 'flex-end',
-    marginTop: 16,
-    marginRight: 6,
+    padding: 4,
   },
   editButtonText: {
     fontWeight: '600',
@@ -563,9 +431,9 @@ const styles = StyleSheet.create({
   userRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingBottom: 10,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.midGray,
+    paddingBottom: 12,
     marginBottom: 20,
   },
   userImage: {
@@ -577,41 +445,26 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 12,
   },
+  price: {
+    fontSize: 17,
+    color: Colors.black,
+  },
   content: {
     color: Colors.darkGray2,
     fontSize: 15,
     marginVertical: 38,
   },
-  input: {
-    paddingVertical: 4,
-    // paddingHorizontal: 12,
-    // backgroundColor: '#eee',
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray2,
-  },
   location: {
     marginHorizontal: "8%",
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderRadius: 20,
     backgroundColor: "#eee",
-    marginBottom: '3%',
+    marginBottom: 14,
   },
   locationText: {
     color: Colors.black,
     fontSize: 14,
-  },
-  deleteButton: {
-    alignItems: 'center',
-    padding: 10,
-    marginHorizontal: '30%',
-    borderRadius: 20,
-    marginTop: '7%',
-  },
-  deleteButtonText: {
-    fontWeight: '700',
-    color: Colors.black,
-    fontSize: 16,
   },
   footer: {
     backgroundColor: Colors.white,
@@ -619,7 +472,6 @@ const styles = StyleSheet.create({
     height: "12%",
     paddingBottom: '6%',
     alignItems: "center",
-    // justifyContent: "center",
     justifyContent: 'space-between',
     flexDirection: 'row',
     borderTopWidth: StyleSheet.hairlineWidth,

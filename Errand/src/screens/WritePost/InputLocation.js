@@ -6,13 +6,17 @@ import Colors from '../../constants/Colors';
 import Container from '../../components/Container';
 import MiniSubmitButton from '../../components/MiniSubmitButton';
 import SpeechBalloon from '../../components/SpeechBalloon';
+import { useNavigation } from '@react-navigation/native';
+import { Appbar } from 'react-native-paper';
 
 export default InputLocation = (props) => {
+    const navigation = useNavigation()
+
     const { color, category, price } = props.route.params;
 
     const InputLocation = () => {
         if (price) {
-            props.navigation.navigate('WriteTitle', { color: color, category: category, price: price, arrive: arrive, destination : destination })
+            props.navigation.navigate('WriteTitle', { color: color, category: category, price: price, arrive: arrive, destination: destination })
         } else {
             setMessage('금액을 입력해주세요.')
         }
@@ -58,7 +62,7 @@ export default InputLocation = (props) => {
                 <View style={styles.titleWrapper}>
                     <Text style={styles.title}>도착지</Text>
                 </View>
-                <View style={[styles.inputWrapper, {marginBottom: 70}]}>
+                <View style={[styles.inputWrapper, { marginBottom: 70 }]}>
                     <Icon name='right' size={20} color={titleFocus ? color : 'black'} />
                     <TextInput
                         style={[styles.input2, aFocus && { fontWeight: '600' }]}
@@ -77,7 +81,7 @@ export default InputLocation = (props) => {
                 </View>
 
                 <MiniSubmitButton
-                    title={(destination !== "" || arrive !== "") ? 'OK' : 'SKIP'} 
+                    title={(destination !== "" || arrive !== "") ? 'OK' : 'SKIP'}
                     backgroundColor={color}
                     onPress={() => InputLocation()} />
             </View>

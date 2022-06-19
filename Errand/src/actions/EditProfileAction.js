@@ -6,6 +6,8 @@ import * as Firebase from '../utils/Firebase';
 import EditProfileScreen from '../screens/Mypage/EditProfileScreen';
 
 export default EditProfileAction = (props) => {
+  const currentUser = Firebase.currentUser != null ? Firebase.currentUser : auth().currentUser
+
   const [err, setErr] = useState('');
 
   const reauthenticate = (password) => {
@@ -14,10 +16,9 @@ export default EditProfileAction = (props) => {
       return false;
     } else {
       setErr('');
-      const userEmail = Firebase.currentUser.email;
-      const credential = auth.EmailAuthProvider.credential(userEmail, password);
+      const credential = auth.EmailAuthProvider.credential(currentUser.email, password);
   
-      Firebase.currentUser
+      currentUser
         .reauthenticateWithCredential(credential)
         .then(() => props.navigation.navigate('ResetPw', {withdrawal: withdrawal}))
         .catch(error => {
@@ -41,21 +42,124 @@ export default EditProfileAction = (props) => {
       {
         text: "탈퇴",
         onPress: () => {
-          Firebase.currentUser
-            .delete()
-            .then(() => {
-              const userEmail = Firebase.currentUser.email;
-              const userInfo = Firebase.usersRef.doc(userEmail);
-              userInfo
-                .delete()
-                .then(() => console.log('계정 정보 삭제 완료'))
-                .catch((err) => console.log(err));
+          Firebase.postsRef
+            .where('process.title', 'not-in', ['regist', 'finished'])
+            .get()
+            .then(querySnapshot => {
+              let isAbleToWithdraw = true
+
+              querySnapshot.forEach(doc => {
+                const writerEmail = doc.data().writerEmail
+                const erranderEmail = doc.data().erranderEmail
+  
+                if (writerEmail == currentUser.email || erranderEmail == currentUser.email) {
+                  isAbleToWithdraw = false
+                  return false
+                }
+              })
+
+              if (isAbleToWithdraw) {
+                delete_user_posts(currentUser.email)
+                delete_user_hearts(currentUser.email)
+                erase_user_email(currentUser.email)
+                delete_user(currentUser.email)
+              } else {
+                Alert.alert(
+                  "회원탈퇴 불가능",
+                  "요청 또는 진행 중인 심부름이 있을 경우, 회원탈퇴가 불가능합니다.",
+                  [{
+                      text: "확인",
+                      onPress: () => props.navigation.navigate('Mypage'),
+                      style: "cancel",
+                  }],
+                )
+              }
             })
-            .catch((error) => console.log(error))
+          
         },
         style: "destructive",
       }],
     );
+  }
+
+  const delete_user_posts = (email) => {
+    Firebase.postsRef
+      .where('writerEmail', '==', email)
+      .where('process.title', '!=', 'finished')
+      .get()
+      .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+              doc.ref.delete()
+          })
+      })
+      .catch(err => console.log(err));
+  }
+
+  const delete_user_hearts = (email) => {
+    Firebase.heartsRef
+      .where('who', '==', email)
+      .get()
+      .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+              doc.ref.delete()
+          })
+      })
+      .catch(err => console.log(err));
+  }
+
+  const erase_user_email = (email) => {
+    const finishedPost = Firebase.postsRef.where('process.title', '==', 'finished')
+
+    finishedPost
+      .where('writerEmail', '==', email)
+      .get()
+      .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+              doc.ref.update({writerEmail: ''})
+          })
+      })
+      .catch(err => console.log(err))
+    finishedPost
+      .where('erranderEmail', '==', email)
+      .get()
+      .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+              doc.ref.update({erranderEmail: ''})
+          })
+      })
+      .catch(err => console.log(err))
+
+    Firebase.chatsRef
+      .where('user._id', '==', email)
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          doc.ref.update({user: {_id: ''}})
+        })
+      })
+      .catch(err => console.log(err))
+    Firebase.chatsRef
+      .where('opponent._id', '==', email)
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          doc.ref.update({opponent: {_id: ''}})
+        })
+      })
+      .catch(err => console.log(err))
+  }
+  
+  const delete_user = (email) => {
+    Firebase.usersRef
+      .doc(currentUser.email)
+      .delete()
+      .then(() => {
+        currentUser
+          .delete()
+          .then(() => props.navigation.reset({routes: [{name: 'Login'}]}))
+          .catch((error) => console.log(error))
+      })
+      .catch((err) => console.log(err));
   }
   
   return <EditProfileScreen 
