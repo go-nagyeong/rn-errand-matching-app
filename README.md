@@ -22,12 +22,17 @@ firebase (authentication, cloud firestore)
 
 ## Screenshot  
 <div>
-  <img width="270" src="https://user-images.githubusercontent.com/84227532/168519299-a69eb928-8d99-469e-ac4d-bd5e50de8652.png"/>
-  <img width="270" src="https://user-images.githubusercontent.com/84227532/168519419-87724e10-a6b3-4309-b920-78843dea57d6.png"/>
-  <img width="270" src="https://user-images.githubusercontent.com/84227532/168519624-883c7382-700c-4085-a321-f960b8ca244c.png"/>
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472381-59c60244-c033-4bbd-8224-a03671d6e9a6.png"/>
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472386-4e5d54b4-34aa-4ac1-83f8-7d6011f7f9af.png"/>
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472391-422a7eab-25ef-4990-9165-0637224f1914.png"/>
 </div>  
 <div>
-  <img width="270" src="https://user-images.githubusercontent.com/84227532/168520340-7c14de51-ab98-4394-8216-b28b59d0094f.png">
-  <img width="270" src="https://user-images.githubusercontent.com/84227532/168520251-06b1d573-4015-46a4-b14e-68f28321b1d6.png">
-  <img width="270" src="https://user-images.githubusercontent.com/84227532/168520437-401b62ac-2d09-487f-acde-1db5ffe69705.png">
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472525-b024751a-3655-4895-b079-c747ef8764c9.png">
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472545-02fd49d8-cb07-43ea-b5ad-ea0fb77002ce.png">
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472528-9eb7fc00-9df5-4a3c-9383-9615da683872.png">
+</div>
+<div>
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472567-e9fd761a-c5d7-47c7-879a-7ed6a195adad.png">
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472481-6161932e-1942-476c-944a-863db298ac5c.png">
+  <img width="270" src="https://user-images.githubusercontent.com/84227532/174472569-499d695a-837c-4136-b14b-7a287b70a0c5.png">
 </div>
